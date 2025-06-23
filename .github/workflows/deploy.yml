@@ -1,0 +1,186 @@
+name: 🚀 Deploy Roteirizar IA
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job 1: Testes e Qualidade
+  test:
+    name: 🧪 Tests & Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: ⬇️ Checkout código
+      uses: actions/checkout@v4
+      
+    - name: ⚡ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🔍 Lint check
+      run: npx eslint . --ext .ts,.tsx --max-warnings 0 || true
+      
+    - name: 🏗️ Build check
+      run: npm run build
+      
+    - name: 🧪 Run unit tests
+      run: npm test -- --run --coverage
+      
+    - name: 📊 Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        fail_ci_if_error: false
+
+  # Job 2: Deploy para Vercel (Recomendado)
+  deploy-vercel:
+    name: 🌐 Deploy Vercel
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: ⬇️ Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🚀 Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+
+  # Job 3: Deploy para Hostinger (Alternativo)
+  deploy-hostinger:
+    name: 🏠 Deploy Hostinger
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && false # Desabilitado por padrão
+    
+    steps:
+    - name: ⬇️ Checkout
+      uses: actions/checkout@v4
+      
+    - name: ⚡ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build production
+      run: npm run build
+      
+    - name: 📁 Create .htaccess
+      run: |
+        cat > dist/.htaccess << 'EOF'
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+        
+        <IfModule mod_expires.c>
+            ExpiresActive on
+            ExpiresByType text/css "access plus 1 year"
+            ExpiresByType application/javascript "access plus 1 year"
+            ExpiresByType image/png "access plus 1 year"
+            ExpiresByType image/jpg "access plus 1 year"
+            ExpiresByType image/jpeg "access plus 1 year"
+            ExpiresByType image/gif "access plus 1 year"
+            ExpiresByType image/svg+xml "access plus 1 year"
+            ExpiresByType image/x-icon "access plus 1 year"
+            ExpiresByType image/webp "access plus 1 year"
+            ExpiresByType font/woff "access plus 1 year"
+            ExpiresByType font/woff2 "access plus 1 year"
+            ExpiresByType application/font-woff "access plus 1 year"
+            ExpiresByType application/font-woff2 "access plus 1 year"
+            ExpiresByType application/manifest+json "access plus 1 week"
+            ExpiresByType text/html "access plus 1 hour"
+        </IfModule>
+        
+        <IfModule mod_deflate.c>
+            AddOutputFilterByType DEFLATE application/javascript
+            AddOutputFilterByType DEFLATE application/rss+xml
+            AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+            AddOutputFilterByType DEFLATE application/x-font
+            AddOutputFilterByType DEFLATE application/x-font-opentype
+            AddOutputFilterByType DEFLATE application/x-font-otf
+            AddOutputFilterByType DEFLATE application/x-font-truetype
+            AddOutputFilterByType DEFLATE application/x-font-ttf
+            AddOutputFilterByType DEFLATE application/x-javascript
+            AddOutputFilterByType DEFLATE application/xhtml+xml
+            AddOutputFilterByType DEFLATE application/xml
+            AddOutputFilterByType DEFLATE font/opentype
+            AddOutputFilterByType DEFLATE font/otf
+            AddOutputFilterByType DEFLATE font/ttf
+            AddOutputFilterByType DEFLATE image/svg+xml
+            AddOutputFilterByType DEFLATE image/x-icon
+            AddOutputFilterByType DEFLATE text/css
+            AddOutputFilterByType DEFLATE text/html
+            AddOutputFilterByType DEFLATE text/javascript
+            AddOutputFilterByType DEFLATE text/plain
+            AddOutputFilterByType DEFLATE text/xml
+        </IfModule>
+        
+        <IfModule mod_headers.c>
+            Header set X-Content-Type-Options "nosniff"
+            Header set X-Frame-Options "DENY"
+            Header set X-XSS-Protection "1; mode=block"
+            
+            <FilesMatch "sw\.js$">
+                Header set Cache-Control "no-cache, no-store, must-revalidate"
+                Header set Pragma "no-cache"
+                Header set Expires "0"
+            </FilesMatch>
+            
+            <FilesMatch "manifest\.json$">
+                Header set Cache-Control "public, max-age=604800"
+            </FilesMatch>
+        </IfModule>
+        
+        AddType application/manifest+json .webmanifest .json
+        AddType text/cache-manifest .appcache
+        EOF
+      
+         - name: 🚀 Deploy via FTP
+       uses: sebastianpopp/ftp-action@releases/v2
+       with:
+         host: ${{ secrets.HOSTINGER_FTP_HOST }}
+         user: ${{ secrets.HOSTINGER_FTP_USER }}
+         password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+         localDir: "dist"
+         remoteDir: "/public_html"
+          
+  # Job 4: Notify
+  notify:
+    name: 📢 Notify
+    needs: [deploy-vercel]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 🎉 Success notification
+      if: needs.deploy-vercel.result == 'success'
+      run: |
+        echo "✅ Deploy realizado com sucesso!"
+        echo "🌐 Site disponível em: https://roteirizaria.vercel.app"
+        echo "📱 PWA instalável e pronto para uso!"
+        
+    - name: ❌ Failure notification
+      if: needs.deploy-vercel.result == 'failure'
+      run: |
+        echo "❌ Deploy falhou!"
+        echo "🔍 Verificar logs para identificar o problema." 

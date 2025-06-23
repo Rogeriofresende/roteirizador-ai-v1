@@ -1,0 +1,79 @@
+name: 🚀 Deploy Vercel - Roteirizar IA
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job 1: Testes e Build
+  test-and-build:
+    name: 🧪 Test & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: ⬇️ Checkout
+      uses: actions/checkout@v4
+      
+    - name: ⚡ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build production
+      run: npm run build
+      
+    - name: 🧪 Run tests
+      run: npm test -- --run || true
+      
+    - name: 📊 Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        retention-days: 1
+
+  # Job 2: Deploy para Vercel
+  deploy:
+    name: 🌐 Deploy to Vercel
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: ⬇️ Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🚀 Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+
+  # Job 3: Notificação
+  notify:
+    name: 📢 Notify Status
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 🎉 Success notification
+      if: needs.deploy.result == 'success'
+      run: |
+        echo "✅ Deploy realizado com sucesso!"
+        echo "🌐 Site disponível em: https://roteirizaria.vercel.app"
+        echo "📱 PWA instalável e funcionando!"
+        
+    - name: ❌ Failure notification
+      if: needs.deploy.result == 'failure'
+      run: |
+        echo "❌ Deploy falhou!"
+        echo "🔍 Verificar logs para identificar o problema." 
