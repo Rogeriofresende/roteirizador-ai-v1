@@ -25,7 +25,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 
 // Novos componentes do dashboard
 import DashboardFilters from '../components/dashboard/DashboardFilters';
-import DashboardStats from '../components/dashboard/DashboardStats';
+import { DashboardStats } from '../components/dashboard/DashboardStats';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import TagManager from '../components/dashboard/TagManager';
 
@@ -396,7 +396,7 @@ const UserDashboardPage: React.FC = () => {
       {/* Conteúdo das Tabs */}
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
-          <DashboardStats />
+          <DashboardStats userId={currentUser?.uid || ""} timeRange="30d" onTimeRangeChange={() => {}} />
         </div>
       )}
 

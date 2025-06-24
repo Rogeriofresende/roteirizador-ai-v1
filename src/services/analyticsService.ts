@@ -3,6 +3,7 @@
 
 import { collection, doc, getDoc, setDoc, updateDoc, increment, Timestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { ClarityService } from './clarityService';
 
 declare global {
   interface Window {
@@ -281,6 +282,18 @@ export class AnalyticsService {
     if (this.config.debug_mode) {
       console.log('📊 Analytics Event:', eventName, eventData);
     }
+
+    // Integração com Microsoft Clarity
+    if (typeof ClarityService !== 'undefined') {
+      try {
+        ClarityService.trackEvent(eventName, eventData);
+      } catch (error) {
+        // Falha silenciosa para não quebrar analytics principal
+        if (this.config.debug_mode) {
+          console.warn('Erro ao integrar com Clarity:', error);
+        }
+      }
+    }
   }
 
   public trackPageView(page: string, title?: string) {
@@ -335,6 +348,22 @@ export class AnalyticsService {
         platform: data.platform,
         error_message: data.error_message
       });
+    }
+
+    // Integração específica com Microsoft Clarity
+    if (typeof ClarityService !== 'undefined') {
+      try {
+        ClarityService.trackScriptGeneration({
+          platform: data.platform,
+          duration: data.duration,
+          success: data.success,
+          generationTime: data.generation_time
+        });
+      } catch (error) {
+        if (this.config.debug_mode) {
+          console.warn('Erro ao integrar script generation com Clarity:', error);
+        }
+      }
     }
   }
 

@@ -11,10 +11,40 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    fs: { strict: false },
+    watch: { 
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/node_modules_old*/**',
+        '**/.archive/**',
+        '**/coverage/**',
+        '**/playwright-report/**',
+        '**/test-results/**',
+        '**/*.log',
+        '**/dist/**',
+        '**/build/**'
+      ]
+    },
+    hmr: {
+      overlay: true
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          ui: ['lucide-react', 'framer-motion']
+        }
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',
-    // Removido setupFiles temporariamente para debug
-    // setupFiles: './src/tests/setup.ts',
+    setupFiles: './src/tests/setup.ts',
   },
 })

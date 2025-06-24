@@ -4,12 +4,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { Button } from "./ui/button";
-import { LogOut, Menu, X, Home, FileText, User, UserPlus } from 'lucide-react';
+import { LogOut, Menu, X, Home, FileText, User, UserPlus, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { SystemDashboard } from './SystemDashboard';
 import { healthCheckService } from '../services/healthCheckService';
 
+import { TallyService } from '../services/tallyService';
 const Navbar: React.FC = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -139,6 +140,16 @@ const Navbar: React.FC = () => {
               )}
             </nav>
 
+
+            {/* Feedback Button */}
+            <button
+              onClick={() => TallyService.showGeneralFeedback()}
+              className="flex items-center space-x-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-blue-600 dark:text-blue-400"
+              title="Enviar Feedback"
+            >
+              <MessageCircle size={16} />
+              <span className="text-xs hidden sm:inline">Feedback</span>
+            </button>
             <ThemeToggle />
 
             {/* System Status Indicator */}

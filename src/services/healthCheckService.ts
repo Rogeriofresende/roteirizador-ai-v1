@@ -225,7 +225,7 @@ export class HealthCheckService {
       
       const responseTime = Date.now() - startTime;
       
-      return {
+            return {
         status: responseTime < this.RESPONSE_TIME_THRESHOLD ? 'operational' : 'degraded',
         responseTime,
         lastCheck: Timestamp.now(),
@@ -233,7 +233,7 @@ export class HealthCheckService {
         errorCount: 0
       };
     } catch (error) {
-      return {
+          return {
         status: 'outage',
         responseTime: Date.now() - startTime,
         lastCheck: Timestamp.now(),
@@ -257,15 +257,15 @@ export class HealthCheckService {
       const responseTime = Date.now() - startTime;
 
       if (response.ok) {
-        return {
+            return {
           status: responseTime < this.RESPONSE_TIME_THRESHOLD ? 'operational' : 'degraded',
           responseTime,
           lastCheck: Timestamp.now(),
           uptime: 99.5,
           errorCount: 0
-        };
-      } else {
-        return {
+            };
+          } else {
+            return {
           status: 'degraded',
           responseTime,
           lastCheck: Timestamp.now(),
@@ -275,7 +275,7 @@ export class HealthCheckService {
         };
       }
     } catch (error) {
-      return {
+          return {
         status: 'outage',
         responseTime: Date.now() - startTime,
         lastCheck: Timestamp.now(),
@@ -299,7 +299,7 @@ export class HealthCheckService {
       const responseTime = Date.now() - startTime;
       const allPassed = checks.every(check => check);
 
-      return {
+          return {
         status: allPassed ? 'operational' : 'degraded',
         responseTime,
         lastCheck: Timestamp.now(),
@@ -308,7 +308,7 @@ export class HealthCheckService {
         message: allPassed ? undefined : 'Some PWA features not working'
       };
     } catch (error) {
-      return {
+          return {
         status: 'outage',
         responseTime: Date.now() - startTime,
         lastCheck: Timestamp.now(),
@@ -375,14 +375,14 @@ export class HealthCheckService {
       const activeUsers = usersSnapshot.size;
       const totalProjects = projectsSnapshot.size;
 
-      return {
+          return {
         errorRate,
         activeUsers,
         totalProjects
       };
     } catch (error) {
       console.error('Erro ao obter métricas do sistema:', error);
-      return {
+          return {
         errorRate: 1,
         activeUsers: 0,
         totalProjects: 0
@@ -485,6 +485,37 @@ export class HealthCheckService {
 
   // **NOTIFICAÇÕES E ALERTAS**
 
+  static async requestNotificationPermission(): Promise<boolean> {
+    if (!('Notification' in window)) {
+      console.log('📱 Notificações não suportadas neste navegador');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      console.log('✅ Permissão para notificações já concedida');
+      return true;
+    }
+
+    if (Notification.permission === 'denied') {
+      console.log('❌ Permissão para notificações negada pelo usuário');
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        console.log('✅ Permissão para notificações concedida');
+        return true;
+      } else {
+        console.log('❌ Permissão para notificações negada');
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao solicitar permissão para notificações:', error);
+      return false;
+    }
+  }
+
   private static async notifyHealthIssues(healthData: SystemHealth): Promise<void> {
     if (healthData.issues.length === 0) return;
 
@@ -495,6 +526,19 @@ export class HealthCheckService {
       criticalIssues.forEach(issue => {
         console.error(`- ${issue.service}: ${issue.message}`);
       });
+
+      // Mostrar notificação se autorizado
+      if (Notification.permission === 'granted') {
+        try {
+          new Notification('🚨 Roteirizar IA - Problema Crítico', {
+            body: `${criticalIssues.length} problema(s) crítico(s) detectado(s)`,
+            icon: '/icons/icon-192x192.png',
+            tag: 'health-critical'
+          });
+        } catch (error) {
+          console.error('Erro ao mostrar notificação:', error);
+        }
+      }
 
       // Em produção, enviaria notificações por email/Slack
       // await this.sendCriticalAlert(criticalIssues);
@@ -643,10 +687,10 @@ export class HealthCheckService {
   }
 }
 
-// Singleton global
-export const healthCheckService = new HealthCheckService();
+// Singleton global - Exportar a classe, não uma instância
+export const healthCheckService = HealthCheckService;
 
 // Exposer globalmente para debugging
 if (typeof window !== 'undefined') {
-  (window as any).healthCheck = healthCheckService;
+  (window as any).healthCheck = HealthCheckService;
 } 

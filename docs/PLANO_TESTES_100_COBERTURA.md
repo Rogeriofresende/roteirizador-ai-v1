@@ -228,4 +228,186 @@ Após implementação, gerar:
 - [ ] 0 vulnerabilidades críticas
 - [ ] Build passando sem warnings
 
-**Pronto para produção! 🚀** 
+**Pronto para produção! 🚀**
+
+# 🚀 **PLANO EXECUTIVO: IMPLEMENTAÇÃO TESTES 100% COBERTURA**
+## **Roteirar IA - Execution Plan for Critical Testing**
+
+---
+
+## **📋 RESUMO EXECUTIVO**
+
+**Status:** 🚨 **EXECUÇÃO IMEDIATA APROVADA**  
+**Data Início:** Hoje - Implementação Imediata  
+**Objetivo:** Eliminar gaps críticos de teste identificados  
+**Meta:** 85% cobertura em 3 semanas
+
+---
+
+## **🎯 PLANO DE EXECUÇÃO - FASE 1: TESTES CRÍTICOS**
+
+### **📊 SITUAÇÃO ATUAL**
+- ✅ **6.200+ linhas** implementadas (Fase 3 + UX)
+- ❌ **0% cobertura** em serviços críticos
+- ❌ **0% cobertura** em componentes UX polidos
+- 🚨 **RISCO ALTO** para produção
+
+### **🚀 EXECUÇÃO IMEDIATA - HOJE**
+
+#### **1. SETUP AMBIENTE DE TESTES**
+```bash
+# Instalar dependências de teste
+npm install --save-dev @testing-library/react @testing-library/jest-dom
+npm install --save-dev @testing-library/user-event vitest jsdom
+npm install --save-dev @babel/preset-env @babel/preset-react @babel/preset-typescript
+```
+
+#### **2. CONFIGURAÇÃO JEST/VITEST**
+- ✅ jest.config.js já existe
+- ✅ babel.config.js já existe  
+- 🔄 Validar configurações
+
+#### **3. IMPLEMENTAÇÃO TESTES CRÍTICOS**
+
+**Prioridade 1 - VoiceSynthesisService (2h)**
+- ✅ Testes unitários básicos
+- ✅ Mocks para APIs externas
+- ✅ Testes de quota e limites
+- ✅ Testes de erro e fallback
+
+**Prioridade 2 - VoiceSynthesisPanel (1h)**
+- ✅ Testes de renderização
+- ✅ Testes de interação
+- ✅ Testes de acessibilidade
+
+**Prioridade 3 - Toast System (30min)**
+- ✅ Testes básicos de funcionamento
+- ✅ Testes de auto-dismiss
+
+---
+
+## **⏰ CRONOGRAMA DE EXECUÇÃO**
+
+### **🎯 HOJE (Fase 1 - 4 horas)**
+
+**14:00 - 14:30: Setup Ambiente**
+- Instalar dependências
+- Validar configurações
+- Criar estrutura de testes
+
+**14:30 - 16:30: VoiceSynthesisService Tests**
+- Implementar testes unitários
+- Criar mocks necessários
+- Validar cobertura
+
+**16:30 - 17:30: VoiceSynthesisPanel Tests**
+- Testes de componente
+- Testes de interação
+
+**17:30 - 18:00: Toast System Tests**
+- Testes básicos
+- Documentação
+
+---
+
+## **📝 CHECKLIST DE EXECUÇÃO**
+
+### **🔧 Setup (30min)**
+- [ ] Instalar @testing-library/react
+- [ ] Instalar @testing-library/jest-dom  
+- [ ] Instalar @testing-library/user-event
+- [ ] Instalar vitest e jsdom
+- [ ] Validar babel.config.js
+- [ ] Validar jest.config.js
+- [ ] Criar pasta src/tests/ se necessário
+
+### **🧪 VoiceSynthesisService (2h)**
+- [ ] Criar voiceSynthesisService.test.ts
+- [ ] Mock para Web Speech API
+- [ ] Mock para ElevenLabs API
+- [ ] Testes de inicialização
+- [ ] Testes de síntese de voz
+- [ ] Testes de quota
+- [ ] Testes de fallback
+- [ ] Validar 90%+ cobertura
+
+### **🎨 VoiceSynthesisPanel (1h)**
+- [ ] Criar VoiceSynthesisPanel.test.tsx
+- [ ] Testes de renderização
+- [ ] Testes de seleção de voz
+- [ ] Testes de preview
+- [ ] Testes de quota visual
+- [ ] Validar acessibilidade
+
+### **🔔 Toast System (30min)**
+- [ ] Criar Toast.test.tsx
+- [ ] Testes básicos renderização
+- [ ] Testes auto-dismiss
+- [ ] Testes de tipos (success, error, etc)
+
+---
+
+## **🎯 MÉTRICAS DE SUCESSO**
+
+### **📊 Metas Hoje**
+- **Cobertura:** De 15% → 45%
+- **Serviços Testados:** +3 críticos
+- **Componentes Testados:** +2 críticos
+- **Tempo:** 4 horas execução
+
+### **✅ Critérios de Aceitação**
+- VoiceSynthesisService: 90%+ cobertura
+- VoiceSynthesisPanel: 85%+ cobertura  
+- Toast: 80%+ cobertura
+- Todos testes passando
+- CI/CD não quebrado
+
+---
+
+## **📈 PRÓXIMAS ETAPAS**
+
+### **🗓️ Amanhã - Fase 2**
+- CollaborationService tests
+- AdvancedAnalyticsService tests
+- TemplateService tests
+
+### **🗓️ Esta Semana - Fase 3**
+- E2E tests críticos
+- Integration tests
+- Performance tests
+
+---
+
+## **🚨 RISCOS E MITIGAÇÕES**
+
+### **⚠️ Riscos Identificados**
+1. **Dependências conflitantes** → Usar versões específicas
+2. **Mocks complexos** → Implementar gradualmente
+3. **Tempo limitado** → Focar no essencial primeiro
+
+### **🛡️ Plano de Contingência**
+- Se algum teste falhar: continuar com próximo
+- Se setup complexo: usar testes básicos primeiro
+- Se tempo acabar: documentar progresso
+
+---
+
+## **📋 LOG DE EXECUÇÃO**
+
+### **⏰ Timestamp de Progresso**
+```
+[INICIO] - Setup ambiente iniciado
+[14:30] - VoiceSynthesisService tests iniciados  
+[16:30] - VoiceSynthesisPanel tests iniciados
+[17:30] - Toast tests iniciados
+[18:00] - Documentação atualizada
+```
+
+---
+
+**Status:** 🚀 **EXECUÇÃO EM ANDAMENTO**  
+**Próxima Atualização:** A cada milestone completado
+
+---
+
+*Plano executivo para implementação imediata e sistemática de cobertura de testes robusta no Roteirar IA.* 

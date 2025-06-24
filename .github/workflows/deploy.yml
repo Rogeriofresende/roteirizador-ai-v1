@@ -1,186 +1,269 @@
-name: 🚀 Deploy Roteirizar IA
+name: 🚀 Deploy Roteirar IA
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    tags: ['v*']
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18'
+  FORCE_COLOR: 1
 
 jobs:
-  # Job 1: Testes e Qualidade
-  test:
+  # Job de testes e qualidade
+  test-and-quality:
     name: 🧪 Tests & Quality
     runs-on: ubuntu-latest
     
     steps:
-    - name: ⬇️ Checkout código
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-    - name: ⚡ Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        
-    - name: 📦 Install dependencies
-      run: npm ci
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
       
-    - name: 🔍 Lint check
-      run: npx eslint . --ext .ts,.tsx --max-warnings 0 || true
+      - name: 📦 Install dependencies
+        run: npm ci
       
-    - name: 🏗️ Build check
-      run: npm run build
+      - name: 🔍 Lint code
+        run: npm run lint
       
-    - name: 🧪 Run unit tests
-      run: npm test -- --run --coverage
+      - name: 🧪 Run tests
+        run: npm run test
       
-    - name: 📊 Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage/lcov.info
-        fail_ci_if_error: false
+      - name: 📊 Test coverage
+        run: npm run test:coverage
+      
+      - name: 🔒 Security audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+      
+      - name: 📤 Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
 
-  # Job 2: Deploy para Vercel (Recomendado)
-  deploy-vercel:
-    name: 🌐 Deploy Vercel
-    needs: test
+  # Job de build
+  build:
+    name: 🏗️ Build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    needs: test-and-quality
+    
+    strategy:
+      matrix:
+        environment: [staging, production]
     
     steps:
-    - name: ⬇️ Checkout
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
       
-    - name: 🚀 Deploy to Vercel
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      - name: 🏗️ Build for ${{ matrix.environment }}
+        run: |
+          if [ "${{ matrix.environment }}" = "staging" ]; then
+            npm run build:staging
+          else
+            npm run build:production
+          fi
+        env:
+          NODE_ENV: ${{ matrix.environment }}
+          VITE_ENVIRONMENT: ${{ matrix.environment }}
+          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+          VITE_GIT_COMMIT: ${{ github.sha }}
+          VITE_GIT_BRANCH: ${{ github.ref_name }}
+      
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.environment }}
+          path: dist/
+          retention-days: 7
 
-  # Job 3: Deploy para Hostinger (Alternativo)
-  deploy-hostinger:
-    name: 🏠 Deploy Hostinger
-    needs: test
+  # Job de deploy para staging
+  deploy-staging:
+    name: 🧪 Deploy Staging
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && false # Desabilitado por padrão
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    environment: staging
     
     steps:
-    - name: ⬇️ Checkout
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
       
-    - name: ⚡ Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        
-    - name: 📦 Install dependencies
-      run: npm ci
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
       
-    - name: 🏗️ Build production
-      run: npm run build
+      - name: 📦 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-staging
+          path: dist/
       
-    - name: 📁 Create .htaccess
-      run: |
-        cat > dist/.htaccess << 'EOF'
-        RewriteEngine On
-        RewriteBase /
-        RewriteRule ^index\.html$ - [L]
-        RewriteCond %{REQUEST_FILENAME} !-f
-        RewriteCond %{REQUEST_FILENAME} !-d
-        RewriteRule . /index.html [L]
-        
-        <IfModule mod_expires.c>
-            ExpiresActive on
-            ExpiresByType text/css "access plus 1 year"
-            ExpiresByType application/javascript "access plus 1 year"
-            ExpiresByType image/png "access plus 1 year"
-            ExpiresByType image/jpg "access plus 1 year"
-            ExpiresByType image/jpeg "access plus 1 year"
-            ExpiresByType image/gif "access plus 1 year"
-            ExpiresByType image/svg+xml "access plus 1 year"
-            ExpiresByType image/x-icon "access plus 1 year"
-            ExpiresByType image/webp "access plus 1 year"
-            ExpiresByType font/woff "access plus 1 year"
-            ExpiresByType font/woff2 "access plus 1 year"
-            ExpiresByType application/font-woff "access plus 1 year"
-            ExpiresByType application/font-woff2 "access plus 1 year"
-            ExpiresByType application/manifest+json "access plus 1 week"
-            ExpiresByType text/html "access plus 1 hour"
-        </IfModule>
-        
-        <IfModule mod_deflate.c>
-            AddOutputFilterByType DEFLATE application/javascript
-            AddOutputFilterByType DEFLATE application/rss+xml
-            AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-            AddOutputFilterByType DEFLATE application/x-font
-            AddOutputFilterByType DEFLATE application/x-font-opentype
-            AddOutputFilterByType DEFLATE application/x-font-otf
-            AddOutputFilterByType DEFLATE application/x-font-truetype
-            AddOutputFilterByType DEFLATE application/x-font-ttf
-            AddOutputFilterByType DEFLATE application/x-javascript
-            AddOutputFilterByType DEFLATE application/xhtml+xml
-            AddOutputFilterByType DEFLATE application/xml
-            AddOutputFilterByType DEFLATE font/opentype
-            AddOutputFilterByType DEFLATE font/otf
-            AddOutputFilterByType DEFLATE font/ttf
-            AddOutputFilterByType DEFLATE image/svg+xml
-            AddOutputFilterByType DEFLATE image/x-icon
-            AddOutputFilterByType DEFLATE text/css
-            AddOutputFilterByType DEFLATE text/html
-            AddOutputFilterByType DEFLATE text/javascript
-            AddOutputFilterByType DEFLATE text/plain
-            AddOutputFilterByType DEFLATE text/xml
-        </IfModule>
-        
-        <IfModule mod_headers.c>
-            Header set X-Content-Type-Options "nosniff"
-            Header set X-Frame-Options "DENY"
-            Header set X-XSS-Protection "1; mode=block"
-            
-            <FilesMatch "sw\.js$">
-                Header set Cache-Control "no-cache, no-store, must-revalidate"
-                Header set Pragma "no-cache"
-                Header set Expires "0"
-            </FilesMatch>
-            
-            <FilesMatch "manifest\.json$">
-                Header set Cache-Control "public, max-age=604800"
-            </FilesMatch>
-        </IfModule>
-        
-        AddType application/manifest+json .webmanifest .json
-        AddType text/cache-manifest .appcache
-        EOF
+      - name: 🚀 Deploy to Vercel Staging
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          alias-domains: staging.roteirar.ai
       
-         - name: 🚀 Deploy via FTP
-       uses: sebastianpopp/ftp-action@releases/v2
-       with:
-         host: ${{ secrets.HOSTINGER_FTP_HOST }}
-         user: ${{ secrets.HOSTINGER_FTP_USER }}
-         password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
-         localDir: "dist"
-         remoteDir: "/public_html"
+      - name: 🏃‍♂️ Run smoke tests
+        run: |
+          npm ci
+          npm run test:e2e
+        env:
+          BASE_URL: https://staging.roteirar.ai
+      
+      - name: 📊 Lighthouse audit
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: https://staging.roteirar.ai
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # Job de deploy para produção
+  deploy-production:
+    name: 🚀 Deploy Production
+    runs-on: ubuntu-latest
+    needs: [build, deploy-staging]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📦 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-production
+          path: dist/
+      
+      - name: 🚀 Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          alias-domains: app.roteirar.ai
+      
+      - name: 🔔 Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # Job de monitoramento pós-deploy
+  post-deploy-monitoring:
+    name: 📊 Post-Deploy Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: needs.deploy-production.result == 'success'
+    
+    steps:
+      - name: 🔍 Health check
+        run: |
+          sleep 30  # Aguardar deploy se propagar
           
-  # Job 4: Notify
-  notify:
-    name: 📢 Notify
-    needs: [deploy-vercel]
+          # Verificar se o site está respondendo
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://app.roteirar.ai)
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Site respondendo corretamente (HTTP $HTTP_CODE)"
+          else
+            echo "❌ Site retornou HTTP $HTTP_CODE"
+            exit 1
+          fi
+      
+      - name: 📊 Performance audit
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: https://app.roteirar.ai
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+      
+      - name: 🚨 Create issue on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Production Deployment Failed - ' + new Date().toISOString(),
+              body: `Production deployment failed at ${new Date().toISOString()}\n\nCommit: ${context.sha}\nWorkflow: ${context.workflow}\n\nPlease investigate immediately.`,
+              labels: ['bug', 'urgent', 'deployment']
+            })
+
+  # Job de limpeza
+  cleanup:
+    name: 🧹 Cleanup
     runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
     if: always()
     
     steps:
-    - name: 🎉 Success notification
-      if: needs.deploy-vercel.result == 'success'
-      run: |
-        echo "✅ Deploy realizado com sucesso!"
-        echo "🌐 Site disponível em: https://roteirizaria.vercel.app"
-        echo "📱 PWA instalável e pronto para uso!"
-        
-    - name: ❌ Failure notification
-      if: needs.deploy-vercel.result == 'failure'
-      run: |
-        echo "❌ Deploy falhou!"
-        echo "🔍 Verificar logs para identificar o problema." 
+      - name: 🗑️ Clean up artifacts
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+            
+            for (const artifact of artifacts.data.artifacts) {
+              if (artifact.name.startsWith('build-')) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+                console.log(`Deleted artifact: ${artifact.name}`);
+              }
+            } 
