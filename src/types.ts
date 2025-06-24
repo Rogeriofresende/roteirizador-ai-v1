@@ -575,3 +575,580 @@ export interface ContentConstraints {
   toneConstraints: string[];
   platformSpecific: Record<string, any>;
 }
+
+// **TIPOS PARA FASE 3 - FUNCIONALIDADES AVANÇADAS**
+
+// **EDITOR VISUAL WYSIWYG**
+export interface VisualElement {
+  id: string;
+  type: 'text' | 'image' | 'video' | 'audio' | 'transition' | 'effect';
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  content: string;
+  style: {
+    fontSize?: number;
+    fontFamily?: string;
+    color?: string;
+    backgroundColor?: string;
+    border?: string;
+    borderRadius?: number;
+    opacity?: number;
+    animation?: string;
+  };
+  timing: {
+    startTime: number; // segundos
+    endTime: number;   // segundos
+    duration: number;  // segundos
+  };
+  metadata: {
+    layer: number;
+    locked: boolean;
+    visible: boolean;
+    tags: string[];
+  };
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface VisualScript {
+  id: string;
+  projectId: string;
+  userId: string;
+  title: string;
+  elements: VisualElement[];
+  canvas: {
+    width: number;
+    height: number;
+    backgroundColor: string;
+    duration: number; // segundos totais
+  };
+  settings: {
+    fps: number;
+    quality: 'low' | 'medium' | 'high' | 'ultra';
+    format: '16:9' | '9:16' | '1:1' | '4:3';
+    resolution: '720p' | '1080p' | '4k';
+  };
+  version: number;
+  isPublic: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// **SÍNTESE DE VOZ**
+export interface VoiceSynthesis {
+  id: string;
+  projectId: string;
+  userId: string;
+  text: string;
+  voice: {
+    name: string;
+    lang: string;
+    gender: 'male' | 'female' | 'neutral';
+    accent: string;
+  };
+  settings: {
+    rate: number;    // 0.1 - 10
+    pitch: number;   // 0 - 2  
+    volume: number;  // 0 - 1
+    emphasis: 'strong' | 'moderate' | 'none';
+    pause: {
+      sentence: number; // milissegundos
+      paragraph: number;
+    };
+  };
+  audioUrl?: string;
+  duration?: number; // segundos
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  createdAt: Timestamp;
+  processedAt?: Timestamp;
+}
+
+export interface VoiceProfile {
+  id: string;
+  name: string;
+  displayName: string;
+  language: string;
+  gender: 'male' | 'female' | 'neutral';
+  accent: string;
+  description: string;
+  sampleUrl?: string;
+  isAvailable: boolean;
+  isPremium: boolean;
+  provider: 'browser' | 'elevenlabs' | 'azure' | 'aws';
+}
+
+// **COLABORAÇÃO EM TEMPO REAL**
+export interface CollaborationSession {
+  id: string;
+  projectId: string;
+  hostUserId: string;
+  participants: CollaborationParticipant[];
+  status: 'active' | 'paused' | 'ended';
+  settings: {
+    allowEdit: boolean;
+    allowComment: boolean;
+    allowVoiceChat: boolean;
+    maxParticipants: number;
+  };
+  startedAt: Timestamp;
+  endedAt?: Timestamp;
+  duration?: number; // segundos
+}
+
+export interface CollaborationParticipant {
+  userId: string;
+  displayName: string;
+  email: string;
+  avatar?: string;
+  role: 'owner' | 'editor' | 'commenter' | 'viewer';
+  permissions: {
+    canEdit: boolean;
+    canComment: boolean;
+    canShare: boolean;
+    canDelete: boolean;
+  };
+  status: 'online' | 'away' | 'offline';
+  cursor?: {
+    x: number;
+    y: number;
+    selection?: {
+      start: number;
+      end: number;
+    };
+  };
+  joinedAt: Timestamp;
+  lastActive: Timestamp;
+}
+
+export interface RealtimeEdit {
+  id: string;
+  sessionId: string;
+  userId: string;
+  operation: 'insert' | 'delete' | 'replace' | 'format';
+  position: number;
+  content: string;
+  timestamp: Timestamp;
+  applied: boolean;
+}
+
+export interface Comment {
+  id: string;
+  projectId: string;
+  userId: string;
+  content: string;
+  position: {
+    start: number;
+    end: number;
+    selectedText: string;
+  };
+  thread: CommentReply[];
+  status: 'open' | 'resolved' | 'deleted';
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  resolvedAt?: Timestamp;
+  resolvedBy?: string;
+}
+
+export interface CommentReply {
+  id: string;
+  userId: string;
+  content: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// **ANALYTICS AVANÇADO**
+export interface AdvancedAnalytics {
+  userId: string;
+  period: {
+    start: Timestamp;
+    end: Timestamp;
+  };
+  productivity: {
+    totalProjectsCreated: number;
+    totalWordsWritten: number;
+    totalEditingSessions: number;
+    averageSessionDuration: number;
+    peakProductivityHours: number[];
+    productivityTrend: number; // % change from previous period
+    efficiency: {
+      wordsPerMinute: number;
+      editsPerMinute: number;
+      aiAssistanceRatio: number;
+    };
+  };
+  collaboration: {
+    sessionsHosted: number;
+    sessionsParticipated: number;
+    commentsGiven: number;
+    commentsReceived: number;
+    sharesSent: number;
+    sharesReceived: number;
+  };
+  aiUsage: {
+    totalRequests: number;
+    successfulSuggestions: number;
+    acceptanceRate: number;
+    favoriteTypes: Record<string, number>;
+    tokensConsumed: number;
+    costEstimate: number;
+    qualityImprovement: number;
+  };
+  contentQuality: {
+    averageReadabilityScore: number;
+    averageEngagementScore: number;
+    averageSentiment: number;
+    topKeywords: Record<string, number>;
+    improvementTrend: number;
+  };
+  platformPerformance: {
+    [platform: string]: {
+      scriptsCreated: number;
+      averageViews: number;
+      averageEngagement: number;
+      successRate: number;
+    };
+  };
+}
+
+export interface ProductivityInsight {
+  id: string;
+  userId: string;
+  type: 'tip' | 'achievement' | 'goal' | 'warning';
+  title: string;
+  description: string;
+  data: any;
+  priority: 'low' | 'medium' | 'high';
+  isRead: boolean;
+  createdAt: Timestamp;
+}
+
+// **INTEGRAÇÕES COM PLATAFORMAS**
+export interface PlatformIntegration {
+  id: string;
+  userId: string;
+  platform: 'youtube' | 'instagram' | 'tiktok' | 'linkedin' | 'twitter' | 'facebook';
+  credentials: {
+    accessToken: string;
+    refreshToken?: string;
+    expiresAt?: Timestamp;
+    scope: string[];
+  };
+  profile: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar?: string;
+    followers: number;
+    verified: boolean;
+  };
+  settings: {
+    autoPublish: boolean;
+    defaultPrivacy: 'public' | 'private' | 'unlisted';
+    defaultTags: string[];
+    defaultDescription: string;
+  };
+  isActive: boolean;
+  lastSync: Timestamp;
+  createdAt: Timestamp;
+}
+
+export interface ContentPublication {
+  id: string;
+  projectId: string;
+  userId: string;
+  platform: string;
+  platformPostId?: string;
+  title: string;
+  description: string;
+  tags: string[];
+  privacy: 'public' | 'private' | 'unlisted';
+  scheduledFor?: Timestamp;
+  publishedAt?: Timestamp;
+  status: 'draft' | 'scheduled' | 'published' | 'failed' | 'deleted';
+  analytics: {
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+    clickThroughRate: number;
+    engagementRate: number;
+    lastUpdated: Timestamp;
+  };
+  errorMessage?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// **SISTEMA DE TEMPLATES**
+export interface ScriptTemplate {
+  id: string;
+  title: string;
+  description: string;
+  category: 'educational' | 'entertainment' | 'marketing' | 'news' | 'tutorial' | 'review' | 'story';
+  platform: string[];
+  duration: {
+    min: number; // segundos
+    max: number; // segundos
+  };
+  structure: TemplateSection[];
+  placeholders: TemplatePlaceholder[];
+  examples: string[];
+  tags: string[];
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  popularity: number;
+  usage: number;
+  rating: number;
+  author: {
+    id: string;
+    name: string;
+    verified: boolean;
+  };
+  isPremium: boolean;
+  isPublic: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface TemplateSection {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  order: number;
+  duration: number; // segundos
+  isRequired: boolean;
+  suggestions: string[];
+}
+
+export interface TemplatePlaceholder {
+  id: string;
+  name: string;
+  description: string;
+  type: 'text' | 'number' | 'select' | 'multiselect' | 'image' | 'video';
+  defaultValue?: any;
+  options?: string[];
+  validation?: {
+    required: boolean;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+  };
+}
+
+// **PWA AVANÇADO**
+export interface OfflineData {
+  id: string;
+  type: 'project' | 'template' | 'analytics' | 'settings';
+  data: any;
+  lastModified: Timestamp;
+  syncStatus: 'synced' | 'pending' | 'conflict' | 'error';
+  syncAttempts: number;
+  maxSize: number; // bytes
+}
+
+export interface SyncOperation {
+  id: string;
+  userId: string;
+  type: 'upload' | 'download' | 'conflict_resolution';
+  dataType: 'project' | 'template' | 'analytics' | 'settings';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number; // 0-100
+  startedAt: Timestamp;
+  completedAt?: Timestamp;
+  errorMessage?: string;
+  retryCount: number;
+}
+
+export interface NotificationPermission {
+  userId: string;
+  permissions: {
+    push: boolean;
+    email: boolean;
+    sms: boolean;
+    inApp: boolean;
+  };
+  preferences: {
+    collaborationUpdates: boolean;
+    aiSuggestions: boolean;
+    publicationStatus: boolean;
+    analyticsReports: boolean;
+    systemUpdates: boolean;
+  };
+  devices: {
+    id: string;
+    type: 'desktop' | 'mobile' | 'tablet';
+    browser: string;
+    lastActive: Timestamp;
+    pushSubscription?: any;
+  }[];
+}
+
+// **SISTEMA DE GAMIFICAÇÃO**
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: 'productivity' | 'quality' | 'collaboration' | 'consistency' | 'innovation';
+  difficulty: 'bronze' | 'silver' | 'gold' | 'platinum';
+  points: number;
+  requirements: {
+    type: string;
+    target: number;
+    period?: 'day' | 'week' | 'month' | 'year' | 'all_time';
+  };
+  isHidden: boolean;
+  isActive: boolean;
+  createdAt: Timestamp;
+}
+
+export interface UserAchievement {
+  userId: string;
+  achievementId: string;
+  unlockedAt: Timestamp;
+  progress: number; // 0-100
+  isNotified: boolean;
+}
+
+export interface UserLevel {
+  userId: string;
+  level: number;
+  experience: number;
+  experienceToNext: number;
+  title: string;
+  perks: string[];
+  unlockedFeatures: string[];
+}
+
+// **EXPORT/IMPORT AVANÇADO**
+export interface ExportOptions {
+  format: 'pdf' | 'docx' | 'txt' | 'md' | 'html' | 'json' | 'xml' | 'srt' | 'vtt';
+  includeMetadata: boolean;
+  includeComments: boolean;
+  includeVersionHistory: boolean;
+  includeAnalytics: boolean;
+  templateId?: string;
+  customization: {
+    font: string;
+    fontSize: number;
+    lineSpacing: number;
+    pageMargins: number;
+    includeHeader: boolean;
+    includeFooter: boolean;
+    watermark?: string;
+  };
+}
+
+export interface ImportOptions {
+  format: 'txt' | 'docx' | 'pdf' | 'md' | 'html' | 'json' | 'xml' | 'srt' | 'vtt';
+  preserveFormatting: boolean;
+  autoDetectStructure: boolean;
+  createTemplate: boolean;
+  templateCategory?: string;
+  aiEnhancement: boolean;
+  targetPlatform?: string;
+}
+
+// **INTELIGÊNCIA ARTIFICIAL AVANÇADA**
+export interface AIWorkflow {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  steps: AIWorkflowStep[];
+  triggers: {
+    type: 'manual' | 'automatic' | 'scheduled';
+    condition?: string;
+    schedule?: string; // cron expression
+  };
+  isActive: boolean;
+  executionCount: number;
+  successRate: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface AIWorkflowStep {
+  id: string;
+  type: 'analyze' | 'generate' | 'refine' | 'translate' | 'summarize' | 'enhance' | 'validate';
+  config: any;
+  order: number;
+  isOptional: boolean;
+  retryOnFailure: boolean;
+  maxRetries: number;
+}
+
+export interface AIPersona {
+  id: string;
+  name: string;
+  description: string;
+  personality: {
+    tone: string;
+    style: string;
+    vocabulary: 'simple' | 'moderate' | 'advanced';
+    formality: 'casual' | 'semi-formal' | 'formal';
+  };
+  expertise: string[];
+  platforms: string[];
+  examples: string[];
+  isPublic: boolean;
+  usage: number;
+  rating: number;
+  createdBy: string;
+  createdAt: Timestamp;
+}
+
+// **CONFIGURAÇÕES AVANÇADAS DA APLICAÇÃO**
+export interface AppConfiguration {
+  version: string;
+  features: {
+    visualEditor: boolean;
+    voiceSynthesis: boolean;
+    collaboration: boolean;
+    platformIntegrations: boolean;
+    advancedAnalytics: boolean;
+    templates: boolean;
+    aiWorkflows: boolean;
+    gamification: boolean;
+  };
+  limits: {
+    maxProjectsPerUser: number;
+    maxCollaboratorsPerProject: number;
+    maxVoiceSynthesisPerDay: number;
+    maxAIRequestsPerDay: number;
+    maxStoragePerUser: number; // bytes
+  };
+  billing: {
+    plans: Plan[];
+    currentPlan: string;
+    usage: PlanUsage;
+  };
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  interval: 'month' | 'year';
+  features: string[];
+  limits: Record<string, number>;
+  isPopular: boolean;
+  isEnterprise: boolean;
+}
+
+export interface PlanUsage {
+  projects: number;
+  aiRequests: number;
+  voiceSynthesis: number;
+  storage: number;
+  collaborators: number;
+  exports: number;
+  resetDate: Timestamp;
+}
