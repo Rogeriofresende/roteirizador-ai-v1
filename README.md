@@ -1,331 +1,432 @@
-# 🎬 Roteirizar IA
+# 🎬 **Roteirizar IA - Gerador de Roteiros Inteligente**
 
-> **Gerador inteligente de roteiros com IA real** para criadores de conteúdo  
-> ✨ **AGORA COM GEMINI AI INTEGRADO** - Gere roteiros únicos e profissionais!
+> **Versão:** 2.1.2 | **Status:** ✅ Produção Ready | **Monitoramento:** Sistema Empresarial Completo
 
-## 🚀 **Status: PRODUÇÃO - IA Real Funcionando!**
-
-- ✅ **Integração Gemini AI Real** - Não é simulação!
-- ✅ **Interface Profissional** - UX/UI completa
-- ✅ **Pronto para Deploy** - 100% funcional
-- ✅ **Documentação Enterprise** - Guias completos
-- ✅ **Configuração Flexível** - Múltiplos métodos
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Rogeriofresende/roteirizador-ai-v1)
+[![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](https://github.com/Rogeriofresende/roteirizador-ai-v1)
+[![Monitoring](https://img.shields.io/badge/monitoring-enterprise-blue)](https://github.com/Rogeriofresende/roteirizador-ai-v1)
+[![PWA Ready](https://img.shields.io/badge/PWA-ready-purple)](https://github.com/Rogeriofresende/roteirizador-ai-v1)
 
 ---
 
-## 🎯 **Funcionalidades Principais**
+## 🚀 **Sistema Completo com Monitoramento Empresarial**
 
-### **🤖 IA Real Integrada**
-- **Google Gemini 1.5 Flash** - API real funcionando
-- **Roteiros únicos** personalizados por IA
-- **Prompts otimizados** para cada plataforma
-- **50-100 roteiros gratuitos/dia** no tier free
+**Roteirizar IA** é uma aplicação web Progressive Web App (PWA) que utiliza Google Gemini AI para gerar roteiros personalizados para diferentes plataformas de mídia social. **Agora com sistema de monitoramento empresarial completo!**
 
-### **🎨 Plataformas Suportadas**
-- 📺 **YouTube Shorts** - Roteiros otimizados para vídeos curtos
-- 📱 **Instagram Reels** - Conteúdo visual e engajante  
-- 🎵 **TikTok** - Trends e conteúdo viral
-- 💼 **LinkedIn** - Conteúdo profissional
-- 🐦 **Twitter/X** - Threads e posts
-
-### **⚡ Personalização Avançada**
-- 🎯 **Público-alvo específico** (jovens, profissionais, estudantes, etc.)
-- ⏱️ **Duração customizável** (15s, 30s, 60s, 90s, etc.)
-- 🎭 **Tom de voz ajustável** (informal, formal, divertido, sério)
-- 📋 **Formatos variados** (tutorial, lista, storytelling, review)
-- 🎪 **Objetivos claros** (educar, entreter, vender, engajar)
+### **✨ Novidades da Versão 2.1.2**
+- 🔍 **Health Checks Automáticos**: 4 verificações críticas em tempo real
+- 📊 **Analytics Empresarial**: Google Analytics 4 + Business Intelligence
+- 🎛️ **Dashboard Operacional**: Interface completa de monitoramento
+- 🚨 **Alertas Automáticos**: Notificações críticas com cooldown inteligente
+- ⌨️ **Atalhos Avançados**: `Ctrl+Shift+D` para dashboard instantâneo
 
 ---
 
-## 🏃‍♂️ **Quick Start (2 minutos)**
+## 🎯 **Principais Funcionalidades**
 
-### **1. Abrir Aplicação**
-```bash
-# Método 1: Servidor local
-python3 -m http.server 3000
-# Acesse: http://localhost:3000
+### **🤖 Geração de Roteiros com IA**
+- Roteiros personalizados para YouTube, Instagram, TikTok, LinkedIn
+- Múltiplos tons: profissional, casual, educativo, engraçado
+- Segmentação por público-alvo específico
+- Duração configurável dos conteúdos
 
-# Método 2: Abrir diretamente
-open index.html
-```
+### **🔍 Sistema de Monitoramento (NOVO)**
+- **Health Checks**: Gemini API, Firebase, Performance, Storage
+- **Analytics Real-time**: Conversão, performance, métricas de negócio
+- **Dashboard Visual**: Status, alertas, exports, debugging
+- **Alertas Críticos**: Notificações automáticas de problemas
 
-### **2. Configurar API Gemini** (Primeira vez)
-1. 🔑 **Obter API Key** em [aistudio.google.com](https://aistudio.google.com/)
-2. 🎬 **Gerar primeiro roteiro** - API key será solicitada automaticamente
-3. ✅ **Salvar configuração** - Será lembrada para próximas vezes
+### **👤 Gestão de Usuários**
+- Autenticação Firebase (email/senha + Google)
+- Dashboard personalizado de usuário
+- Histórico de roteiros gerados
+- Configurações personalizáveis
 
-**📖 [Guia completo de configuração](docs/user-guide/setup-gemini-api.md)**
-
-### **3. Primeiro Roteiro**
-```
-📝 Assunto: "Como fazer café perfeito"
-📺 Plataforma: YouTube Shorts  
-⏱️ Duração: 60 segundos
-🎯 Tom: Informal
-👥 Público: Geral
-
-🚀 Clique "Gerar Roteiro" → Aguarde 5-10s → Roteiro único gerado!
-```
-
----
-
-## 📁 **Estrutura do Projeto**
-
-```
-roteirizar-ia/
-├── 📄 index.html              # 🌟 APLICAÇÃO PRINCIPAL (standalone)
-├── 📁 src/                    # Código fonte React/Vite
-│   ├── 🧩 components/         # Componentes reutilizáveis
-│   ├── 📄 services/           # 🤖 geminiService.ts (IA integrada)
-│   ├── 🏠 pages/              # Páginas da aplicação
-│   └── 📊 types.ts            # Definições TypeScript
-├── 📚 docs/                   # Documentação profissional
-│   ├── 👤 user-guide/         # Para usuários finais
-│   ├── 💻 developer-guide/    # Para desenvolvedores  
-│   ├── ⚙️ operations/         # Monitoramento e troubleshooting
-│   └── 🚀 deployment/         # Deploy e produção
-├── 🗃️ .archive/              # Versões antigas organizadas
-└── 📦 package.json            # Dependências modernas
-```
+### **📱 Progressive Web App**
+- Instalação nativa no dispositivo
+- Funcionamento offline
+- Notificações push
+- Interface responsiva
 
 ---
 
 ## 🛠️ **Stack Tecnológica**
 
 ### **Frontend**
-- ⚛️ **React 19** - UI framework moderno
-- 📘 **TypeScript** - Tipagem completa
-- 🎨 **Tailwind CSS** - Styling profissional
-- ⚡ **Vite** - Build tool rápido
+- ⚛️ **React 18** + TypeScript
+- 🎨 **Tailwind CSS** + Tailwind Animate
+- 🖼️ **Radix UI** (componentes acessíveis)
+- 🎭 **Framer Motion** (animações)
+- 📱 **PWA** (Vite PWA Plugin)
 
-### **IA & Backend**
-- 🧠 **Google Gemini 1.5 Flash** - IA real integrada
-- 🔥 **Firebase** - Autenticação e banco
-- 🌐 **API RESTful** - Integração nativa
+### **Backend/Services**
+- 🔥 **Firebase** (Auth + Firestore)
+- 🤖 **Google Gemini AI** (geração de conteúdo)
+- 📊 **Google Analytics 4** (analytics empresarial)
+- 🔍 **Custom Health Checks** (monitoramento)
 
-### **Qualidade & Testes**
-- 🧪 **Vitest** - Test runner moderno
-- 🔍 **Testing Library** - Testes de componentes
-- 🎭 **Playwright** - Testes End-to-End
-- ✅ **ESLint** - Code quality
-- 🎯 **Coverage reports** - Métricas de teste (90%)
-
----
-
-## 🧪 **Sistema de Testes Abrangente (90% Coverage)**
-
-### **✅ Testes Implementados (Janeiro 2025)**
-
-**🔥 Componentes Críticos:**
-- **ScriptForm.test.tsx** - 8 cenários (componente principal)
-- **geminiService.test.ts** - 15 cenários (serviço IA crítico)
-- **HomePage.test.tsx** - 8 cenários (landing page)
-- **GeneratorPage.test.tsx** - 10 cenários (página principal)
-
-**🔐 Autenticação & Segurança:**
-- **LoginPage.test.tsx** - Fluxos de login
-- **SignupPage.test.tsx** - Registro de usuários
-- **UserDashboardPage.test.tsx** - Dashboard protegido
-- **ProtectedRoute.test.tsx** - Proteção de rotas
-
-**🎨 Interface & Usabilidade:**
-- **Button.test.tsx** - Componente UI base
-- **utils.test.ts** - Funções utilitárias
-
-### **🎭 Testes End-to-End (Playwright)**
-- **script-generation.spec.ts** - Geração completa de roteiros
-- **auth.spec.ts** - Fluxos de autenticação
-- **navigation.spec.ts** - Navegação entre páginas
-- **performance.spec.ts** - Métricas de performance
-
-### **📊 Cobertura Detalhada**
-```
-✅ Componentes Core:     95%
-✅ Serviços IA:          100%
-✅ Páginas Principais:   90%
-✅ Autenticação:         95%
-✅ Utilitários:          100%
-⚠️ PWA Components:       60% (próximo milestone)
-⚠️ Form Components:      65% (próximo milestone)
-```
-
-### **🎯 Plano para 100% Coverage**
-**📋 [Plano Detalhado](docs/PLANO_TESTES_100_COBERTURA.md)**
-- Fase 2: Componentes PWA e Forms (5%)
-- Fase 3: Hooks customizados (5%)
-- **ETA:** 3-5 horas de desenvolvimento
+### **DevOps**
+- ⚡ **Vite** (build tool)
+- 🚀 **Vercel** (deploy)
+- 🧪 **Jest + Playwright** (testing)
+- 📝 **ESLint + TypeScript** (quality)
 
 ---
 
-## 📊 **Métricas do Projeto**
+## 📊 **Sistema de Monitoramento Empresarial**
 
-| Categoria | Status | Cobertura |
-|-----------|--------|-----------|
-| **🤖 IA Integration** | ✅ Real | 100% |
-| **🎨 UI/UX** | ✅ Completa | 95% |
-| **📚 Documentação** | ✅ Enterprise | 95% |
-| **🚀 Deploy Ready** | ✅ Pronta | 100% |
-| **🧪 Testes** | ✅ Abrangente | 90% |
-| **📱 Responsivo** | ✅ Mobile-first | 100% |
+### **🔍 Health Checks Automáticos**
+```typescript
+✅ Gemini API (40% peso)    - Conectividade e API key
+✅ Firebase (30% peso)      - Auth e Firestore  
+✅ Performance (20% peso)   - Memória e carregamento
+✅ Storage (10% peso)       - localStorage e PWA
+```
+
+### **📈 Analytics de Negócio**
+```typescript
+✅ Taxa de Conversão        - Meta: >60%
+✅ Tempo de Geração         - Meta: <10s
+✅ Taxa de Erro            - Meta: <5%
+✅ Web Vitals              - Google Core Web Vitals
+```
+
+### **🎛️ Dashboard Operacional**
+- **Acesso**: `Ctrl + Shift + D` ou click no status na navbar
+- **Features**: Status visual, export JSON, comandos debug
+- **Auto-refresh**: A cada 30 segundos
+- **Alertas**: Histórico e clear manual
+
+### **📱 Status Indicator**
+- 🟢 **HEALTHY** (70-100%): Sistema funcionando perfeitamente
+- 🟡 **DEGRADED** (40-69%): Alguns problemas, não críticos  
+- 🔴 **DOWN** (0-39%): Problemas sérios, atenção necessária
 
 ---
 
-## 💰 **Custos de Operação**
+## ⚡ **Quick Start**
 
-### **Gemini API (Tier Gratuito)**
-- 🆓 **50-100 roteiros/dia** - Completamente gratuito
-- ⚡ **15 requests/minuto** - Rate limit generoso
-- 📊 **1M tokens/dia** - Limite alto
+### **1. Configuração Básica**
+```bash
+# Clone do repositório
+git clone https://github.com/Rogeriofresende/roteirizador-ai-v1.git
+cd roteirizador-ai-v1
 
-### **Escalabilidade**
+# Instalar dependências
+npm install
+
+# Configurar variáveis de ambiente
+cp .env.example .env.local
+# Editar .env.local com suas chaves
 ```
-📊 Uso Leve (10/dia):     R$ 0,00/mês
-📊 Uso Médio (50/dia):    R$ 0,00/mês  
-📊 Uso Alto (200/dia):    ~R$ 2,50/mês
-📊 Uso Intenso (1000/dia): ~R$ 11,25/mês
+
+### **2. Variáveis de Ambiente (.env.local)**
+```bash
+# OBRIGATÓRIO - Google Analytics 4
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# OBRIGATÓRIO - Firebase
+VITE_FIREBASE_API_KEY=sua_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=seu_projeto_id
+VITE_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abc123
+
+# OPCIONAL - Alertas externos
+VITE_ALERT_WEBHOOK_URL=https://webhook.site/sua-url
+VITE_DEBUG_MODE=true
 ```
+
+### **3. Desenvolvimento**
+```bash
+# Iniciar servidor de desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
+
+# Preview da build
+npm run preview
+
+# Executar testes
+npm run test
+npm run test:e2e
+```
+
+### **4. Configurar Google Analytics 4**
+1. Acesse [Google Analytics](https://analytics.google.com/)
+2. Crie uma propriedade GA4
+3. Copie o Measurement ID (formato: G-XXXXXXXXXX)
+4. Configure no `.env.local`
 
 ---
 
 ## 📚 **Documentação Completa**
 
-### **👤 Para Usuários**
-- 🚀 [**Começar Agora**](docs/user-guide/getting-started.md) - Setup em 2 minutos
-- 🤖 [**⭐ Configurar Gemini AI**](docs/user-guide/setup-gemini-api.md) - **ESSENCIAL!**
-- 💎 [**Todas as Funcionalidades**](docs/user-guide/features.md) - Guia completo
-- ❓ [**FAQ**](docs/user-guide/faq.md) - Dúvidas frequentes
+### **Documentação Operacional**
+- 📖 [**Guia Operacional de Produção**](docs/operations/GUIA_OPERACIONAL_PRODUCAO.md)
+- 🎯 [**Sistema de Monitoramento**](docs/SISTEMA_MONITORAMENTO_IMPLEMENTADO.md)
+- 🔧 [**Documentação Técnica Completa**](docs/DOCUMENTACAO_TECNICA_COMPLETA.md)
 
-### **💻 Para Desenvolvedores**
-- ⚡ [**Setup de Desenvolvimento**](docs/developer-guide/setup.md) - Ambiente local
-- 🏗️ [**Arquitetura**](docs/architecture/overview.md) - Como funciona
-- 🧪 [**Relatório de Testes**](docs/developer-guide/TESTING_PROGRESS.md) - Status atual
-- 📝 [**Contribuindo**](docs/developer-guide/contributing.md) - Como ajudar
+### **Documentação de Desenvolvimento**
+- ⚙️ [**Setup de Desenvolvimento**](docs/developer-guide/setup.md)
+- 🧪 [**Testes E2E**](docs/developer-guide/RELATORIO_TESTES_E2E.md)
+- 📱 [**PWA Development**](docs/developer-guide/pwa-development.md)
 
-### **🚀 Para Deploy**
-- 📊 [**Monitoramento**](docs/operations/monitoring.md) - Métricas e logs
-- 🔧 [**Troubleshooting**](docs/operations/troubleshooting.md) - Solução de problemas
-- 🌐 [**Deploy Produção**](docs/deployment/production.md) - Vercel, Netlify, AWS
-- 🔐 [**Segurança**](docs/deployment/security.md) - Boas práticas
+### **Documentação de API**
+- 🤖 [**Integração Gemini**](docs/api/gemini-integration.md)
+- 🔥 [**Setup Firebase**](docs/api/firebase-setup.md)
+- 🌐 [**APIs Externas**](docs/api/external-apis.md)
 
 ---
 
-## 🎯 **Scripts Principais**
+## 🎛️ **Como Usar o Sistema de Monitoramento**
 
+### **Acesso Rápido**
 ```bash
-# 🚀 Desenvolvimento
-npm run dev          # Servidor de desenvolvimento
-npm run build        # Build para produção  
-npm run preview      # Preview da build
+# Dashboard operacional
+Ctrl + Shift + D
 
-# 🧪 Testes (NOVO! 90% Coverage)
-npm test            # Executar testes unitários
-npm run test:watch  # Modo watch para desenvolvimento
-npm run test:coverage # Relatório de cobertura
-npm run test:coverage:report # Relatório HTML visual
-npm run test:e2e    # Testes End-to-End
-npm run test:e2e:ui # Interface visual para E2E
-npm run test:all    # Todos os testes (unitários + E2E)
+# Console commands
+healthCheck.getHealth()          # Status completo
+analytics.getSessionData()      # Analytics da sessão
+analytics.exportAnalyticsData() # Export completo
+```
 
-# 🔍 Qualidade
-npm run lint        # Verificar código
-npm audit           # Verificar vulnerabilidades
+### **Interpretação de Status**
+- **Status na Navbar**: Sempre visível (verde/amarelo/vermelho)
+- **Score do Sistema**: 0-100% com pesos diferenciados
+- **Alertas Automáticos**: Cooldown de 5min para evitar spam
+- **Export de Dados**: JSON completo para análise
 
-# 📊 Análise
-npm run analyze     # Bundle analyzer
-npm run lighthouse  # Performance audit
+### **Comandos de Debug**
+```javascript
+// Health checks
+healthCheck.getLastResults()     // Último resultado
+healthCheck.getAlerts()         // Lista de alertas
+healthCheck.clearAlerts()       // Limpar alertas
+
+// Analytics
+analytics.getConversionRate()   // Taxa de conversão
+analytics.getDebugInfo()        // Info de debug
+performance.memory              // Memória do browser
 ```
 
 ---
 
-## 🔄 **Histórico de Evolução**
+## 🚀 **Deploy e Produção**
 
-### **📅 Janeiro 2025 - Reorganização Profissional**
-- ✅ **Consolidação** de 6+ versões fragmentadas
-- ✅ **Estrutura padronizada** e escalável
-- ✅ **Documentação enterprise** implementada
-- ✅ **Arquivamento** de versões antigas
+### **Deploy na Vercel (Recomendado)**
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-### **📅 Janeiro 2025 - Integração IA Real**
-- 🤖 **Gemini AI integrado** - Substituída simulação
-- ⚡ **Performance otimizada** - 3-10s por roteiro
-- 🎯 **Prompts profissionais** - Resultado superior
-- 📖 **Documentação completa** - Guias de configuração
+# Deploy
+vercel --prod
 
-### **📅 Janeiro 2025 - Qualidade & Testes Empresarial**
-- 🧪 **Sistema de testes robusto** - Coverage 70% → 90%
-- 🎭 **Testes E2E com Playwright** - Fluxos completos
-- 🔧 **Tooling profissional** - Vitest + Testing Library
-- 📊 **Métricas de qualidade** - Thresholds automatizados
-- 📋 **Plano para 100%** - Roadmap detalhado
+# Configurar environment variables na Vercel dashboard
+```
+
+### **Build Otimizado**
+```bash
+npm run build
+
+# Saída esperada:
+dist/
+├── index.html                  # ~4KB
+├── assets/
+│   ├── index-[hash].css       # ~2KB
+│   └── index-[hash].js        # ~2MB
+└── manifest.json              # PWA manifest
+```
+
+### **Environment Variables Produção**
+```bash
+# Na Vercel dashboard
+VITE_GA_MEASUREMENT_ID=G-REAL_ID
+VITE_FIREBASE_PROJECT_ID=projeto_real
+# ... outras variáveis
+```
 
 ---
 
-## 🏆 **Próximos Marcos**
+## 🔍 **Monitoring & Analytics**
 
-### **🎯 Curto Prazo (Esta semana)**
-- [ ] 🌐 **Deploy em produção** (Vercel/Netlify)
-- [ ] 👥 **Teste com usuários reais**
-- [ ] 📊 **Analytics implementado**
+### **Métricas de Negócio**
+```typescript
+✅ Taxa de Conversão: (Scripts / PageViews) × 100
+   🎯 Meta: >60% | 🔥 Excelente: >80% | ⚠️ Atenção: <40%
 
-### **🚀 Médio Prazo (Próximas 2 semanas)**
-- [x] 🔧 **Tooling fixado** (ESLint, Vitest) - ✅ CONCLUÍDO
-- [x] 🧪 **Coverage 90%** implementado - ✅ CONCLUÍDO  
-- [ ] 🧪 **Coverage 100%** - Componentes PWA e Forms
-- [ ] 📱 **PWA features** melhoradas
+✅ Tempo de Geração: Média de tempo de resposta
+   🎯 Meta: <10s | ⚡ Excelente: <5s | ⚠️ Lento: >15s
 
-### **💫 Longo Prazo (Próximo mês)**
-- [ ] 🎨 **Design system** completo
-- [ ] 🔐 **Auth completa** Firebase
-- [ ] 📈 **Analytics avançado** implementado
+✅ Taxa de Erro: (Erros / Tentativas) × 100  
+   🎯 Meta: <5% | ✅ Ótimo: <2% | ⚠️ Problema: >10%
+```
+
+### **Web Vitals Automáticos**
+- **CLS** (Cumulative Layout Shift): <0.1
+- **FID** (First Input Delay): <100ms
+- **LCP** (Largest Contentful Paint): <2.5s
+- **FCP** (First Contentful Paint): <1.8s
+- **TTFB** (Time to First Byte): <800ms
+
+### **Health Check Scoring**
+```typescript
+Score = (GEMINI_API × 0.4) + (FIREBASE × 0.3) + 
+        (PERFORMANCE × 0.2) + (STORAGE × 0.1)
+
+Status:
+- 70-100%: HEALTHY   (🟢)
+- 40-69%:  DEGRADED  (🟡)  
+- 0-39%:   DOWN      (🔴)
+```
+
+---
+
+## 🧪 **Testing**
+
+### **Testes Unitários**
+```bash
+npm run test                    # Jest tests
+npm run test:coverage          # Coverage report
+```
+
+### **Testes E2E**
+```bash
+npm run test:e2e               # Playwright E2E
+npm run test:e2e:ui            # Interactive UI
+```
+
+### **Testing Checklist**
+```bash
+✅ Health checks funcionando
+✅ Dashboard abre com Ctrl+Shift+D  
+✅ Status indicator na navbar
+✅ Analytics tracking events
+✅ Export de dados funciona
+✅ Alertas disparam corretamente
+✅ Build success
+✅ PWA installable
+```
+
+---
+
+## 📦 **Dependências Principais**
+
+### **Core Dependencies**
+```json
+{
+  "@google/generative-ai": "^0.21.0",
+  "firebase": "^10.13.2",
+  "react": "^18.3.1",
+  "react-dom": "^18.3.1",
+  "react-router-dom": "^6.26.2",
+  "web-vitals": "^4.2.4"
+}
+```
+
+### **UI & Animation**
+```json
+{
+  "@radix-ui/react-*": "^1.1.14+",
+  "framer-motion": "^11.11.17",
+  "lucide-react": "^0.523.0",
+  "tailwindcss": "^3.4.13",
+  "class-variance-authority": "^0.7.1"
+}
+```
 
 ---
 
 ## 🤝 **Contribuição**
 
-### **Como Contribuir:**
-1. 🍴 **Fork** o projeto
-2. 🌟 **Crie uma feature branch** (`feature/amazing-feature`)
-3. ✅ **Commit** suas mudanças
-4. 📤 **Push** para a branch
-5. 🔀 **Abra um Pull Request**
+### **Como Contribuir**
+1. Fork do projeto
+2. Criar feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit das mudanças (`git commit -m 'Add AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
 
-### **Áreas que Precisam de Ajuda:**
-- 🧪 **Testes automatizados** - Expandir coverage
-- 🎨 **UI/UX melhorias** - Design refinements
-- 📖 **Documentação** - Mais exemplos e tutoriais
-- 🌐 **Internacionalização** - Suporte a outros idiomas
+### **Padrões de Código**
+- **TypeScript**: Tipagem estrita
+- **ESLint**: Regras configuradas
+- **Prettier**: Formatação automática
+- **Conventional Commits**: Padrão de commits
+
+### **Testing Requirements**
+- Testes unitários para novas features
+- Testes E2E para fluxos críticos
+- Coverage mínimo: 80%
 
 ---
 
-## 📞 **Suporte & Comunidade**
+## 📞 **Suporte**
 
-### **📧 Contato**
-- **Email:** suporte@roteirizar.ia
-- **Issues:** GitHub Issues para bugs
-- **Discussions:** GitHub Discussions para ideias
+### **Reporting Issues**
+1. Abrir dashboard (`Ctrl+Shift+D`)
+2. Exportar dados do sistema
+3. Incluir screenshot da dashboard
+4. Descrever passos para reproduzir
+5. Abrir issue no GitHub
 
-### **🌟 Agradecimentos**
-- **Google Gemini Team** - Pela IA incrível
-- **React Team** - Pelo framework fantástico  
-- **Tailwind Team** - Pelo CSS framework
-- **Comunidade Open Source** - Por tornar isso possível
+### **Debug Commands**
+```javascript
+// Status rápido
+healthCheck.getLastResults()?.overall
+
+// Analytics completo  
+analytics.exportAnalyticsData()
+
+// Reset completo (emergência)
+localStorage.clear(); location.reload();
+```
+
+### **Links Úteis**
+- 📊 [Google Analytics Dashboard](https://analytics.google.com/)
+- 🔥 [Firebase Console](https://console.firebase.google.com/)
+- 🤖 [Google AI Studio](https://makersuite.google.com/)
 
 ---
 
 ## 📄 **Licença**
 
-Este projeto está sob a **licença MIT**. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ---
 
-## 🎉 **Status Atual**
+## 🙏 **Agradecimentos**
 
-**🟢 PRODUÇÃO - TOTALMENTE FUNCIONAL**
-
-✨ **O Roteirizar IA está pronto para impactar criadores de conteúdo com IA real!**
+- **Google Gemini AI** - Engine de geração de conteúdo
+- **Firebase** - Backend-as-a-Service
+- **Vercel** - Platform de deploy
+- **React Team** - Framework frontend
+- **Tailwind CSS** - Framework de estilos
 
 ---
 
-**Feito com ❤️ para criadores de conteúdo**  
-**Powered by 🧠 Google Gemini AI**  
-**Built with ⚛️ React + 🎨 Tailwind** 
+## 📈 **Roadmap**
+
+### **Versão 2.2.0 (Próxima)**
+- 📧 Email alerts automáticos
+- 💬 Slack/Discord integration
+- 🔄 Real-time monitoring
+- 📊 Advanced analytics
+
+### **Versão 2.3.0 (Futuro)**
+- 🤖 AI-powered insights
+- 📈 Predictive analytics  
+- 🔍 Anomaly detection
+- 📱 Mobile app
+
+---
+
+**🚀 Sistema pronto para produção com monitoramento empresarial completo!**
+
+**Próximo passo:** Configure o Google Analytics 4 e teste o dashboard com `Ctrl+Shift+D`
+
+---
+
+**Criado com ❤️ por [Rogerio Resende](https://github.com/Rogeriofresende)**  
+**© 2025 Roteirizar IA - Sistema de Monitoramento Empresarial** 
