@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Header } from '../components/blocks/Header';
+// import { Header } from '../components/blocks/Header';
 import ScriptForm from '../components/ScriptForm';
 import EditableScriptArea from '../components/EditableScriptArea';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Button } from "../components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/Dialog';
 import { Alert, AlertDescription } from '../components/ui/Alert';
@@ -100,7 +100,7 @@ const GeneratorPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-700">
-      <Header />
+      {/* <Header /> */}
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">

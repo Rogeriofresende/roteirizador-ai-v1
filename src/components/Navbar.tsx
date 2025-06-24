@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -7,12 +7,17 @@ import { Button } from "./ui/button";
 import { LogOut, Menu, X, Home, FileText, User, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from "./ui/ThemeToggle";
+import { SystemDashboard } from './SystemDashboard';
+import { healthCheckService } from '../services/healthCheckService';
 
 const Navbar: React.FC = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [systemStatus, setSystemStatus] = useState<'healthy' | 'degraded' | 'down'>('healthy');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +26,34 @@ const Navbar: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const updateStatus = async () => {
+      try {
+        const health = await healthCheckService.getHealth();
+        setSystemStatus(health.overall);
+      } catch (error) {
+        setSystemStatus('down');
+      }
+    };
+
+    updateStatus();
+
+    const interval = setInterval(updateStatus, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+        event.preventDefault();
+        setShowDashboard(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleLogout = async () => {
@@ -45,6 +78,24 @@ const Navbar: React.FC = () => {
       <span>{children}</span>
     </Link>
   );
+
+  const getStatusColor = () => {
+    switch (systemStatus) {
+      case 'healthy': return 'bg-green-500';
+      case 'degraded': return 'bg-yellow-500';
+      case 'down': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getStatusText = () => {
+    switch (systemStatus) {
+      case 'healthy': return 'Sistema OK';
+      case 'degraded': return 'Atenção';
+      case 'down': return 'Problema';
+      default: return 'Verificando...';
+    }
+  };
 
   return (
     <header 
@@ -89,6 +140,20 @@ const Navbar: React.FC = () => {
             </nav>
 
             <ThemeToggle />
+
+            {/* System Status Indicator */}
+            <button
+              onClick={() => setShowDashboard(true)}
+              className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title={`${getStatusText()} - Clique para ver detalhes (Ctrl+Shift+D)`}
+            >
+              <div className={`w-2 h-2 rounded-full ${getStatusColor()}`}>
+                <div className={`w-2 h-2 rounded-full ${getStatusColor()} animate-pulse`}></div>
+              </div>
+              <span className="text-xs text-gray-600 dark:text-gray-300 hidden sm:inline">
+                {getStatusText()}
+              </span>
+            </button>
 
             {/* Mobile Menu Button */}
             <button 
@@ -147,6 +212,11 @@ const Navbar: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* System Dashboard Modal */}
+      {showDashboard && (
+        <SystemDashboard onClose={() => setShowDashboard(false)} />
+      )}
     </header>
   );
 };
