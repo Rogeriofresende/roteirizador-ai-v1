@@ -83,7 +83,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
     return (
       <div className="space-y-2">
         {diff.map((change, index) => (
-          <div key={index} className="flex">
+          <div key={`diff-${change.type}-${change.startIndex}-${index}`} className="flex">
             <div className="w-12 text-xs text-gray-500 dark:text-gray-400 mr-4 text-right">
               {index + 1}
             </div>
@@ -414,7 +414,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                     .filter(change => change.type !== 'unchanged')
                     .map((change, index) => (
                       <div 
-                        key={index}
+                        key={`change-${change.type}-${change.startIndex}-${change.endIndex}-${index}`}
                         className={`p-3 rounded-lg border-l-4 ${
                           change.type === 'added' ? 'bg-green-50 dark:bg-green-900/20 border-green-400' :
                           change.type === 'removed' ? 'bg-red-50 dark:bg-red-900/20 border-red-400' :

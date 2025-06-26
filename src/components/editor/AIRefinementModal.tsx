@@ -271,7 +271,7 @@ export const AIRefinementModal: React.FC<AIRefinementModalProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {quickPrompts[selectedType].map((prompt, index) => (
                     <Button
-                      key={index}
+                      key={`${selectedType}-${prompt}-${index}`}
                       size="sm"
                       variant="outline"
                       onClick={() => applyQuickPrompt(prompt)}
