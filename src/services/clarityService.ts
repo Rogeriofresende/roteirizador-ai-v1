@@ -1,286 +1,164 @@
-// Microsoft Clarity - Análise Comportamental de Usuários
-// Heatmaps, gravações de sessão e análise de cliques
+/**
+ * Microsoft Clarity Service
+ * Professionalized with environment configuration and structured logging
+ */
 
-declare global {
-  interface Window {
-    clarity: (action: string, ...args: any[]) => void;
-  }
-}
+import { config } from '../config/environment';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('ClarityService');
 
 interface ClarityConfig {
   projectId: string;
   enabled: boolean;
-  debug: boolean;
 }
 
-export class ClarityService {
-  private static config: ClarityConfig = {
-    projectId: import.meta.env.VITE_CLARITY_PROJECT_ID || '',
-    enabled: import.meta.env.PROD,
-    debug: import.meta.env.DEV
-  };
-  
-  private static isInitialized = false;
-  private static isLoaded = false;
+interface ClarityEvent {
+  event: string;
+  properties?: Record<string, any>;
+}
 
-  /**
-   * Inicializa o Microsoft Clarity
-   */
-  static initialize(): void {
-    if (!this.config.projectId) {
-      if (this.config.debug) {
-        console.warn('🔍 Microsoft Clarity: Project ID não configurado');
-      }
-      return;
-    }
+class ClarityService {
+  private isInitialized = false;
+  private config: ClarityConfig;
 
-    if (this.isInitialized) {
-      if (this.config.debug) {
-        console.warn('🔍 Microsoft Clarity: Já inicializado');
-      }
-      return;
-    }
-
-    if (!this.config.enabled) {
-      if (this.config.debug) {
-        console.log('🔍 Microsoft Clarity: Desabilitado no ambiente atual');
-      }
-      return;
-    }
-
-    this.loadClarityScript();
-    this.isInitialized = true;
-
-    if (this.config.debug) {
-      console.log('🔍 Microsoft Clarity: Inicializado com sucesso');
-    }
-  }
-
-  /**
-   * Carrega o script do Microsoft Clarity
-   */
-  private static loadClarityScript(): void {
-    try {
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.innerHTML = `
-        (function(c,l,a,r,i,t,y){
-          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "${this.config.projectId}");
-      `;
-      
-      document.head.appendChild(script);
-      
-      // Aguardar carregamento
-      const checkLoaded = setInterval(() => {
-        if (typeof window.clarity === 'function') {
-          this.isLoaded = true;
-          this.setupCustomEvents();
-          clearInterval(checkLoaded);
-          
-          if (this.config.debug) {
-            console.log('🔍 Microsoft Clarity: Script carregado');
-          }
-        }
-      }, 100);
-
-      // Timeout de segurança
-      setTimeout(() => {
-        clearInterval(checkLoaded);
-        if (!this.isLoaded && this.config.debug) {
-          console.warn('🔍 Microsoft Clarity: Timeout no carregamento');
-        }
-      }, 10000);
-
-    } catch (error) {
-      console.error('🔍 Microsoft Clarity: Erro ao carregar script:', error);
-    }
-  }
-
-  /**
-   * Configura eventos personalizados
-   */
-  private static setupCustomEvents(): void {
-    if (!this.isLoaded) return;
-
-    try {
-      // Identificar usuário (sem PII)
-      this.identify();
-      
-      // Configurar eventos de página
-      this.trackPageView();
-
-      if (this.config.debug) {
-        console.log('🔍 Microsoft Clarity: Eventos personalizados configurados');
-      }
-    } catch (error) {
-      console.error('🔍 Microsoft Clarity: Erro ao configurar eventos:', error);
-    }
-  }
-
-  /**
-   * Rastreia eventos personalizados
-   */
-  static trackEvent(eventName: string, data?: Record<string, any>): void {
-    if (!this.isLoaded || !window.clarity) {
-      if (this.config.debug) {
-        console.log('🔍 Microsoft Clarity: Event queued -', eventName, data);
-      }
-      return;
-    }
-
-    try {
-      window.clarity('event', eventName, data || {});
-      
-      if (this.config.debug) {
-        console.log('🔍 Microsoft Clarity: Event tracked -', eventName, data);
-      }
-    } catch (error) {
-      console.error('🔍 Microsoft Clarity: Erro ao rastrear evento:', error);
-    }
-  }
-
-  /**
-   * Identifica usuário (anonimamente)
-   */
-  static identify(userId?: string): void {
-    if (!this.isLoaded || !window.clarity) return;
-
-    try {
-      const anonymousId = userId ? `user_${btoa(userId).slice(0, 8)}` : 'anonymous';
-      window.clarity('identify', anonymousId);
-      
-      if (this.config.debug) {
-        console.log('🔍 Microsoft Clarity: User identified -', anonymousId);
-      }
-    } catch (error) {
-      console.error('🔍 Microsoft Clarity: Erro ao identificar usuário:', error);
-    }
-  }
-
-  /**
-   * Rastreia visualização de página
-   */
-  static trackPageView(pageName?: string): void {
-    if (!this.isLoaded) return;
-
-    try {
-      const page = pageName || window.location.pathname;
-      this.trackEvent('page_view', {
-        page: page,
-        title: document.title,
-        referrer: document.referrer || 'direct'
-      });
-    } catch (error) {
-      console.error('🔍 Microsoft Clarity: Erro ao rastrear page view:', error);
-    }
-  }
-
-  /**
-   * Eventos específicos da aplicação
-   */
-  static trackScriptGeneration(data: {
-    platform: string;
-    duration: string;
-    success: boolean;
-    generationTime?: number;
-  }): void {
-    this.trackEvent('script_generated', {
-      platform: data.platform,
-      duration: data.duration,
-      success: data.success,
-      generation_time_ms: data.generationTime
-    });
-  }
-
-  static trackAIRefinement(data: {
-    type: string;
-    accepted: boolean;
-    confidence: number;
-  }): void {
-    this.trackEvent('ai_refinement_used', {
-      refinement_type: data.type,
-      user_accepted: data.accepted,
-      ai_confidence: data.confidence
-    });
-  }
-
-  static trackProjectSaved(data: {
-    projectId: string;
-    platform: string;
-    wordCount: number;
-  }): void {
-    this.trackEvent('project_saved', {
-      platform: data.platform,
-      word_count: data.wordCount,
-      is_new_project: !data.projectId.includes('existing')
-    });
-  }
-
-  static trackExport(data: {
-    format: string;
-    platform: string;
-    wordCount: number;
-  }): void {
-    this.trackEvent('export_completed', {
-      export_format: data.format,
-      content_platform: data.platform,
-      content_length: data.wordCount
-    });
-  }
-
-  static trackPWAInstall(): void {
-    this.trackEvent('pwa_installed', {
-      install_timestamp: Date.now(),
-      user_agent: navigator.userAgent,
-      platform: navigator.platform
-    });
-  }
-
-  static trackFormInteraction(data: {
-    formType: string;
-    field: string;
-    action: string;
-  }): void {
-    this.trackEvent('form_interaction', {
-      form_type: data.formType,
-      field_name: data.field,
-      interaction_type: data.action
-    });
-  }
-
-  static trackError(data: {
-    errorType: string;
-    errorMessage: string;
-    context: string;
-  }): void {
-    this.trackEvent('error_occurred', {
-      error_type: data.errorType,
-      error_context: data.context,
-      page: window.location.pathname
-    });
-  }
-
-  /**
-   * Utilitários
-   */
-  static getStatus(): {
-    initialized: boolean;
-    loaded: boolean;
-    enabled: boolean;
-    projectId: string;
-  } {
-    return {
-      initialized: this.isInitialized,
-      loaded: this.isLoaded,
-      enabled: this.config.enabled,
-      projectId: this.config.projectId ? '***' + this.config.projectId.slice(-4) : 'not_set'
+  constructor() {
+    this.config = {
+      projectId: config.analytics.clarityProjectId || '',
+      enabled: !!config.analytics.clarityProjectId
     };
   }
 
-  static setDebug(enabled: boolean): void {
-    this.config.debug = enabled;
+  async initialize(): Promise<boolean> {
+    if (!this.config.enabled) {
+      logger.info('Microsoft Clarity disabled in current environment');
+      return false;
+    }
+
+    if (!this.config.projectId) {
+      logger.warn('Microsoft Clarity project ID not configured');
+      return false;
+    }
+
+    if (this.isInitialized) {
+      logger.debug('Microsoft Clarity already initialized');
+      return true;
+    }
+
+    try {
+      // Load Clarity script
+      await this.loadClarityScript();
+      this.isInitialized = true;
+      
+      logger.info('Microsoft Clarity initialized successfully', {
+        projectId: this.config.projectId,
+        environment: config.environment
+      });
+      
+      return true;
+    } catch (error) {
+      logger.error('Failed to initialize Microsoft Clarity', { error });
+      return false;
+    }
   }
-} 
+
+  private loadClarityScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.clarity) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.clarity.ms/tag/${this.config.projectId}`;
+      
+      script.onload = () => {
+        logger.debug('Clarity script loaded successfully');
+        resolve();
+      };
+      
+      script.onerror = () => {
+        const error = new Error('Failed to load Clarity script');
+        logger.error('Clarity script load failed', { error });
+        reject(error);
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  // Event tracking methods
+  trackEvent(event: string, properties?: Record<string, any>): void {
+    if (!this.isInitialized || !this.config.enabled) {
+      logger.debug('Clarity event not tracked - service not initialized', { event });
+      return;
+    }
+
+    try {
+      if (window.clarity) {
+        window.clarity('event', event, properties);
+        logger.debug('Clarity event tracked', { event, properties });
+      }
+    } catch (error) {
+      logger.error('Failed to track Clarity event', { event, error });
+    }
+  }
+
+  trackPageView(page: string): void {
+    this.trackEvent('page_view', { page });
+  }
+
+  trackUserAction(action: string, context?: Record<string, any>): void {
+    this.trackEvent('user_action', { action, ...context });
+  }
+
+  trackError(error: string, context?: Record<string, any>): void {
+    this.trackEvent('error', { error, ...context });
+  }
+
+  trackConversionFunnel(step: string, data?: Record<string, any>): void {
+    this.trackEvent('conversion_funnel', { step, ...data });
+  }
+
+  // User identification
+  identify(userId: string, traits?: Record<string, any>): void {
+    if (!this.isInitialized || !this.config.enabled) {
+      logger.debug('Clarity identify not called - service not initialized');
+      return;
+    }
+
+    try {
+      if (window.clarity) {
+        window.clarity('identify', userId, traits);
+        logger.debug('User identified in Clarity', { userId });
+      }
+    } catch (error) {
+      logger.error('Failed to identify user in Clarity', { userId, error });
+    }
+  }
+
+  // Service status methods
+  getStatus(): { initialized: boolean; enabled: boolean; projectId: string } {
+    return {
+      initialized: this.isInitialized,
+      enabled: this.config.enabled,
+      projectId: this.config.projectId
+    };
+  }
+
+  isEnabled(): boolean {
+    return this.config.enabled && this.isInitialized;
+  }
+}
+
+// Global Clarity interface
+declare global {
+  interface Window {
+    clarity?: (method: string, ...args: any[]) => void;
+  }
+}
+
+// Export singleton instance
+export const clarityService = new ClarityService(); 

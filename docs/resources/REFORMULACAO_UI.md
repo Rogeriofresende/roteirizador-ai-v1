@@ -8,7 +8,9 @@ Este documento descreve o plano de ação para a modernização completa da inte
 
 ### Fase 1: Redesenho do Gerador de Roteiro (Ponto de Partida)
 
--   **Status:** Concluído
+-   **Status:** ⚠️ **PENDENTE - Design Moderno Não Aplicado**
+-   **Situação:** Navbar implementada, mas design ainda usa padrões antigos (hardcoded colors)
+-   **Necessário:** Aplicar design system moderno seguindo padrão da HomePage
 -   **Etapa 1.1: Inspiração Futurista:** Utilizar a ferramenta "Magic MCP" para obter um novo design para a página `GeneratorPage.tsx`.
 -   **Etapa 1.2: Modernização dos Formulários:** Redesenhar os componentes de formulário existentes (`InputField`, `SelectField`, `TextareaField`, etc.) para que sigam a nova identidade visual.
 -   **Etapa 1.3: Implementação no Gerador:** Aplicar o novo layout e os componentes redesenhados à página `GeneratorPage.tsx`.
@@ -33,6 +35,6 @@ Este documento descreve o plano de ação para a modernização completa da inte
 
 ### Fase 4: Finalização e Coesão Visual
 
--   **Status:** Concluído
+-   **Status:** ⚠️ **PENDENTE** - Aguardando conclusão da Fase 1
 -   **Etapa 4.1: Refinamento da Navegação:** Redesenhar a `Navbar` para que ela se alinhe com o novo estilo do aplicativo.
 -   **Etapa 4.2: Revisão Geral:** Fazer uma varredura final em todo o aplicativo para garantir uma identidade visual coesa e polida. 

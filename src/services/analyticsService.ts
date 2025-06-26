@@ -1,14 +1,20 @@
-// Google Analytics 4 + Business Metrics para MVP
-// Gratuito, completo, foco em crescimento
+/**
+ * Analytics Service - Professionalized
+ * Centralized analytics with environment configuration
+ */
 
-import { collection, doc, getDoc, setDoc, updateDoc, increment, Timestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { FirebaseFirestore, collection, doc, getDoc, setDoc, updateDoc, increment, Timestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { ClarityService } from './clarityService';
+import { clarityService } from './clarityService';
+import { config } from '../config/environment';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('AnalyticsService');
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
   }
 }
 
@@ -104,8 +110,9 @@ interface UserAnalytics {
   streakDays: number;
 }
 
-export class AnalyticsService {
-  private isInitialized = false;
+class AnalyticsService {
+  private initialized = false;
+  private gaTrackingId: string;
   private sessionId: string;
   private userId?: string;
   private config: AnalyticsConfig;
@@ -114,131 +121,144 @@ export class AnalyticsService {
   private static sessionStartTime: Date | null = null;
 
   constructor() {
+    this.gaTrackingId = config.analytics.gaMeasurementId || '';
     this.sessionId = this.generateSessionId();
     this.config = {
-      ga_measurement_id: import.meta.env.VITE_GA_MEASUREMENT_ID || '',
-      debug_mode: import.meta.env.DEV,
+      ga_measurement_id: this.gaTrackingId,
+      debug_mode: config.debugMode,
       enhanced_measurement: true,
       send_page_view: true
     };
-    
-    this.init();
+  }
+
+  async initialize(): Promise<boolean> {
+    if (!config.analytics.enabled) {
+      logger.info('Analytics disabled in current environment');
+      return false;
+    }
+
+    if (!this.gaTrackingId) {
+      logger.warn('Analytics GA Measurement ID not configured');
+      return false;
+    }
+
+    try {
+      await this.loadGoogleAnalytics();
+      this.initialized = true;
+      
+      logger.info('Analytics initialized successfully', {
+        trackingId: this.gaTrackingId,
+        environment: config.environment
+      });
+      
+      return true;
+    } catch (error) {
+      logger.error('Failed to initialize Analytics', { error });
+      return false;
+    }
+  }
+
+  private async loadGoogleAnalytics(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create gtag script
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${this.gaTrackingId}`;
+        
+        script.onload = () => {
+          // Initialize gtag
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function(...args: any[]) {
+            window.dataLayer!.push(args);
+          };
+          
+          window.gtag('js', new Date());
+          window.gtag('config', this.gaTrackingId, {
+            anonymize_ip: true,
+            allow_ad_personalization_signals: false
+          });
+          
+          logger.debug('Google Analytics script loaded successfully');
+          resolve();
+        };
+        
+        script.onerror = () => {
+          const error = new Error('Failed to load Google Analytics script');
+          logger.error('Google Analytics script load failed', { error });
+          reject(error);
+        };
+
+        document.head.appendChild(script);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   private generateSessionId(): string {
     return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
-  private async init() {
-    if (!this.config.ga_measurement_id) {
-      console.warn('Analytics: GA Measurement ID não configurado');
+  // Event tracking methods
+  trackEvent(event: string, parameters?: Record<string, any>): void {
+    if (!this.initialized || !config.analytics.enabled) {
+      logger.debug('Analytics event not tracked - service not initialized', { event });
       return;
     }
 
     try {
-      // Load GA4 script
-      await this.loadGtagScript();
-      
-      // Initialize GA4
-      this.initializeGA4();
-      
-      // Setup event listeners
-      this.setupEventListeners();
-      
-      this.isInitialized = true;
-      console.log('✅ Analytics inicializado:', this.config.ga_measurement_id);
+      if (window.gtag) {
+        window.gtag('event', event, parameters);
+        logger.debug('Analytics event tracked', { event, parameters });
+      }
+
+      // Also send to Clarity if available
+      if (clarityService.isEnabled()) {
+        clarityService.trackEvent(event, parameters);
+      }
     } catch (error) {
-      console.error('❌ Erro ao inicializar Analytics:', error);
+      logger.error('Failed to track analytics event', { event, error });
     }
   }
 
-  private async loadGtagScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Se já existe, não carrega novamente
-      if (window.gtag) {
-        resolve();
-        return;
-      }
-
-      // Initialize dataLayer
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function() {
-        window.dataLayer.push(arguments);
-      };
-
-      // Load GA4 script
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${this.config.ga_measurement_id}`;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Falha ao carregar GA4 script'));
-      document.head.appendChild(script);
-    });
+  trackPageView(page: string): void {
+    this.trackEvent('page_view', { page_title: document.title, page_location: page });
   }
 
-  private initializeGA4() {
-    if (!window.gtag) return;
-
-    // Configure GA4
-    window.gtag('config', this.config.ga_measurement_id, {
-      // Enhanced measurement
-      enhanced_measurements: this.config.enhanced_measurement,
-      
-      // Debug mode
-      debug_mode: this.config.debug_mode,
-      
-      // Session configuration
-      session_timeout: 30 * 60, // 30 minutos
-      
-      // Custom dimensions (free tier: 25 custom dimensions)
-      custom_map: {
-        'custom_parameter_1': 'platform',
-        'custom_parameter_2': 'generation_time',
-        'custom_parameter_3': 'user_type',
-        'custom_parameter_4': 'script_length',
-        'custom_parameter_5': 'session_id'
-      },
-
-      // Send initial page view
-      send_page_view: this.config.send_page_view
-    });
-
-    // Set session ID globally
-    this.setSessionId(this.sessionId);
+  trackUserAction(action: string, context?: Record<string, any>): void {
+    this.trackEvent('user_action', { action, ...context });
   }
 
-  private setupEventListeners() {
-    // Page visibility for session tracking
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        this.trackEvent('session_pause', 'engagement');
-      } else {
-        this.trackEvent('session_resume', 'engagement');
-      }
-    });
+  trackConversionFunnel(step: string, data?: Record<string, any>): void {
+    this.trackEvent('conversion_funnel', { funnel_step: step, ...data });
+  }
 
-    // Unload tracking
-    window.addEventListener('beforeunload', () => {
-      this.trackEvent('session_end', 'engagement', {
-        session_duration: Date.now() - parseInt(this.sessionId.split('_')[1])
-      });
-    });
+  trackError(error: string, context?: Record<string, any>): void {
+    this.trackEvent('error', { error_message: error, ...context });
+  }
 
-    // Error tracking
-    window.addEventListener('error', (event) => {
-      this.trackError(event.error?.message || 'JavaScript Error', {
-        filename: event.filename,
-        line: event.lineno,
-        column: event.colno
-      });
-    });
+  // Service status
+  getStatus(): { initialized: boolean; enabled: boolean; trackingId: string } {
+    return {
+      initialized: this.initialized,
+      enabled: config.analytics.enabled,
+      trackingId: this.gaTrackingId ? `***${this.gaTrackingId.slice(-4)}` : 'not_set'
+    };
+  }
 
-    // Unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
-      this.trackError('Unhandled Promise Rejection', {
-        reason: event.reason?.toString()
-      });
-    });
+  getDebugInfo(): Record<string, any> {
+    return {
+      analytics: this.getStatus(),
+      clarity: clarityService.getStatus(),
+      environment: config.environment,
+      debugMode: config.debugMode,
+      logLevel: config.logLevel
+    };
+  }
+
+  isEnabled(): boolean {
+    return config.analytics.enabled && this.initialized;
   }
 
   // Public Methods
@@ -246,7 +266,7 @@ export class AnalyticsService {
   public setUserId(userId: string) {
     this.userId = userId;
     if (window.gtag) {
-      window.gtag('config', this.config.ga_measurement_id, {
+      window.gtag('config', this.gaTrackingId, {
         user_id: userId
       });
     }
@@ -265,52 +285,6 @@ export class AnalyticsService {
       });
     }
   }
-
-  public trackEvent(eventName: string, eventCategory: string, parameters: Record<string, any> = {}) {
-    if (!this.isInitialized || !window.gtag) return;
-
-    const eventData = {
-      event_category: eventCategory,
-      session_id: this.sessionId,
-      timestamp: new Date().toISOString(),
-      ...parameters
-    };
-
-    window.gtag('event', eventName, eventData);
-
-    // Log para debug em desenvolvimento
-    if (this.config.debug_mode) {
-      console.log('📊 Analytics Event:', eventName, eventData);
-    }
-
-    // Integração com Microsoft Clarity
-    if (typeof ClarityService !== 'undefined') {
-      try {
-        ClarityService.trackEvent(eventName, eventData);
-      } catch (error) {
-        // Falha silenciosa para não quebrar analytics principal
-        if (this.config.debug_mode) {
-          console.warn('Erro ao integrar com Clarity:', error);
-        }
-      }
-    }
-  }
-
-  public trackPageView(page: string, title?: string) {
-    if (!this.isInitialized || !window.gtag) return;
-
-    window.gtag('event', 'page_view', {
-      page_title: title || document.title,
-      page_location: window.location.href,
-      page: page,
-      session_id: this.sessionId
-    });
-
-    // Track no funil de conversão
-    this.trackConversionFunnel('page_view', { page });
-  }
-
-  // Business-specific tracking methods
 
   public trackScriptGeneration(data: {
     platform: string;
@@ -351,9 +325,9 @@ export class AnalyticsService {
     }
 
     // Integração específica com Microsoft Clarity
-    if (typeof ClarityService !== 'undefined') {
+    if (typeof clarityService !== 'undefined') {
       try {
-        ClarityService.trackScriptGeneration({
+        clarityService.trackScriptGeneration({
           platform: data.platform,
           duration: data.duration,
           success: data.success,
@@ -367,13 +341,6 @@ export class AnalyticsService {
     }
   }
 
-  public trackUserAction(action: string, details: Record<string, any> = {}) {
-    this.trackEvent(action, 'user_interaction', {
-      ...details,
-      action_timestamp: Date.now()
-    });
-  }
-
   public trackFeatureUsage(feature: string, context: Record<string, any> = {}) {
     this.trackEvent('feature_used', 'engagement', {
       feature_name: feature,
@@ -381,40 +348,11 @@ export class AnalyticsService {
     });
   }
 
-  public trackConversionFunnel(step: ConversionFunnel['step'], data: Record<string, any> = {}) {
-    const funnelData: ConversionFunnel = {
-      step,
-      session_id: this.sessionId,
-      user_id: this.userId,
-      ...data
-    };
-
-    this.conversionFunnelData.push(funnelData);
-
-    // Track no GA4
-    this.trackEvent('funnel_step', 'conversion', {
-      funnel_step: step,
-      ...data
-    });
-
-    // Salvar localmente para análise
-    this.saveConversionData();
-  }
-
   public trackPerformance(metric: string, value: number, unit: string = 'ms') {
     this.trackEvent('performance_metric', 'performance', {
       metric_name: metric,
       metric_value: value,
       metric_unit: unit
-    });
-  }
-
-  public trackError(error: string, context: Record<string, any> = {}) {
-    this.trackEvent('error_occurred', 'error', {
-      error_message: error,
-      error_context: JSON.stringify(context),
-      user_agent: navigator.userAgent,
-      url: window.location.href
     });
   }
 
@@ -508,18 +446,6 @@ export class AnalyticsService {
     };
 
     return JSON.stringify(data, null, 2);
-  }
-
-  // Debug methods
-  public getDebugInfo(): any {
-    return {
-      initialized: this.isInitialized,
-      session_id: this.sessionId,
-      user_id: this.userId,
-      config: this.config,
-      ga4_loaded: !!window.gtag,
-      conversion_funnel_length: this.conversionFunnelData.length
-    };
   }
 
   // **SESSÕES E EVENTOS**
@@ -1007,7 +933,7 @@ export class AnalyticsService {
   }
 }
 
-// Singleton
+// Export singleton instance
 export const analyticsService = new AnalyticsService();
 
 // Global access for debugging

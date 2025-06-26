@@ -106,3 +106,4 @@ Thumbs.db
 
 # Performance optimization exclusions
 roteiropro-deploy.zip
+.vercel

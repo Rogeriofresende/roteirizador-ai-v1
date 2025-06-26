@@ -1,404 +1,568 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, Calendar, Clock, Tag, Folder, Star } from 'lucide-react';
-import { Input } from '../ui/Input';
+// DashboardFilters Component - Advanced filtering system
+// Professional-grade filtering with persistence and advanced options
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { Calendar, Filter, Search, X, ChevronDown, Clock, Star, Folder } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Select } from '../ui/Select';
+import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
-import type { ProjectFilters, Tag as TagType } from '../../types';
-import { SearchService } from '../../services/searchService';
-import { TagService } from '../../services/tagService';
-import { useAuth } from '../../contexts/AuthContext';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/Select';
+
+import { 
+  FilterOptions, 
+  PlatformType, 
+  FormatType, 
+  ProjectStatus,
+  SortOption,
+  Tag,
+  Folder as FolderType
+} from '../../types/enhanced';
+
+import { tagService } from '../../services/tagService';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('DashboardFilters');
 
 interface DashboardFiltersProps {
-  filters: ProjectFilters;
-  onFiltersChange: (filters: ProjectFilters) => void;
-  className?: string;
+  filters: FilterOptions;
+  onFiltersChange: (filters: FilterOptions) => void;
+  totalProjects: number;
+  filteredCount: number;
+  isLoading?: boolean;
+  userTags?: Tag[];
+  userFolders?: FolderType[];
 }
 
-const DashboardFilters: React.FC<DashboardFiltersProps> = ({
+export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   filters,
   onFiltersChange,
-  className = ''
+  totalProjects,
+  filteredCount,
+  isLoading = false,
+  userTags = [],
+  userFolders = []
 }) => {
-  const { currentUser } = useAuth();
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [availableTags, setAvailableTags] = useState<TagType[]>([]);
-  const [filterSuggestions, setFilterSuggestions] = useState<{
-    platforms: string[];
-    tags: string[];
-    folders: { id: string; name: string }[];
-  }>({
-    platforms: [],
-    tags: [],
-    folders: []
-  });
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDateRange, setSelectedDateRange] = useState<string>('all');
 
-  // Carregar dados para filtros
-  useEffect(() => {
-    const loadFilterData = async () => {
-      if (!currentUser) return;
+  // Platform options
+  const platformOptions: { value: PlatformType; label: string; icon: string }[] = [
+    { value: 'youtube', label: 'YouTube', icon: '📺' },
+    { value: 'instagram', label: 'Instagram', icon: '📸' },
+    { value: 'tiktok', label: 'TikTok', icon: '🎵' },
+    { value: 'facebook', label: 'Facebook', icon: '📘' },
+    { value: 'twitter', label: 'Twitter', icon: '🐦' },
+    { value: 'linkedin', label: 'LinkedIn', icon: '💼' }
+  ];
 
-      try {
-        const [tags, suggestions] = await Promise.all([
-          TagService.getUserTags(currentUser.uid),
-          SearchService.getFilterSuggestions(currentUser.uid)
-        ]);
+  // Format options  
+  const formatOptions: { value: FormatType; label: string }[] = [
+    { value: 'short', label: 'Short (até 60s)' },
+    { value: 'reel', label: 'Reel (até 90s)' },
+    { value: 'story', label: 'Story (até 15s)' },
+    { value: 'post', label: 'Post' },
+    { value: 'video', label: 'Vídeo Longo' },
+    { value: 'carousel', label: 'Carrossel' }
+  ];
 
-        setAvailableTags(tags);
-        setFilterSuggestions(suggestions);
-      } catch (error) {
-        console.error('Erro ao carregar dados dos filtros:', error);
-      }
-    };
+  // Status options
+  const statusOptions: { value: ProjectStatus; label: string; color: string }[] = [
+    { value: 'draft', label: 'Rascunho', color: 'yellow' },
+    { value: 'completed', label: 'Concluído', color: 'green' },
+    { value: 'published', label: 'Publicado', color: 'blue' }
+  ];
 
-    loadFilterData();
-  }, [currentUser]);
+  // Sort options
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'date', label: 'Data de Criação' },
+    { value: 'title', label: 'Título' },
+    { value: 'platform', label: 'Plataforma' },
+    { value: 'wordCount', label: 'Palavras' },
+    { value: 'editCount', label: 'Edições' },
+    { value: 'viewCount', label: 'Visualizações' }
+  ];
 
-  const handleSearchChange = (value: string) => {
-    onFiltersChange({
-      ...filters,
-      search: value || undefined
-    });
-  };
+  // Date range presets
+  const dateRangeOptions = [
+    { value: 'all', label: 'Todos os períodos' },
+    { value: 'today', label: 'Hoje' },
+    { value: 'week', label: 'Última semana' },
+    { value: 'month', label: 'Último mês' },
+    { value: 'quarter', label: 'Últimos 3 meses' },
+    { value: 'year', label: 'Último ano' },
+    { value: 'custom', label: 'Período personalizado' }
+  ];
 
-  const handleSortChange = (field: string, value: string) => {
-    if (field === 'sortBy') {
-      onFiltersChange({
-        ...filters,
-        sortBy: value as ProjectFilters['sortBy']
-      });
-    } else if (field === 'sortOrder') {
-      onFiltersChange({
-        ...filters,
-        sortOrder: value as 'asc' | 'desc'
-      });
-    }
-  };
+  // Calculate active filters count
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.platforms?.length) count++;
+    if (filters.formats?.length) count++;
+    if (filters.status?.length) count++;
+    if (filters.tags?.length) count++;
+    if (filters.folderId) count++;
+    if (filters.isFavorite !== undefined) count++;
+    if (filters.dateRange) count++;
+    return count;
+  }, [filters]);
 
-  const handleTagToggle = (tagName: string) => {
-    const currentTags = filters.tags || [];
-    const newTags = currentTags.includes(tagName)
-      ? currentTags.filter(t => t !== tagName)
-      : [...currentTags, tagName];
-
-    onFiltersChange({
-      ...filters,
-      tags: newTags.length > 0 ? newTags : undefined
-    });
-  };
-
-  const handlePlatformToggle = (platform: string) => {
+  // Handle platform selection
+  const handlePlatformToggle = (platform: PlatformType) => {
     const currentPlatforms = filters.platforms || [];
     const newPlatforms = currentPlatforms.includes(platform)
       ? currentPlatforms.filter(p => p !== platform)
       : [...currentPlatforms, platform];
-
+    
     onFiltersChange({
       ...filters,
       platforms: newPlatforms.length > 0 ? newPlatforms : undefined
     });
   };
 
-  const handleStatusToggle = (status: 'draft' | 'completed' | 'published') => {
-    const currentStatus = filters.status || [];
-    const newStatus = currentStatus.includes(status)
-      ? currentStatus.filter(s => s !== status)
-      : [...currentStatus, status];
-
+  // Handle format selection
+  const handleFormatToggle = (format: FormatType) => {
+    const currentFormats = filters.formats || [];
+    const newFormats = currentFormats.includes(format)
+      ? currentFormats.filter(f => f !== format)
+      : [...currentFormats, format];
+    
     onFiltersChange({
       ...filters,
-      status: newStatus.length > 0 ? newStatus : undefined
+      formats: newFormats.length > 0 ? newFormats : undefined
     });
   };
 
-  const handleFavoriteToggle = () => {
+  // Handle status selection
+  const handleStatusToggle = (status: ProjectStatus) => {
+    const currentStatuses = filters.status || [];
+    const newStatuses = currentStatuses.includes(status)
+      ? currentStatuses.filter(s => s !== status)
+      : [...currentStatuses, status];
+    
     onFiltersChange({
       ...filters,
-      isFavorite: filters.isFavorite === true ? undefined : true
+      status: newStatuses.length > 0 ? newStatuses : undefined
     });
   };
 
-  const clearFilters = () => {
+  // Handle tag selection
+  const handleTagToggle = (tagId: string) => {
+    const currentTags = filters.tags || [];
+    const newTags = currentTags.includes(tagId)
+      ? currentTags.filter(t => t !== tagId)
+      : [...currentTags, tagId];
+    
     onFiltersChange({
-      sortBy: 'updatedAt',
+      ...filters,
+      tags: newTags.length > 0 ? newTags : undefined
+    });
+  };
+
+  // Handle date range selection
+  const handleDateRangeChange = (range: string) => {
+    setSelectedDateRange(range);
+    
+    const now = new Date();
+    let start: Date | undefined;
+    let end: Date | undefined;
+
+    switch (range) {
+      case 'today':
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'week':
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        end = now;
+        break;
+      case 'month':
+        start = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        end = now;
+        break;
+      case 'quarter':
+        start = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+        end = now;
+        break;
+      case 'year':
+        start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        end = now;
+        break;
+      case 'all':
+      default:
+        start = undefined;
+        end = undefined;
+        break;
+    }
+
+    onFiltersChange({
+      ...filters,
+      dateRange: start && end ? { start, end } : undefined
+    });
+  };
+
+  // Handle sort change
+  const handleSortChange = (sortBy: SortOption) => {
+    onFiltersChange({
+      ...filters,
+      sortBy
+    });
+  };
+
+  // Handle sort order toggle
+  const handleSortOrderToggle = () => {
+    onFiltersChange({
+      ...filters,
+      sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc'
+    });
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    onFiltersChange({
+      sortBy: 'date',
       sortOrder: 'desc'
     });
+    setSelectedDateRange('all');
+    setSearchQuery('');
   };
 
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (filters.search) count++;
-    if (filters.tags?.length) count++;
-    if (filters.platforms?.length) count++;
-    if (filters.status?.length) count++;
-    if (filters.isFavorite) count++;
-    if (filters.dateRange) count++;
-    if (filters.duration) count++;
-    return count;
+  // Clear specific filter
+  const clearFilter = (filterType: string) => {
+    const newFilters = { ...filters };
+    
+    switch (filterType) {
+      case 'platforms':
+        delete newFilters.platforms;
+        break;
+      case 'formats':
+        delete newFilters.formats;
+        break;
+      case 'status':
+        delete newFilters.status;
+        break;
+      case 'tags':
+        delete newFilters.tags;
+        break;
+      case 'folder':
+        delete newFilters.folderId;
+        break;
+      case 'favorites':
+        delete newFilters.isFavorite;
+        break;
+      case 'dateRange':
+        delete newFilters.dateRange;
+        setSelectedDateRange('all');
+        break;
+    }
+    
+    onFiltersChange(newFilters);
   };
-
-  const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <div className={`dashboard-filters ${className}`}>
-      {/* Barra de busca principal */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Buscar roteiros por título, conteúdo ou tags..."
-            value={filters.search || ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
-          {filters.search && (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      {/* Filter Header */}
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Filter size={20} className="text-gray-600" />
+            <h3 className="font-semibold text-gray-900">Filtros</h3>
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {activeFiltersCount} ativo{activeFiltersCount > 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">
+              {isLoading ? 'Carregando...' : `${filteredCount} de ${totalProjects} projetos`}
+            </span>
+            
             <Button
               variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6"
-              onClick={() => handleSearchChange('')}
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-gray-600"
             >
-              <X className="h-3 w-3" />
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              />
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex items-center gap-2 mt-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onFiltersChange({
+              ...filters,
+              isFavorite: filters.isFavorite ? undefined : true
+            })}
+            className={filters.isFavorite ? 'bg-yellow-50 text-yellow-700' : ''}
+          >
+            <Star size={14} className={filters.isFavorite ? 'fill-current' : ''} />
+            Favoritos
+          </Button>
+
+          {activeFiltersCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="text-red-600 hover:text-red-700"
+            >
+              <X size={14} />
+              Limpar Filtros
             </Button>
           )}
         </div>
-
-        <Button
-          variant={showAdvanced ? 'default' : 'outline'}
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          Filtros
-          {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="ml-1">
-              {activeFiltersCount}
-            </Badge>
-          )}
-        </Button>
-
-        <Select
-          value={filters.sortBy}
-          onValueChange={(value) => handleSortChange('sortBy', value)}
-        >
-          <option value="updatedAt">Modificação</option>
-          <option value="createdAt">Criação</option>
-          <option value="title">Título</option>
-          <option value="wordCount">Palavras</option>
-          <option value="duration">Duração</option>
-        </Select>
-
-        <Select
-          value={filters.sortOrder}
-          onValueChange={(value) => handleSortChange('sortOrder', value)}
-        >
-          <option value="desc">Mais recente</option>
-          <option value="asc">Mais antigo</option>
-        </Select>
       </div>
 
-      {/* Filtros ativos */}
-      {activeFiltersCount > 0 && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className="text-sm text-muted-foreground">Filtros ativos:</span>
-          
-          {filters.isFavorite && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Star className="h-3 w-3" />
-              Favoritos
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={handleFavoriteToggle}
+      {/* Expanded Filters */}
+      {isExpanded && (
+        <div className="p-4 space-y-6">
+          {/* Search */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Buscar
+            </label>
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar por título, conteúdo ou tags..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
               />
-            </Badge>
+            </div>
+          </div>
+
+          {/* Platforms */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Plataformas
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {platformOptions.map((platform) => (
+                <Button
+                  key={platform.value}
+                  variant={filters.platforms?.includes(platform.value) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePlatformToggle(platform.value)}
+                  className="text-xs"
+                >
+                  <span className="mr-1">{platform.icon}</span>
+                  {platform.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Formats */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Formatos
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {formatOptions.map((format) => (
+                <Button
+                  key={format.value}
+                  variant={filters.formats?.includes(format.value) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleFormatToggle(format.value)}
+                  className="text-xs"
+                >
+                  {format.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map((status) => (
+                <Button
+                  key={status.value}
+                  variant={filters.status?.includes(status.value) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleStatusToggle(status.value)}
+                  className="text-xs"
+                >
+                  <div className={`w-2 h-2 rounded-full mr-2 bg-${status.color}-400`} />
+                  {status.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tags */}
+          {userTags.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tags
+              </label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {userTags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    variant={filters.tags?.includes(tag.id) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleTagToggle(tag.id)}
+                    className="text-xs"
+                  >
+                    <div 
+                      className="w-2 h-2 rounded-full mr-2"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    {tag.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
           )}
 
-          {filters.tags?.map(tag => (
-            <Badge key={tag} variant="outline" className="flex items-center gap-1">
-              <Tag className="h-3 w-3" />
-              {tag}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => handleTagToggle(tag)}
-              />
-            </Badge>
-          ))}
+          {/* Date Range */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Clock size={14} className="inline mr-1" />
+              Período
+            </label>
+            <Select value={selectedDateRange} onValueChange={handleDateRangeChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {dateRangeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          {filters.platforms?.map(platform => (
-            <Badge key={platform} variant="outline" className="flex items-center gap-1">
-              {platform}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => handlePlatformToggle(platform)}
-              />
-            </Badge>
-          ))}
+          {/* Sorting */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ordenar por
+              </label>
+              <Select value={filters.sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {filters.status?.map(status => (
-            <Badge key={status} variant="outline" className="flex items-center gap-1">
-              {status === 'draft' ? 'Rascunho' : 
-               status === 'completed' ? 'Concluído' : 'Publicado'}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => handleStatusToggle(status)}
-              />
-            </Badge>
-          ))}
-
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={clearFilters}
-            className="text-muted-foreground"
-          >
-            Limpar filtros
-          </Button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ordem
+              </label>
+              <Button
+                variant="outline"
+                onClick={handleSortOrderToggle}
+                className="w-full justify-start"
+              >
+                {filters.sortOrder === 'asc' ? '↑ Crescente' : '↓ Decrescente'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Filtros avançados */}
-      {showAdvanced && (
-        <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Tags */}
-            <div>
-              <label className="block text-sm font-medium mb-2 flex items-center gap-1">
-                <Tag className="h-4 w-4" />
-                Tags
-              </label>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {availableTags.slice(0, 10).map(tag => (
-                  <label key={tag.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={filters.tags?.includes(tag.name) || false}
-                      onChange={() => handleTagToggle(tag.name)}
-                      className="rounded"
-                    />
-                    <span 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: tag.color }}
-                    />
-                    <span className="text-sm">{tag.name}</span>
-                    <span className="text-xs text-muted-foreground">({tag.usageCount})</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Plataformas */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Plataformas
-              </label>
-              <div className="space-y-2">
-                {filterSuggestions.platforms.map(platform => (
-                  <label key={platform} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={filters.platforms?.includes(platform) || false}
-                      onChange={() => handlePlatformToggle(platform)}
-                      className="rounded"
-                    />
-                    <span className="text-sm">{platform}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Status
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.status?.includes('draft') || false}
-                    onChange={() => handleStatusToggle('draft')}
-                    className="rounded"
-                  />
-                  <span className="text-sm">Rascunho</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.status?.includes('completed') || false}
-                    onChange={() => handleStatusToggle('completed')}
-                    className="rounded"
-                  />
-                  <span className="text-sm">Concluído</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.status?.includes('published') || false}
-                    onChange={() => handleStatusToggle('published')}
-                    className="rounded"
-                  />
-                  <span className="text-sm">Publicado</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Outros filtros */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={filters.isFavorite || false}
-                  onChange={handleFavoriteToggle}
-                  className="rounded"
-                />
-                <Star className="h-4 w-4" />
-                <span className="text-sm">Apenas favoritos</span>
-              </label>
-
-              {/* Filtro de duração */}
-              <div>
-                <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  Duração (segundos)
-                </label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.duration?.min || ''}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      onFiltersChange({
-                        ...filters,
-                        duration: {
-                          min: isNaN(value) ? 0 : value,
-                          max: filters.duration?.max || 999
-                        }
-                      });
-                    }}
-                    className="w-20 text-sm"
-                  />
-                  <span className="text-sm text-muted-foreground">até</span>
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.duration?.max || ''}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      onFiltersChange({
-                        ...filters,
-                        duration: {
-                          min: filters.duration?.min || 0,
-                          max: isNaN(value) ? 999 : value
-                        }
-                      });
-                    }}
-                    className="w-20 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
+      {/* Active Filters Display */}
+      {activeFiltersCount > 0 && (
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2">
+            {filters.platforms && (
+              <Badge 
+                variant="secondary" 
+                className="cursor-pointer"
+                onClick={() => clearFilter('platforms')}
+              >
+                Plataformas ({filters.platforms.length})
+                <X size={12} className="ml-1" />
+              </Badge>
+            )}
+            
+            {filters.formats && (
+              <Badge 
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => clearFilter('formats')}
+              >
+                Formatos ({filters.formats.length})
+                <X size={12} className="ml-1" />
+              </Badge>
+            )}
+            
+            {filters.status && (
+              <Badge 
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => clearFilter('status')}
+              >
+                Status ({filters.status.length})
+                <X size={12} className="ml-1" />
+              </Badge>
+            )}
+            
+            {filters.tags && (
+              <Badge 
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => clearFilter('tags')}
+              >
+                Tags ({filters.tags.length})
+                <X size={12} className="ml-1" />
+              </Badge>
+            )}
+            
+            {filters.isFavorite && (
+              <Badge 
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => clearFilter('favorites')}
+              >
+                <Star size={12} className="mr-1 fill-current" />
+                Favoritos
+                <X size={12} className="ml-1" />
+              </Badge>
+            )}
+            
+            {filters.dateRange && (
+              <Badge 
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => clearFilter('dateRange')}
+              >
+                <Clock size={12} className="mr-1" />
+                Período
+                <X size={12} className="ml-1" />
+              </Badge>
+            )}
           </div>
         </div>
       )}
@@ -406,4 +570,4 @@ const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   );
 };
 
-export default DashboardFilters; 
+export default DashboardFilters;

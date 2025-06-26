@@ -1,15 +1,15 @@
 export interface FormData {
   platform: string;
   format: string;
-  goal: string;
-  audience: string;
-  tone: string;
-  subject: string;
-  duration: number;
+  videoGoal: string;
+  targetAudience: string;
+  toneOfVoice: string;
+  videoTopic: string;
+  duration: string;
   details: string;
   otherGoal: string;
-  otherAudience: string;
-  otherTone: string;
+  customAudience: string;
+  customTone: string;
   otherFormat: string;
   customPlatform?: string;
   customFormat?: string;
@@ -1152,3 +1152,10 @@ export interface PlanUsage {
   exports: number;
   resetDate: Timestamp;
 }
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export type SelectFieldOptions = string[] | SelectOption[];

@@ -5,31 +5,48 @@ import { analyticsService } from './analyticsService';
 export class GeminiService {
   private genAI: GoogleGenerativeAI | null = null;
   private model: GenerativeModel | null = null;
-  
-  // API key padrão do projeto (a fornecida pelo usuário)
-  private readonly DEFAULT_API_KEY = 'AIzaSyBRZJQv8YJGrkUUitTFHVUQc46rkS6SEZI';
 
   constructor() {
     console.log('🔧 GeminiService: Inicializando...');
     this.initializeModel();
   }
 
+  private getApiKey(): string | null {
+    // Prioridade: localStorage -> environment variable
+    const localStorageKey = localStorage.getItem('GEMINI_API_KEY');
+    if (localStorageKey && localStorageKey.trim()) {
+      return localStorageKey.trim();
+    }
+
+    const envKey = import.meta.env.VITE_GOOGLE_GEMINI_API_KEY;
+    if (envKey && envKey.trim()) {
+      return envKey.trim();
+    }
+
+    return null;
+  }
+
   private initializeModel() {
     try {
-      // Tentar pegar API key do localStorage primeiro, depois env
-      const apiKey = localStorage.getItem('GEMINI_API_KEY') || 
-                     import.meta.env.VITE_GOOGLE_GEMINI_API_KEY;
+      const apiKey = this.getApiKey();
       
-      if (apiKey) {
-        this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-        console.log('✅ Gemini AI inicializado com sucesso');
-      } else {
-        console.warn('⚠️ API key do Gemini não encontrada');
+      if (!apiKey) {
+        console.warn('⚠️ API key do Gemini não configurada. Configure através do localStorage ou variável de ambiente VITE_GOOGLE_GEMINI_API_KEY');
+        this.genAI = null;
+        this.model = null;
+        return;
       }
+      
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+      console.log('✅ Gemini AI inicializado com sucesso');
     } catch (error) {
       console.error('❌ Erro ao inicializar Gemini:', error);
-      analyticsService.trackError('Gemini Initialization Failed', { error: error.message });
+      analyticsService.trackError('Gemini Initialization Failed', { 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      this.genAI = null;
+      this.model = null;
     }
   }
 
@@ -376,4 +393,4 @@ export const geminiService = new GeminiService();
 // Função legacy para compatibilidade
 export const refineText = async (selectedText: string, refinementInstruction: string): Promise<string> => {
   return geminiService.refineText(selectedText, refinementInstruction);
-}; 
+};

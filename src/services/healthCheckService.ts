@@ -2,7 +2,7 @@
 // Gratuito, robusto, alertas críticos automáticos
 
 import { collection, doc, getDoc, setDoc, updateDoc, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db, isFirebaseConfigured } from '../firebaseConfig';
 
 interface HealthCheck {
   name: string;
@@ -90,6 +90,13 @@ export class HealthCheckService {
   private static readonly RESPONSE_TIME_THRESHOLD = 2000; // 2 segundos
   private static isMonitoring = false;
   private static monitoringInterval: NodeJS.Timeout | null = null;
+  private static alertsCache: any[] = []; // Cache para alertas
+  private static healthCache: any = null; // Cache para health data quando Firebase não disponível
+
+  // **VERIFICAÇÃO DE FIREBASE**
+  private static checkFirebaseAvailable(): boolean {
+    return isFirebaseConfigured && db !== null;
+  }
 
   // **MONITORAMENTO PRINCIPAL**
 
@@ -123,9 +130,11 @@ export class HealthCheckService {
 
   static async performHealthCheck(): Promise<SystemHealth> {
     const startTime = Date.now();
-    const timestamp = Timestamp.now();
+    const timestamp = new Date(); // Usar Date normal se Firebase não disponível
 
     try {
+      console.log('🔧 DEBUG: Executando performHealthCheck()');
+      
       // Verificar serviços em paralelo
       const [
         firebaseStatus,
@@ -158,7 +167,7 @@ export class HealthCheckService {
 
       const healthData: SystemHealth = {
         status: overallStatus,
-        timestamp,
+        timestamp: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
         services,
         metrics: {
           responseTime,
@@ -170,7 +179,7 @@ export class HealthCheckService {
         issues
       };
 
-      // Salvar no Firestore
+      // Salvar (Firebase ou cache local)
       await this.saveHealthData(healthData);
 
       // Notificar se necessário
@@ -178,19 +187,20 @@ export class HealthCheckService {
         await this.notifyHealthIssues(healthData);
       }
 
+      console.log('✅ DEBUG: performHealthCheck() concluído com sucesso');
       return healthData;
 
     } catch (error) {
-      console.error('Erro no health check:', error);
+      console.error('❌ DEBUG: Erro no performHealthCheck():', error);
       
       const errorHealthData: SystemHealth = {
         status: 'unhealthy',
-        timestamp,
+        timestamp: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
         services: {
-          firebase: { status: 'outage', responseTime: -1, lastCheck: timestamp, uptime: 0, errorCount: 1 },
-          gemini: { status: 'outage', responseTime: -1, lastCheck: timestamp, uptime: 0, errorCount: 1 },
-          pwa: { status: 'outage', responseTime: -1, lastCheck: timestamp, uptime: 0, errorCount: 1 },
-          authentication: { status: 'outage', responseTime: -1, lastCheck: timestamp, uptime: 0, errorCount: 1 }
+          firebase: { status: 'outage', responseTime: -1, lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any, uptime: 0, errorCount: 1 },
+          gemini: { status: 'outage', responseTime: -1, lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any, uptime: 0, errorCount: 1 },
+          pwa: { status: 'outage', responseTime: -1, lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any, uptime: 0, errorCount: 1 },
+          authentication: { status: 'outage', responseTime: -1, lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any, uptime: 0, errorCount: 1 }
         },
         metrics: {
           responseTime: Date.now() - startTime,
@@ -204,7 +214,7 @@ export class HealthCheckService {
           severity: 'critical',
           service: 'system',
           message: `Health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          timestamp,
+          timestamp: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
           resolved: false
         }]
       };
@@ -218,25 +228,41 @@ export class HealthCheckService {
 
   private static async checkFirebaseHealth(): Promise<ServiceStatus> {
     const startTime = Date.now();
+    console.log('🔧 DEBUG: Verificando saúde do Firebase...');
+    
     try {
+      if (!this.checkFirebaseAvailable()) {
+        console.log('🔧 DEBUG: Firebase não configurado - retornando status degraded');
+        return {
+          status: 'degraded',
+          responseTime: Date.now() - startTime,
+          lastCheck: new Date() as any,
+          uptime: 0,
+          errorCount: 0,
+          message: 'Firebase não configurado - modo offline'
+        };
+      }
+
       // Testar conectividade básica com Firestore
       const testDoc = doc(db, 'health_check', 'test');
       await getDoc(testDoc);
       
       const responseTime = Date.now() - startTime;
+      console.log('✅ DEBUG: Firebase health check passou');
       
-            return {
+      return {
         status: responseTime < this.RESPONSE_TIME_THRESHOLD ? 'operational' : 'degraded',
         responseTime,
         lastCheck: Timestamp.now(),
-        uptime: 99.9, // Seria calculado com dados históricos
+        uptime: 99.9,
         errorCount: 0
       };
     } catch (error) {
-          return {
+      console.error('❌ DEBUG: Erro no Firebase health check:', error);
+      return {
         status: 'outage',
         responseTime: Date.now() - startTime,
-        lastCheck: Timestamp.now(),
+        lastCheck: new Date() as any,
         uptime: 0,
         errorCount: 1,
         message: error instanceof Error ? error.message : 'Firebase connection failed'
@@ -244,41 +270,33 @@ export class HealthCheckService {
     }
   }
 
-  private static async checkGeminiHealth(): Promise<ServiceStatus> {
+    private static async checkGeminiHealth(): Promise<ServiceStatus> {
     const startTime = Date.now();
+    console.log('🔧 DEBUG: Verificando saúde do Gemini...');
+    
     try {
-      // Testar API do Gemini com request simples
-      const response = await fetch('/api/health/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ test: true })
-      });
-
+      // Não fazer chamada para /api/health/gemini que não existe
+      // Em vez disso, verificar se GeminiService está configurado
+      const { geminiService } = await import('../services/geminiService');
+      const isConfigured = geminiService.isConfigured();
+      
       const responseTime = Date.now() - startTime;
+      console.log('🔧 DEBUG: Gemini configurado:', isConfigured);
 
-      if (response.ok) {
-            return {
-          status: responseTime < this.RESPONSE_TIME_THRESHOLD ? 'operational' : 'degraded',
-          responseTime,
-          lastCheck: Timestamp.now(),
-          uptime: 99.5,
-          errorCount: 0
-            };
-          } else {
-            return {
-          status: 'degraded',
-          responseTime,
-          lastCheck: Timestamp.now(),
-          uptime: 95,
-          errorCount: 1,
-          message: `HTTP ${response.status}: ${response.statusText}`
-        };
-      }
+      return {
+        status: isConfigured ? 'operational' : 'degraded',
+        responseTime,
+        lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
+        uptime: isConfigured ? 99.5 : 50,
+        errorCount: isConfigured ? 0 : 1,
+        message: isConfigured ? 'Gemini API configurado' : 'Gemini API não configurado'
+      };
     } catch (error) {
-          return {
+      console.error('❌ DEBUG: Erro no Gemini health check:', error);
+      return {
         status: 'outage',
         responseTime: Date.now() - startTime,
-        lastCheck: Timestamp.now(),
+        lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
         uptime: 0,
         errorCount: 1,
         message: error instanceof Error ? error.message : 'Gemini API unreachable'
@@ -321,25 +339,54 @@ export class HealthCheckService {
 
   private static async checkAuthenticationHealth(): Promise<ServiceStatus> {
     const startTime = Date.now();
+    console.log('🔧 DEBUG: Verificando saúde do Authentication...');
+    
     try {
+      if (!this.checkFirebaseAvailable()) {
+        console.log('🔧 DEBUG: Firebase não configurado - authentication degraded');
+        return {
+          status: 'degraded',
+          responseTime: Date.now() - startTime,
+          lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
+          uptime: 0,
+          errorCount: 0,
+          message: 'Firebase Authentication não configurado - modo offline'
+        };
+      }
+
       // Verificar se Firebase Auth está funcionando
       const { auth } = await import('../firebaseConfig');
-      const user = auth.currentUser;
       
+      if (!auth) {
+        console.log('🔧 DEBUG: Auth object é null');
+        return {
+          status: 'degraded',
+          responseTime: Date.now() - startTime,
+          lastCheck: Timestamp.now(),
+          uptime: 0,
+          errorCount: 1,
+          message: 'Firebase Auth não inicializado'
+        };
+      }
+
+      const user = auth.currentUser;
       const responseTime = Date.now() - startTime;
+      console.log('✅ DEBUG: Authentication health check passou');
 
       return {
         status: 'operational',
         responseTime,
         lastCheck: Timestamp.now(),
         uptime: 99.9,
-        errorCount: 0
+        errorCount: 0,
+        message: user ? 'Usuário autenticado' : 'Authentication disponível'
       };
     } catch (error) {
+      console.error('❌ DEBUG: Erro no Authentication health check:', error);
       return {
         status: 'outage',
         responseTime: Date.now() - startTime,
-        lastCheck: Timestamp.now(),
+        lastCheck: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
         uptime: 0,
         errorCount: 1,
         message: error instanceof Error ? error.message : 'Authentication service failed'
@@ -349,12 +396,23 @@ export class HealthCheckService {
 
   // **MÉTRICAS E ANÁLISES**
 
-  private static async getSystemMetrics(): Promise<{
+    private static async getSystemMetrics(): Promise<{
     errorRate: number;
     activeUsers: number;
     totalProjects: number;
   }> {
+    console.log('🔧 DEBUG: Obtendo métricas do sistema...');
+    
     try {
+      if (!this.checkFirebaseAvailable()) {
+        console.log('🔧 DEBUG: Firebase não disponível - usando métricas mock');
+        return {
+          errorRate: 0.01, // 1% de erro simulado
+          activeUsers: 1, // Usuário atual
+          totalProjects: 0
+        };
+      }
+
       // Buscar métricas recentes (última hora)
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
       
@@ -375,14 +433,15 @@ export class HealthCheckService {
       const activeUsers = usersSnapshot.size;
       const totalProjects = projectsSnapshot.size;
 
-          return {
+      console.log('✅ DEBUG: Métricas obtidas do Firebase');
+      return {
         errorRate,
         activeUsers,
         totalProjects
       };
     } catch (error) {
-      console.error('Erro ao obter métricas do sistema:', error);
-          return {
+      console.error('❌ DEBUG: Erro ao obter métricas:', error);
+      return {
         errorRate: 1,
         activeUsers: 0,
         totalProjects: 0
@@ -422,7 +481,7 @@ export class HealthCheckService {
           severity: 'critical',
           service: serviceName,
           message: `${serviceName} está fora do ar: ${service.message || 'Motivo desconhecido'}`,
-          timestamp: Timestamp.now(),
+          timestamp: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
           resolved: false
         });
       } else if (service.status === 'degraded') {
@@ -431,7 +490,7 @@ export class HealthCheckService {
           severity: 'medium',
           service: serviceName,
           message: `${serviceName} com performance degradada: ${service.responseTime}ms`,
-          timestamp: Timestamp.now(),
+          timestamp: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
           resolved: false
         });
       }
@@ -444,7 +503,7 @@ export class HealthCheckService {
         severity: 'high',
         service: 'system',
         message: `Taxa de erro alta: ${(metrics.errorRate * 100).toFixed(2)}%`,
-        timestamp: Timestamp.now(),
+        timestamp: this.checkFirebaseAvailable() ? Timestamp.now() : new Date() as any,
         resolved: false
       });
     }
@@ -455,14 +514,24 @@ export class HealthCheckService {
   // **PERSISTÊNCIA E HISTÓRICO**
 
   private static async saveHealthData(healthData: SystemHealth): Promise<void> {
+    console.log('🔧 DEBUG: Salvando dados de saúde...');
+    
     try {
-      const healthDoc = doc(db, 'system_health', `check_${Date.now()}`);
-      await setDoc(healthDoc, healthData);
-
-      // Manter apenas últimos 1000 registros
-      await this.cleanupOldHealthData();
+      if (this.checkFirebaseAvailable()) {
+        console.log('🔧 DEBUG: Salvando no Firebase...');
+        const healthDoc = doc(db, 'system_health', `check_${Date.now()}`);
+        await setDoc(healthDoc, healthData);
+        await this.cleanupOldHealthData();
+        console.log('✅ DEBUG: Dados salvos no Firebase');
+      } else {
+        console.log('🔧 DEBUG: Firebase não disponível - salvando em cache local');
+        this.healthCache = healthData;
+        console.log('✅ DEBUG: Dados salvos em cache local');
+      }
     } catch (error) {
-      console.error('Erro ao salvar dados de saúde:', error);
+      console.error('❌ DEBUG: Erro ao salvar dados de saúde:', error);
+      // Fallback para cache local mesmo se Firebase falhar
+      this.healthCache = healthData;
     }
   }
 
@@ -585,20 +654,25 @@ export class HealthCheckService {
 
   static async getCurrentHealth(): Promise<SystemHealth | null> {
     try {
-      const latestHealth = await getDocs(query(
-        collection(db, 'system_health'),
-        orderBy('timestamp', 'desc'),
-        limit(1)
-      ));
+      if (this.checkFirebaseAvailable()) {
+        const latestHealth = await getDocs(query(
+          collection(db, 'system_health'),
+          orderBy('timestamp', 'desc'),
+          limit(1)
+        ));
 
-      if (latestHealth.empty) {
-        return await this.performHealthCheck();
+        if (!latestHealth.empty) {
+          const data = latestHealth.docs[0].data() as SystemHealth;
+          return data;
+        } else {
+          return await this.performHealthCheck();
+        }
+      } else {
+        return this.healthCache || await this.performHealthCheck();
       }
-
-      return latestHealth.docs[0].data() as SystemHealth;
     } catch (error) {
       console.error('Erro ao obter saúde atual:', error);
-      return null;
+      return this.healthCache;
     }
   }
 
@@ -684,6 +758,81 @@ export class HealthCheckService {
       console.error('Erro ao obter manutenções programadas:', error);
       return [];
     }
+  }
+
+  // **MÉTODOS AUSENTES ADICIONADOS PARA CORRIGIR SISTEMA DASHBOARD**
+
+  static async getHealth(): Promise<any> {
+    try {
+      const currentHealth = await this.getCurrentHealth();
+      if (currentHealth) {
+        // Transformar para formato esperado pelo SystemDashboard
+        return {
+          overall: currentHealth.status === 'healthy' ? 'healthy' : 
+                   currentHealth.status === 'degraded' ? 'degraded' : 'down',
+          score: this.calculateHealthScore(currentHealth),
+          checks: this.transformServicesToChecks(currentHealth.services),
+          lastCheck: currentHealth.timestamp instanceof Date ? 
+                     currentHealth.timestamp.toISOString() : 
+                     currentHealth.timestamp.toDate().toISOString(),
+          uptime: currentHealth.metrics.uptime
+        };
+      } else {
+        const newHealth = await this.performHealthCheck();
+        return {
+          overall: newHealth.status === 'healthy' ? 'healthy' : 
+                   newHealth.status === 'degraded' ? 'degraded' : 'down',
+          score: this.calculateHealthScore(newHealth),
+          checks: this.transformServicesToChecks(newHealth.services),
+          lastCheck: newHealth.timestamp instanceof Date ? 
+                     newHealth.timestamp.toISOString() : 
+                     newHealth.timestamp.toDate().toISOString(),
+          uptime: newHealth.metrics.uptime
+        };
+      }
+    } catch (error) {
+      console.error('Erro em getHealth():', error);
+      return {
+        overall: 'down',
+        score: 0,
+        checks: {},
+        lastCheck: new Date().toISOString(),
+        uptime: 0
+      };
+    }
+  }
+
+  static getAlerts(): any[] {
+    return this.alertsCache;
+  }
+
+  static clearAlerts(): void {
+    this.alertsCache = [];
+  }
+
+  // Métodos auxiliares para conversão de dados
+  private static calculateHealthScore(healthData: SystemHealth): number {
+    const services = Object.values(healthData.services);
+    const operationalCount = services.filter(s => s.status === 'operational').length;
+    return Math.round((operationalCount / services.length) * 100);
+  }
+
+  private static transformServicesToChecks(services: SystemHealth['services']): Record<string, any> {
+    const checks: Record<string, any> = {};
+    
+    Object.entries(services).forEach(([serviceName, service]) => {
+      checks[serviceName] = {
+        status: service.status === 'operational' ? 'healthy' : 
+                service.status === 'degraded' ? 'warning' : 'critical',
+        message: service.message || `${serviceName} status: ${service.status}`,
+        responseTime: service.responseTime,
+        timestamp: service.lastCheck instanceof Date ? 
+                   service.lastCheck.toISOString() : 
+                   service.lastCheck.toDate().toISOString()
+      };
+    });
+
+    return checks;
   }
 }
 

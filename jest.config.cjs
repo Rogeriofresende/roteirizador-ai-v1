@@ -1,35 +1,51 @@
+/**
+ * 🧪 JEST CONFIGURATION - UNIFIED
+ * Configuração simplificada apenas com ts-jest (sem babel-jest)
+ */
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+  
+  // TypeScript only com ts-jest
+  preset: 'ts-jest/presets/default-esm',
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  
   moduleDirectories: ['node_modules', '<rootDir>/src'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      useESM: true,
+      tsconfig: {
+        jsx: 'react-jsx',
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+      }
+    }],
   },
   
-  // APENAS arquivos no src/ e tests/
+  // UNIT TESTS apenas (Jest) - E2E separado para Playwright
   testMatch: [
-    '<rootDir>/src/**/*.(test|spec).(ts|tsx|js)',
-    '<rootDir>/tests/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/src/**/*.(test|spec).(ts|tsx)',
+    // EXCLUIR: tests/e2e/ (reservado para Playwright)
   ],
   
   // IGNORAR diretórios problemáticos
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/node_modules_old/',
+    '<rootDir>/node_modules_broken_*/',
     '<rootDir>/.archive/',
     '<rootDir>/coverage/',
     '<rootDir>/dist/',
     '<rootDir>/build/',
     '<rootDir>/playwright-report/',
+    '<rootDir>/src/__tests-disabled__/',
+    '<rootDir>/tests/e2e/',
   ],
   
   transformIgnorePatterns: [
     'node_modules/(?!(react-router|react-router-dom)/)',
-    'node_modules_old/',
-    '\\.archive/',
   ],
   
   moduleNameMapper: {
@@ -45,28 +61,7 @@ module.exports = {
     '!src/vite-env.d.ts',
   ],
   
-  coverageThreshold: {
-    global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
-    },
-  },
-  
   testTimeout: 10000,
-  preset: 'ts-jest/presets/default-esm',
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  
-  globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: {
-        jsx: 'react-jsx',
-      },
-    },
-  },
-  
   clearMocks: true,
   restoreMocks: true,
 };

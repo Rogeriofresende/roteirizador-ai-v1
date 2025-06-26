@@ -1,403 +1,429 @@
-import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy, Timestamp, increment } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import type { Tag } from '../types';
+// Tag Service - Advanced tag management system
+// Handles creation, organization, and analytics for user tags
+
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  getDocs, 
+  getDoc,
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  Timestamp
+} from 'firebase/firestore';
+
+import { Tag, CreateTagData, TagUsageStats } from '../types/enhanced';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('TagService');
 
 export class TagService {
-  private static readonly PREDEFINED_COLORS = [
+  private db = getFirestore();
+  private collection = 'tags';
+
+  // Predefined color palette for tags
+  private readonly DEFAULT_COLORS = [
     '#3B82F6', // Blue
-    '#EF4444', // Red
-    '#10B981', // Green
+    '#10B981', // Green  
     '#F59E0B', // Yellow
+    '#EF4444', // Red
     '#8B5CF6', // Purple
-    '#EC4899', // Pink
     '#06B6D4', // Cyan
-    '#84CC16', // Lime
     '#F97316', // Orange
-    '#6366F1', // Indigo
+    '#84CC16', // Lime
+    '#EC4899', // Pink
+    '#6B7280', // Gray
+    '#14B8A6', // Teal
+    '#A855F7'  // Violet
   ];
 
   /**
-   * Obter todas as tags do usuário
+   * Create a new tag
    */
-  static async getUserTags(userId: string): Promise<Tag[]> {
+  async createTag(userId: string, data: CreateTagData): Promise<Tag> {
     try {
-      const q = query(
-        collection(db, 'tags'),
-        where('userId', '==', userId),
-        orderBy('usageCount', 'desc')
-      );
-      
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Tag[];
-    } catch (error) {
-      console.error('Erro ao carregar tags:', error);
-      return [];
-    }
-  }
+      logger.info('Creating new tag', { userId, name: data.name });
 
-  /**
-   * Criar nova tag
-   */
-  static async createTag(userId: string, tagData: Partial<Tag>): Promise<string> {
-    try {
-      // Verificar se tag já existe
-      const existingTags = await this.getUserTags(userId);
-      const tagExists = existingTags.some(tag => 
-        tag.name.toLowerCase() === tagData.name?.toLowerCase()
-      );
-
-      if (tagExists) {
-        throw new Error('Tag já existe');
+      // Check if tag name already exists for this user
+      const existingTag = await this.getTagByName(userId, data.name);
+      if (existingTag) {
+        throw new Error(`Tag with name "${data.name}" already exists`);
       }
 
-      const tag: Omit<Tag, 'id'> = {
+      const tagData: Omit<Tag, 'id'> = {
         userId,
-        name: tagData.name!.trim(),
-        color: tagData.color || this.generateRandomColor(),
-        category: tagData.category || 'custom',
+        name: data.name.trim(),
+        color: data.color || this.getRandomColor(),
+        description: data.description?.trim() || null,
         usageCount: 0,
+        lastUsedAt: null,
+        isSystem: data.isSystem || false,
         createdAt: Timestamp.now(),
-        isSystemTag: false
+        updatedAt: Timestamp.now()
       };
 
-      const docRef = await addDoc(collection(db, 'tags'), tag);
-      return docRef.id;
+      const docRef = await addDoc(collection(this.db, this.collection), tagData);
+      const tag: Tag = {
+        id: docRef.id,
+        ...tagData
+      };
+
+      logger.info('Tag created successfully', { tagId: docRef.id, name: data.name });
+      return tag;
     } catch (error) {
-      console.error('Erro ao criar tag:', error);
-      throw error;
+      logger.error('Failed to create tag', { error, userId, name: data.name });
+      throw new Error(`Failed to create tag: ${error.message}`);
     }
   }
 
   /**
-   * Atualizar tag existente
+   * Update an existing tag
    */
-  static async updateTag(tagId: string, updates: Partial<Tag>): Promise<void> {
+  async updateTag(tagId: string, updates: Partial<Tag>): Promise<void> {
     try {
-      const tagRef = doc(db, 'tags', tagId);
-      const updateData: any = { ...updates };
-      
-      // Remover campos que não devem ser atualizados
+      logger.info('Updating tag', { tagId });
+
+      const updateData = {
+        ...updates,
+        updatedAt: Timestamp.now()
+      };
+
+      // Remove fields that shouldn't be updated
       delete updateData.id;
       delete updateData.userId;
       delete updateData.createdAt;
-      delete updateData.usageCount;
+      delete updateData.usageCount; // Use incrementUsage instead
 
-      await updateDoc(tagRef, updateData);
+      await updateDoc(doc(this.db, this.collection, tagId), updateData);
+      logger.info('Tag updated successfully', { tagId });
     } catch (error) {
-      console.error('Erro ao atualizar tag:', error);
-      throw new Error('Falha ao atualizar tag');
+      logger.error('Failed to update tag', { error, tagId });
+      throw new Error(`Failed to update tag: ${error.message}`);
     }
   }
 
   /**
-   * Excluir tag
+   * Delete a tag
    */
-  static async deleteTag(tagId: string): Promise<void> {
+  async deleteTag(tagId: string): Promise<void> {
     try {
-      await deleteDoc(doc(db, 'tags', tagId));
+      logger.info('Deleting tag', { tagId });
+
+      // Check if tag is a system tag
+      const tag = await this.getTag(tagId);
+      if (tag?.isSystem) {
+        throw new Error('Cannot delete system tags');
+      }
+
+      await deleteDoc(doc(this.db, this.collection, tagId));
+      logger.info('Tag deleted successfully', { tagId });
     } catch (error) {
-      console.error('Erro ao excluir tag:', error);
-      throw new Error('Falha ao excluir tag');
+      logger.error('Failed to delete tag', { error, tagId });
+      throw new Error(`Failed to delete tag: ${error.message}`);
     }
   }
 
   /**
-   * Incrementar contador de uso da tag
+   * Get a single tag by ID
    */
-  static async incrementTagUsage(tagIds: string[]): Promise<void> {
+  async getTag(tagId: string): Promise<Tag | null> {
     try {
-      const promises = tagIds.map(tagId => {
-        const tagRef = doc(db, 'tags', tagId);
-        return updateDoc(tagRef, {
-          usageCount: increment(1)
-        });
-      });
-
-      await Promise.all(promises);
-    } catch (error) {
-      console.error('Erro ao incrementar uso da tag:', error);
-    }
-  }
-
-  /**
-   * Decrementar contador de uso da tag
-   */
-  static async decrementTagUsage(tagIds: string[]): Promise<void> {
-    try {
-      const promises = tagIds.map(tagId => {
-        const tagRef = doc(db, 'tags', tagId);
-        return updateDoc(tagRef, {
-          usageCount: increment(-1)
-        });
-      });
-
-      await Promise.all(promises);
-    } catch (error) {
-      console.error('Erro ao decrementar uso da tag:', error);
-    }
-  }
-
-  /**
-   * Obter tags por categoria
-   */
-  static async getTagsByCategory(
-    userId: string, 
-    category: Tag['category']
-  ): Promise<Tag[]> {
-    try {
-      const q = query(
-        collection(db, 'tags'),
-        where('userId', '==', userId),
-        where('category', '==', category),
-        orderBy('name')
-      );
+      const docSnap = await getDoc(doc(this.db, this.collection, tagId));
       
+      if (!docSnap.exists()) {
+        return null;
+      }
+
+      return {
+        id: docSnap.id,
+        ...docSnap.data()
+      } as Tag;
+    } catch (error) {
+      logger.error('Failed to get tag', { error, tagId });
+      throw new Error(`Failed to get tag: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all tags for a user
+   */
+  async getUserTags(userId: string): Promise<Tag[]> {
+    try {
+      logger.info('Getting user tags', { userId });
+
+      const q = query(
+        collection(this.db, this.collection),
+        where('userId', '==', userId),
+        orderBy('usageCount', 'desc'),
+        orderBy('name', 'asc')
+      );
+
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
+      const tags = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as Tag[];
+      } as Tag));
+
+      logger.info('User tags retrieved', { userId, count: tags.length });
+      return tags;
     } catch (error) {
-      console.error('Erro ao carregar tags por categoria:', error);
-      return [];
+      logger.error('Failed to get user tags', { error, userId });
+      throw new Error(`Failed to get user tags: ${error.message}`);
     }
   }
 
   /**
-   * Buscar tags por nome (para autocomplete)
+   * Get tag by name (for checking duplicates)
    */
-  static async searchTags(userId: string, searchTerm: string): Promise<Tag[]> {
+  async getTagByName(userId: string, name: string): Promise<Tag | null> {
     try {
-      const allTags = await this.getUserTags(userId);
-      const searchTermLower = searchTerm.toLowerCase();
+      const q = query(
+        collection(this.db, this.collection),
+        where('userId', '==', userId),
+        where('name', '==', name.trim())
+      );
+
+      const snapshot = await getDocs(q);
       
-      return allTags.filter(tag => 
-        tag.name.toLowerCase().includes(searchTermLower)
-      ).slice(0, 10);
+      if (snapshot.empty) {
+        return null;
+      }
+
+      const doc = snapshot.docs[0];
+      return {
+        id: doc.id,
+        ...doc.data()
+      } as Tag;
     } catch (error) {
-      console.error('Erro ao buscar tags:', error);
-      return [];
+      logger.error('Failed to get tag by name', { error, userId, name });
+      throw new Error(`Failed to get tag by name: ${error.message}`);
     }
   }
 
   /**
-   * Criar tags do sistema (pré-definidas)
+   * Increment tag usage count
    */
-  static async createSystemTags(userId: string): Promise<void> {
+  async incrementTagUsage(tagId: string): Promise<void> {
     try {
-      const existingTags = await this.getUserTags(userId);
-      const existingSystemTags = existingTags.filter(tag => tag.isSystemTag);
+      const tag = await this.getTag(tagId);
+      if (!tag) {
+        throw new Error('Tag not found');
+      }
 
-      // Tags do sistema por categoria
-      const systemTags = [
-        // Platform tags
-        { name: 'YouTube', category: 'platform' as const, color: '#FF0000' },
-        { name: 'Instagram', category: 'platform' as const, color: '#E4405F' },
-        { name: 'TikTok', category: 'platform' as const, color: '#000000' },
-        { name: 'Facebook', category: 'platform' as const, color: '#1877F2' },
-        { name: 'LinkedIn', category: 'platform' as const, color: '#0077B5' },
-        { name: 'Twitter', category: 'platform' as const, color: '#1DA1F2' },
-
-        // Tone tags
-        { name: 'Profissional', category: 'tone' as const, color: '#374151' },
-        { name: 'Casual', category: 'tone' as const, color: '#10B981' },
-        { name: 'Educativo', category: 'tone' as const, color: '#3B82F6' },
-        { name: 'Engraçado', category: 'tone' as const, color: '#F59E0B' },
-        { name: 'Inspiracional', category: 'tone' as const, color: '#8B5CF6' },
-
-        // Status tags
-        { name: 'Rascunho', category: 'status' as const, color: '#9CA3AF' },
-        { name: 'Em Progresso', category: 'status' as const, color: '#F59E0B' },
-        { name: 'Pronto', category: 'status' as const, color: '#10B981' },
-        { name: 'Publicado', category: 'status' as const, color: '#3B82F6' },
-
-        // Audience tags
-        { name: 'Iniciantes', category: 'audience' as const, color: '#84CC16' },
-        { name: 'Intermediário', category: 'audience' as const, color: '#F97316' },
-        { name: 'Avançado', category: 'audience' as const, color: '#EF4444' },
-        { name: 'Geral', category: 'audience' as const, color: '#6366F1' },
-      ];
-
-      // Criar apenas tags que não existem
-      const promises = systemTags
-        .filter(sysTag => !existingSystemTags.some(existing => existing.name === sysTag.name))
-        .map(tagData => {
-          const tag: Omit<Tag, 'id'> = {
-            userId,
-            name: tagData.name,
-            color: tagData.color,
-            category: tagData.category,
-            usageCount: 0,
-            createdAt: Timestamp.now(),
-            isSystemTag: true
-          };
-
-          return addDoc(collection(db, 'tags'), tag);
-        });
-
-      await Promise.all(promises);
-    } catch (error) {
-      console.error('Erro ao criar tags do sistema:', error);
-    }
-  }
-
-  /**
-   * Obter sugestões de tags baseadas no conteúdo
-   */
-  static async suggestTagsFromContent(
-    content: string, 
-    formData: any,
-    existingTags: Tag[]
-  ): Promise<Tag[]> {
-    try {
-      const suggestions: Tag[] = [];
-      const contentLower = content.toLowerCase();
-
-      // Sugerir baseado na plataforma
-      const platformTag = existingTags.find(tag => 
-        tag.category === 'platform' && 
-        tag.name.toLowerCase() === formData.platform?.toLowerCase()
-      );
-      if (platformTag) suggestions.push(platformTag);
-
-      // Sugerir baseado no tom
-      const toneTag = existingTags.find(tag => 
-        tag.category === 'tone' && 
-        tag.name.toLowerCase() === formData.tone?.toLowerCase()
-      );
-      if (toneTag) suggestions.push(toneTag);
-
-      // Sugerir baseado no público
-      const audienceTag = existingTags.find(tag => 
-        tag.category === 'audience' && 
-        tag.name.toLowerCase() === formData.audience?.toLowerCase()
-      );
-      if (audienceTag) suggestions.push(audienceTag);
-
-      // Sugerir baseado em palavras-chave no conteúdo
-      const keywordMatches = existingTags.filter(tag => 
-        contentLower.includes(tag.name.toLowerCase()) ||
-        formData.subject?.toLowerCase().includes(tag.name.toLowerCase())
-      );
-
-      // Combinar sugestões e remover duplicatas
-      const allSuggestions = [...suggestions, ...keywordMatches];
-      const uniqueSuggestions = allSuggestions.filter((tag, index, array) => 
-        array.findIndex(t => t.id === tag.id) === index
-      );
-
-      // Ordenar por relevância (usage count)
-      return uniqueSuggestions
-        .sort((a, b) => b.usageCount - a.usageCount)
-        .slice(0, 8);
-    } catch (error) {
-      console.error('Erro ao sugerir tags:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Estatísticas de tags
-   */
-  static async getTagStats(userId: string): Promise<{
-    totalTags: number;
-    tagsByCategory: Record<string, number>;
-    mostUsedTags: Tag[];
-    unusedTags: Tag[];
-  }> {
-    try {
-      const tags = await this.getUserTags(userId);
-
-      const tagsByCategory: Record<string, number> = {};
-      tags.forEach(tag => {
-        tagsByCategory[tag.category] = (tagsByCategory[tag.category] || 0) + 1;
+      await updateDoc(doc(this.db, this.collection, tagId), {
+        usageCount: tag.usageCount + 1,
+        lastUsedAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
       });
 
-      const mostUsedTags = tags
-        .filter(tag => tag.usageCount > 0)
-        .sort((a, b) => b.usageCount - a.usageCount)
-        .slice(0, 10);
-
-      const unusedTags = tags.filter(tag => tag.usageCount === 0);
-
-      return {
-        totalTags: tags.length,
-        tagsByCategory,
-        mostUsedTags,
-        unusedTags
-      };
+      logger.debug('Tag usage incremented', { tagId });
     } catch (error) {
-      console.error('Erro ao obter estatísticas de tags:', error);
-      return {
-        totalTags: 0,
-        tagsByCategory: {},
-        mostUsedTags: [],
-        unusedTags: []
-      };
+      logger.error('Failed to increment tag usage', { error, tagId });
+      throw new Error(`Failed to increment tag usage: ${error.message}`);
     }
   }
 
   /**
-   * Limpeza automática de tags não utilizadas
+   * Bulk increment usage for multiple tags
    */
-  static async cleanupUnusedTags(userId: string, maxUnusedDays: number = 30): Promise<number> {
+  async bulkIncrementUsage(tagIds: string[]): Promise<void> {
     try {
-      const tags = await this.getUserTags(userId);
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - maxUnusedDays);
+      logger.info('Bulk incrementing tag usage', { tagIds });
 
-      const tagsToDelete = tags.filter(tag => 
-        !tag.isSystemTag && 
-        tag.usageCount === 0 && 
-        tag.createdAt.toDate() < cutoffDate
+      const promises = tagIds.map(tagId => this.incrementTagUsage(tagId));
+      await Promise.all(promises);
+
+      logger.info('Bulk tag usage incremented', { count: tagIds.length });
+    } catch (error) {
+      logger.error('Failed to bulk increment tag usage', { error, tagIds });
+      throw new Error(`Failed to bulk increment tag usage: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get tag usage statistics
+   */
+  async getTagUsageStats(userId: string): Promise<TagUsageStats[]> {
+    try {
+      logger.info('Getting tag usage stats', { userId });
+
+      const tags = await this.getUserTags(userId);
+      const totalUsage = tags.reduce((sum, tag) => sum + tag.usageCount, 0);
+
+      const stats: TagUsageStats[] = tags
+        .filter(tag => tag.usageCount > 0)
+        .map(tag => ({
+          tagId: tag.id,
+          tagName: tag.name,
+          usageCount: tag.usageCount,
+          percentage: totalUsage > 0 ? Math.round((tag.usageCount / totalUsage) * 100) : 0
+        }))
+        .sort((a, b) => b.usageCount - a.usageCount);
+
+      logger.info('Tag usage stats calculated', { userId, statsCount: stats.length });
+      return stats;
+    } catch (error) {
+      logger.error('Failed to get tag usage stats', { error, userId });
+      throw new Error(`Failed to get tag usage stats: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get suggested tags based on content
+   */
+  async getSuggestedTags(userId: string, content: string): Promise<Tag[]> {
+    try {
+      logger.info('Getting suggested tags', { userId });
+
+      // Get all user tags
+      const allTags = await this.getUserTags(userId);
+      
+      // Simple keyword matching for suggestions
+      const contentLower = content.toLowerCase();
+      const suggested = allTags.filter(tag => {
+        const tagWords = tag.name.toLowerCase().split(' ');
+        return tagWords.some(word => contentLower.includes(word));
+      });
+
+      // Sort by usage count and limit to top 5
+      const sortedSuggestions = suggested
+        .sort((a, b) => b.usageCount - a.usageCount)
+        .slice(0, 5);
+
+      logger.info('Tag suggestions generated', { 
+        userId, 
+        suggestions: sortedSuggestions.length 
+      });
+
+      return sortedSuggestions;
+    } catch (error) {
+      logger.error('Failed to get suggested tags', { error, userId });
+      return []; // Return empty array on error
+    }
+  }
+
+  /**
+   * Create default system tags for new users
+   */
+  async createDefaultTags(userId: string): Promise<Tag[]> {
+    try {
+      logger.info('Creating default tags for user', { userId });
+
+      const defaultTags = [
+        { name: 'Marketing', color: '#3B82F6', description: 'Marketing content' },
+        { name: 'Educational', color: '#10B981', description: 'Educational content' },
+        { name: 'Entertainment', color: '#F59E0B', description: 'Entertainment content' },
+        { name: 'Tutorial', color: '#8B5CF6', description: 'How-to and tutorial content' },
+        { name: 'Review', color: '#EF4444', description: 'Product and service reviews' }
+      ];
+
+      const createdTags: Tag[] = [];
+
+      for (const tagData of defaultTags) {
+        try {
+          const tag = await this.createTag(userId, {
+            ...tagData,
+            isSystem: true
+          });
+          createdTags.push(tag);
+        } catch (error) {
+          // Skip if tag already exists
+          logger.debug('Skipping existing default tag', { name: tagData.name });
+        }
+      }
+
+      logger.info('Default tags created', { userId, count: createdTags.length });
+      return createdTags;
+    } catch (error) {
+      logger.error('Failed to create default tags', { error, userId });
+      throw new Error(`Failed to create default tags: ${error.message}`);
+    }
+  }
+
+  /**
+   * Search tags by name
+   */
+  async searchTags(userId: string, searchQuery: string): Promise<Tag[]> {
+    try {
+      logger.info('Searching tags', { userId, searchQuery });
+
+      const allTags = await this.getUserTags(userId);
+      const query = searchQuery.toLowerCase().trim();
+
+      const results = allTags.filter(tag => 
+        tag.name.toLowerCase().includes(query) ||
+        (tag.description && tag.description.toLowerCase().includes(query))
       );
 
-      const deletePromises = tagsToDelete.map(tag => this.deleteTag(tag.id));
-      await Promise.all(deletePromises);
+      logger.info('Tag search completed', { 
+        userId, 
+        searchQuery, 
+        results: results.length 
+      });
 
-      return tagsToDelete.length;
+      return results;
     } catch (error) {
-      console.error('Erro na limpeza de tags:', error);
-      return 0;
+      logger.error('Failed to search tags', { error, userId, searchQuery });
+      throw new Error(`Failed to search tags: ${error.message}`);
     }
   }
 
   /**
-   * Gerar cor aleatória para tag
+   * Get most popular tags across all users (for insights)
    */
-  private static generateRandomColor(): string {
-    return this.PREDEFINED_COLORS[
-      Math.floor(Math.random() * this.PREDEFINED_COLORS.length)
-    ];
+  async getPopularTags(limit: number = 10): Promise<Tag[]> {
+    try {
+      logger.info('Getting popular tags', { limit });
+
+      const q = query(
+        collection(this.db, this.collection),
+        where('isSystem', '==', false),
+        orderBy('usageCount', 'desc'),
+        orderBy('name', 'asc')
+      );
+
+      const snapshot = await getDocs(q);
+      const tags = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Tag))
+        .slice(0, limit);
+
+      logger.info('Popular tags retrieved', { count: tags.length });
+      return tags;
+    } catch (error) {
+      logger.error('Failed to get popular tags', { error });
+      throw new Error(`Failed to get popular tags: ${error.message}`);
+    }
+  }
+
+  // ============================================================================
+  // PRIVATE HELPER METHODS
+  // ============================================================================
+
+  private getRandomColor(): string {
+    const randomIndex = Math.floor(Math.random() * this.DEFAULT_COLORS.length);
+    return this.DEFAULT_COLORS[randomIndex];
   }
 
   /**
-   * Validar dados da tag
+   * Validate tag name
    */
-  static validateTagData(tagData: Partial<Tag>): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    if (!tagData.name?.trim()) {
-      errors.push('Nome da tag é obrigatório');
-    } else if (tagData.name.length > 30) {
-      errors.push('Nome da tag deve ter no máximo 30 caracteres');
-    }
-
-    if (tagData.color && !/^#[0-9A-F]{6}$/i.test(tagData.color)) {
-      errors.push('Cor deve estar no formato hexadecimal (#RRGGBB)');
-    }
-
-    const validCategories = ['platform', 'tone', 'audience', 'status', 'custom'];
-    if (tagData.category && !validCategories.includes(tagData.category)) {
-      errors.push('Categoria inválida');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
+  private validateTagName(name: string): boolean {
+    const trimmed = name.trim();
+    return trimmed.length >= 2 && trimmed.length <= 30 && 
+           /^[a-zA-Z0-9\s\-_]+$/.test(trimmed);
   }
-} 
+
+  /**
+   * Validate color hex code
+   */
+  private validateColor(color: string): boolean {
+    return /^#[0-9A-F]{6}$/i.test(color);
+  }
+}
+
+// Export singleton instance
+export const tagService = new TagService();

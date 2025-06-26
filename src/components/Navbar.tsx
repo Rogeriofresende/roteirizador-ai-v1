@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
-import { Button } from "./ui/button";
+import { auth, isFirebaseConfigured } from '../firebaseConfig';
+import { Button } from "./ui/Button";
 import { LogOut, Menu, X, Home, FileText, User, UserPlus, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { SystemDashboard } from './SystemDashboard';
-import { healthCheckService } from '../services/healthCheckService';
+import { tallyService } from '../services/tallyService';
+import { createLogger } from '../utils/logger';
 
-import { TallyService } from '../services/tallyService';
+const logger = createLogger('Navbar');
+
 const Navbar: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, isFirebaseEnabled } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -30,22 +32,6 @@ const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const updateStatus = async () => {
-      try {
-        const health = await healthCheckService.getHealth();
-        setSystemStatus(health.overall);
-      } catch (error) {
-        setSystemStatus('down');
-      }
-    };
-
-    updateStatus();
-
-    const interval = setInterval(updateStatus, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === 'D') {
         event.preventDefault();
@@ -58,6 +44,11 @@ const Navbar: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
+    if (!isFirebaseEnabled || !auth) {
+      console.warn('Logout não disponível - Firebase não configurado');
+      return;
+    }
+    
     try {
       await signOut(auth);
       navigate('/login');
@@ -98,6 +89,26 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const handleFeedbackClick = () => {
+    try {
+      const success = tallyService.openFeedbackForm();
+      if (!success) {
+        logger.warn('Feedback form could not be opened');
+        // Fallback para URL direta
+        const fallbackUrl = tallyService.getFormUrl('feedback');
+        if (fallbackUrl) {
+          window.open(fallbackUrl, '_blank');
+        }
+      }
+    } catch (error) {
+      logger.error('Error opening feedback form', { error });
+    }
+  };
+
+  const handleSystemDashboard = () => {
+    setShowDashboard(true);
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
@@ -106,16 +117,22 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-primary relative group" onClick={closeMenu}>
-            <span className="relative z-10">Roteirista PRO</span>
+            <span className="relative z-10">RoteiroPro</span>
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
           </Link>
 
           <div className="flex items-center gap-4">
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              {currentUser ? (
+              {/* Se Firebase não configurado, mostrar acesso direto às funcionalidades */}
+              {!isFirebaseEnabled ? (
                 <>
-                  <NavLink to="/gerador" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/generator" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/dashboard" icon={<Home size={16} />}>Dashboard</NavLink>
+                </>
+              ) : currentUser ? (
+                <>
+                  <NavLink to="/generator" icon={<FileText size={16} />}>Gerador</NavLink>
                   <NavLink to="/dashboard" icon={<Home size={16} />}>Meus Roteiros</NavLink>
                   <Button variant="destructive" size="sm" onClick={handleLogout} className="flex items-center gap-2">
                     <LogOut size={16} />
@@ -140,21 +157,20 @@ const Navbar: React.FC = () => {
               )}
             </nav>
 
-
             {/* Feedback Button */}
-            <button
-              onClick={() => TallyService.showGeneralFeedback()}
-              className="flex items-center space-x-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-blue-600 dark:text-blue-400"
-              title="Enviar Feedback"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleFeedbackClick}
+              className="text-muted-foreground hover:text-foreground"
             >
-              <MessageCircle size={16} />
-              <span className="text-xs hidden sm:inline">Feedback</span>
-            </button>
-            <ThemeToggle />
+              <MessageCircle size={16} className="mr-2" />
+              Feedback
+            </Button>
 
             {/* System Status Indicator */}
             <button
-              onClick={() => setShowDashboard(true)}
+              onClick={handleSystemDashboard}
               className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               title={`${getStatusText()} - Clique para ver detalhes (Ctrl+Shift+D)`}
             >
@@ -165,6 +181,9 @@ const Navbar: React.FC = () => {
                 {getStatusText()}
               </span>
             </button>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Mobile Menu Button */}
             <button 
@@ -188,9 +207,14 @@ const Navbar: React.FC = () => {
               className="md:hidden overflow-hidden"
             >
               <nav className="flex flex-col space-y-4 py-4">
-                {currentUser ? (
+                {!isFirebaseEnabled ? (
                   <>
-                    <NavLink to="/gerador" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/generator" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/dashboard" icon={<Home size={18} />}>Dashboard</NavLink>
+                  </>
+                ) : currentUser ? (
+                  <>
+                    <NavLink to="/generator" icon={<FileText size={18} />}>Gerador</NavLink>
                     <NavLink to="/dashboard" icon={<Home size={18} />}>Meus Roteiros</NavLink>
                     <Button 
                       variant="destructive" 

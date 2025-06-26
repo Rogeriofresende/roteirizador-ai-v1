@@ -1,110 +1,180 @@
-// Tally.so - Formulários e Pesquisas de Feedback
+/**
+ * Tally.so Service
+ * Professionalized with environment configuration and structured logging
+ */
 
-declare global {
-  interface Window {
-    Tally: {
-      openPopup: (formId: string, options?: any) => void;
-      closePopup: (formId: string) => void;
-    };
-  }
+import { config } from '../config/environment';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('TallyService');
+
+interface TallyConfig {
+  enabled: boolean;
+  formIds: {
+    feedback?: string;
+    nps?: string;
+    features?: string;
+    bugs?: string;
+  };
 }
 
-export class TallyService {
-  private static config = {
-    enabled: import.meta.env.PROD,
-    debug: import.meta.env.DEV,
-    scriptLoaded: false
-  };
+type FormType = 'feedback' | 'nps' | 'features' | 'bugs';
 
-  private static forms = {
-    feedback: import.meta.env.VITE_TALLY_FORM_FEEDBACK || '',
-    nps: import.meta.env.VITE_TALLY_FORM_NPS || '',
-    features: import.meta.env.VITE_TALLY_FORM_FEATURES || '',
-    bugs: import.meta.env.VITE_TALLY_FORM_BUGS || ''
-  };
+class TallyService {
+  private isInitialized = false;
+  private config: TallyConfig;
 
-  static initialize(): void {
-    if (!this.config.enabled) {
-      console.log('📝 Tally.so: Disabled in current environment');
-      return;
-    }
-
-    this.loadTallyScript();
-    console.log('📝 Tally.so: Initialized successfully');
-  }
-
-  private static loadTallyScript(): void {
-    const script = document.createElement('script');
-    script.src = 'https://tally.so/widgets/embed.js';
-    script.async = true;
-    script.onload = () => {
-      this.config.scriptLoaded = true;
-      console.log('📝 Tally.so: Script loaded successfully');
+  constructor() {
+    this.config = {
+      enabled: config.tally.enabled,
+      formIds: config.tally.formIds
     };
-    document.head.appendChild(script);
   }
 
-  static showFeedbackForm(formType: keyof typeof TallyService.forms, trigger?: string): void {
-    const formId = this.forms[formType];
-    
-    if (!formId) {
-      console.warn(`📝 Tally.so: Form ID not configured for ${formType}`);
-      return;
+  async initialize(): Promise<boolean> {
+    if (!this.config.enabled) {
+      logger.info('Tally.so disabled in current environment');
+      return false;
     }
 
-    if (!window.Tally) {
-      console.warn('📝 Tally.so: Script not loaded yet');
-      return;
+    if (!this.hasAnyFormConfigured()) {
+      logger.warn('No Tally.so form IDs configured');
+      return false;
     }
 
     try {
-      window.Tally.openPopup(formId, {
-        layout: 'modal',
-        width: 600,
-        autoClose: 0
+      await this.loadTallyScript();
+      this.isInitialized = true;
+      
+      logger.info('Tally.so initialized successfully', {
+        environment: config.environment,
+        formsConfigured: Object.keys(this.config.formIds).length
       });
-
-      this.trackFormEvent(formType, 'shown', trigger);
+      
+      return true;
     } catch (error) {
-      console.error('📝 Tally.so: Error showing form:', error);
+      logger.error('Failed to initialize Tally.so', { error });
+      return false;
     }
   }
 
-  static showGeneralFeedback(): void {
-    this.showFeedbackForm('feedback', 'manual');
+  private hasAnyFormConfigured(): boolean {
+    return Object.values(this.config.formIds).some(id => !!id);
   }
 
-  static showNPSSurvey(): void {
-    this.showFeedbackForm('nps', 'manual');
+  private loadTallyScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.Tally) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://tally.so/widgets/embed.js';
+      
+      script.onload = () => {
+        logger.debug('Tally script loaded successfully');
+        resolve();
+      };
+      
+      script.onerror = () => {
+        const error = new Error('Failed to load Tally script');
+        logger.error('Tally script load failed', { error });
+        reject(error);
+      };
+
+      document.head.appendChild(script);
+    });
   }
 
-  static showBugReport(): void {
-    this.showFeedbackForm('bugs', 'manual');
-  }
-
-  private static trackFormEvent(formType: string, event: string, trigger?: string): void {
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', 'tally_form_interaction', {
-        form_type: formType,
-        event_type: event,
-        trigger: trigger || 'unknown'
-      });
+  // Form display methods
+  openForm(formType: FormType, options?: { width?: number; height?: number }): boolean {
+    if (!this.isInitialized || !this.config.enabled) {
+      logger.warn('Tally form not opened - service not initialized', { formType });
+      return false;
     }
 
-    if (typeof window.clarity === 'function') {
-      window.clarity('event', 'tally_form_interaction', {
-        form_type: formType,
-        event_type: event,
-        trigger: trigger || 'unknown'
-      });
+    const formId = this.config.formIds[formType];
+    if (!formId) {
+      logger.warn('Form ID not configured', { formType });
+      return false;
+    }
+
+    try {
+      if (window.Tally) {
+        window.Tally.openPopup(formId, {
+          width: options?.width || 600,
+          height: options?.height || 500,
+          ...options
+        });
+        
+        logger.info('Tally form opened', { formType, formId });
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      logger.error('Failed to open Tally form', { formType, formId, error });
+      return false;
     }
   }
 
-  static getStatus() {
+  // Convenience methods for specific forms
+  openFeedbackForm(): boolean {
+    return this.openForm('feedback');
+  }
+
+  openNPSForm(): boolean {
+    return this.openForm('nps');
+  }
+
+  openFeaturesForm(): boolean {
+    return this.openForm('features');
+  }
+
+  openBugReportForm(): boolean {
+    return this.openForm('bugs');
+  }
+
+  // Service status methods
+  getStatus(): { 
+    initialized: boolean; 
+    enabled: boolean; 
+    formsConfigured: Record<FormType, boolean> 
+  } {
     return {
+      initialized: this.isInitialized,
       enabled: this.config.enabled,
-      scriptLoaded: this.config.scriptLoaded,
-      formsConfigured: this.forms
+      formsConfigured: {
+        feedback: !!this.config.formIds.feedback,
+        nps: !!this.config.formIds.nps,
+        features: !!this.config.formIds.features,
+        bugs: !!this.config.formIds.bugs,
+      }
+    };
+  }
+
+  isEnabled(): boolean {
+    return this.config.enabled && this.isInitialized;
+  }
+
+  getFormUrl(formType: FormType): string | null {
+    const formId = this.config.formIds[formType];
+    return formId ? `https://tally.so/r/${formId}` : null;
+  }
+}
+
+// Global Tally interface
+declare global {
+  interface Window {
+    Tally?: {
+      openPopup: (formId: string, options?: any) => void;
+      closePopup: () => void;
     };
   }
 }
+
+// Export singleton instance
+export const tallyService = new TallyService();

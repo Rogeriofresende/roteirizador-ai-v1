@@ -9,15 +9,15 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/.*",
-      "dest": "/index.html"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "source": "/.*",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "X-Content-Type-Options",
@@ -69,30 +69,17 @@
       ]
     }
   ],
-  "env": {
-    "VITE_ENVIRONMENT": "@environment",
-    "VITE_FIREBASE_API_KEY": "@firebase_api_key",
-    "VITE_FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
-    "VITE_FIREBASE_PROJECT_ID": "@firebase_project_id",
-    "VITE_FIREBASE_STORAGE_BUCKET": "@firebase_storage_bucket",
-    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@firebase_messaging_sender_id",
-    "VITE_FIREBASE_APP_ID": "@firebase_app_id",
-    "VITE_GEMINI_API_KEY": "@gemini_api_key",
-    "VITE_ANALYTICS_MEASUREMENT_ID": "@analytics_measurement_id",
-    "VITE_CLARITY_PROJECT_ID": "@clarity_project_id",
-    "VITE_TALLY_FORM_FEEDBACK": "@tally_form_feedback",
-    "VITE_TALLY_FORM_NPS": "@tally_form_nps",
-    "VITE_TALLY_FORM_FEATURES": "@tally_form_features",
-    "VITE_TALLY_FORM_BUGS": "@tally_form_bugs"
-  },
+
   "build": {
     "env": {
       "NODE_OPTIONS": "--max_old_space_size=4096"
     }
   },
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
+  "env": {
+    "VITE_CLARITY_PROJECT_ID": "s05cslzjy5",
+    "VITE_TALLY_FORM_FEEDBACK": "mBqMK1",
+    "VITE_TALLY_FORM_NPS": "wkXMGr",
+    "VITE_TALLY_FORM_FEATURES": "3jX1lJ",
+    "VITE_TALLY_FORM_BUGS": "3yrVYX"
   }
 } 

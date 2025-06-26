@@ -1,545 +1,708 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
+  Tags, 
   Plus, 
-  Edit, 
+  Search, 
+  Edit3, 
   Trash2, 
-  Tag as TagIcon, 
-  Save, 
+  Check, 
   X, 
-  Search,
-  Hash,
+  MoreVertical,
   Palette,
-  BarChart3,
+  TrendingUp,
+  Archive,
+  Copy,
+  Star,
+  Hash,
   Filter,
-  SortAsc,
-  SortDesc
+  Download,
+  Upload
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
-import { Card } from '../ui/Card';
-import { Dialog } from '../ui/Dialog';
-import { Select } from '../ui/Select';
-import { Separator } from '../ui/Separator';
-import { TagService } from '../../services/tagService';
-import { useAuth } from '../../contexts/AuthContext';
-import type { Tag } from '../../types';
-import { cn } from '../../lib/utils';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/Dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/DropdownMenu';
+import { Textarea } from '../ui/Textarea';
+import { Switch } from '../ui/Switch';
+import { Checkbox } from '../ui/Checkbox';
+
+import type { Tag, CreateTagData, TagUsageStats } from '../../types/enhanced';
+import { tagService } from '../../services/tagService';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('TagManager');
 
 interface TagManagerProps {
-  onTagSelect?: (tags: string[]) => void;
-  selectedTags?: string[];
-  showStats?: boolean;
-  allowCreate?: boolean;
-  allowEdit?: boolean;
-  allowDelete?: boolean;
-  className?: string;
+  userId: string;
+  onTagsChange?: (tags: Tag[]) => void;
+  showAnalytics?: boolean;
+  allowBulkOperations?: boolean;
 }
 
-const TagManager: React.FC<TagManagerProps> = ({
-  onTagSelect,
-  selectedTags = [],
-  showStats = true,
-  allowCreate = true,
-  allowEdit = true,
-  allowDelete = true,
-  className = ''
+export const TagManager: React.FC<TagManagerProps> = ({
+  userId,
+  onTagsChange,
+  showAnalytics = true,
+  allowBulkOperations = true
 }) => {
-  const { currentUser } = useAuth();
+  // Estados principais
   const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'usage' | 'date'>('usage');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingTag, setEditingTag] = useState<Tag | null>(null);
-  const [newTag, setNewTag] = useState({
-    name: '',
-    color: '#3B82F6',
-    category: 'custom' as Tag['category']
-  });
+  const [usageStats, setUsageStats] = useState<TagUsageStats[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Estados de interface
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'name' | 'usage' | 'date'>('usage');
+  const [filterBy, setFilterBy] = useState<'all' | 'system' | 'user'>('all');
+
+  // Estados de modais
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+
+  // Estados de formulário
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#3B82F6');
+  const [newTagDescription, setNewTagDescription] = useState('');
+
+  // Cores predefinidas para tags
   const predefinedColors = [
-    '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
-    '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
-    '#F97316', '#6366F1', '#14B8A6', '#F59E0B'
+    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
+    '#8B5CF6', '#06B6D4', '#F97316', '#84CC16',
+    '#EC4899', '#6B7280', '#14B8A6', '#A855F7'
   ];
 
-  const categoryLabels: Record<Tag['category'], string> = {
-    'platform': 'Plataforma',
-    'tone': 'Tom',
-    'audience': 'Público',
-    'status': 'Status',
-    'custom': 'Personalizada'
-  };
-
+  // Carregar dados iniciais
   useEffect(() => {
     loadTags();
-  }, [currentUser]);
+    if (showAnalytics) {
+      loadUsageStats();
+    }
+  }, [userId, showAnalytics]);
+
+  // Filtrar e ordenar tags
+  const filteredAndSortedTags = useMemo(() => {
+    let filtered = tags.filter(tag => {
+      // Filtro de busca
+      const matchesSearch = tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (tag.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+      
+      // Filtro por tipo
+      const matchesFilter = filterBy === 'all' || 
+                           (filterBy === 'system' && tag.isSystem) ||
+                           (filterBy === 'user' && !tag.isSystem);
+
+      return matchesSearch && matchesFilter;
+    });
+
+    // Ordenação
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'usage':
+          return b.usageCount - a.usageCount;
+        case 'date':
+          return b.updatedAt.toDate().getTime() - a.updatedAt.toDate().getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [tags, searchQuery, filterBy, sortBy]);
 
   const loadTags = async () => {
-    if (!currentUser) return;
-
     try {
-      setLoading(true);
-      const userTags = await TagService.getUserTags(currentUser.uid);
+      setIsLoading(true);
+      setError(null);
+      const userTags = await tagService.getUserTags(userId);
       setTags(userTags);
-    } catch (error) {
-      console.error('Erro ao carregar tags:', error);
+      onTagsChange?.(userTags);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tags';
+      setError(errorMessage);
+      logger.error('Erro ao carregar tags', err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const loadUsageStats = async () => {
+    try {
+      const stats = await tagService.getTagUsageStats(userId);
+      setUsageStats(stats);
+    } catch (err) {
+      logger.error('Erro ao carregar estatísticas de tags', err);
     }
   };
 
   const handleCreateTag = async () => {
-    if (!currentUser || !newTag.name.trim()) return;
+    if (!newTagName.trim()) return;
 
     try {
-      const validation = TagService.validateTagData(newTag);
-      if (!validation.isValid) {
-        alert(validation.errors.join('\n'));
-        return;
-      }
+      setIsLoading(true);
+      
+      const tagData: CreateTagData = {
+        name: newTagName.trim(),
+        color: newTagColor,
+        description: newTagDescription.trim() || undefined,
+        isSystem: false
+      };
 
-      await TagService.createTag(currentUser.uid, newTag);
+      await tagService.createTag(userId, tagData);
       await loadTags();
       
-      setNewTag({
-        name: '',
-        color: '#3B82F6',
-        category: 'custom'
-      });
+      // Reset form
+      setNewTagName('');
+      setNewTagColor('#3B82F6');
+      setNewTagDescription('');
       setShowCreateDialog(false);
-    } catch (error: any) {
-      alert(error.message || 'Erro ao criar tag');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar tag';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEditTag = async () => {
-    if (!editingTag) return;
-
+  const handleUpdateTag = async (tagId: string, updates: Partial<Tag>) => {
     try {
-      const validation = TagService.validateTagData(editingTag);
-      if (!validation.isValid) {
-        alert(validation.errors.join('\n'));
-        return;
-      }
-
-      await TagService.updateTag(editingTag.id, editingTag);
+      setIsLoading(true);
+      await tagService.updateTag(tagId, updates);
       await loadTags();
       setEditingTag(null);
-    } catch (error: any) {
-      alert(error.message || 'Erro ao atualizar tag');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar tag';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteTag = async (tag: Tag) => {
-    if (!window.confirm(`Tem certeza que deseja excluir a tag "${tag.name}"?`)) {
-      return;
-    }
+  const handleDeleteTag = async (tagId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta tag?')) return;
 
     try {
-      await TagService.deleteTag(tag.id);
+      setIsLoading(true);
+      await tagService.deleteTag(tagId);
       await loadTags();
-    } catch (error: any) {
-      alert(error.message || 'Erro ao excluir tag');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir tag';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleTagToggle = (tagName: string) => {
-    if (!onTagSelect) return;
-
-    const newSelection = selectedTags.includes(tagName)
-      ? selectedTags.filter(t => t !== tagName)
-      : [...selectedTags, tagName];
+  const handleBulkDelete = async () => {
+    if (selectedTags.size === 0) return;
     
-    onTagSelect(newSelection);
-  };
+    const count = selectedTags.size;
+    if (!confirm(`Tem certeza que deseja excluir ${count} tag${count > 1 ? 's' : ''}?`)) return;
 
-  const filteredAndSortedTags = tags
-    .filter(tag => {
-      if (searchTerm && !tag.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
-      if (selectedCategory !== 'all' && tag.category !== selectedCategory) {
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      let comparison = 0;
+    try {
+      setIsLoading(true);
       
-      switch (sortBy) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'usage':
-          comparison = a.usageCount - b.usageCount;
-          break;
-        case 'date':
-          comparison = a.createdAt.seconds - b.createdAt.seconds;
-          break;
+      for (const tagId of selectedTags) {
+        await tagService.deleteTag(tagId);
       }
       
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-
-  const getTagStats = () => {
-    const totalTags = tags.length;
-    const byCategory = tags.reduce((acc, tag) => {
-      acc[tag.category] = (acc[tag.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    const mostUsed = tags
-      .filter(tag => tag.usageCount > 0)
-      .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, 3);
-
-    return { totalTags, byCategory, mostUsed };
+      await loadTags();
+      setSelectedTags(new Set());
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir tags';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const stats = getTagStats();
+  const handleTagSelect = (tagId: string) => {
+    const newSelected = new Set(selectedTags);
+    if (newSelected.has(tagId)) {
+      newSelected.delete(tagId);
+    } else {
+      newSelected.add(tagId);
+    }
+    setSelectedTags(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTags.size === filteredAndSortedTags.length) {
+      setSelectedTags(new Set());
+    } else {
+      setSelectedTags(new Set(filteredAndSortedTags.map(tag => tag.id)));
+    }
+  };
+
+  const handleCreateDefaultTags = async () => {
+    try {
+      setIsLoading(true);
+      await tagService.createDefaultTags(userId);
+      await loadTags();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar tags padrão';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'Nunca usado';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('pt-BR');
+  };
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <TagIcon className="h-5 w-5" />
-            Gerenciar Tags
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Organize seus projetos com tags personalizadas
-          </p>
-        </div>
-        
-        {allowCreate && (
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Tag
-          </Button>
-        )}
-      </div>
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Tags size={24} className="text-blue-600" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Gerenciar Tags</h2>
+              <p className="text-sm text-gray-600">
+                {filteredAndSortedTags.length} de {tags.length} tags
+              </p>
+            </div>
+          </div>
 
-      {/* Estatísticas (se habilitadas) */}
-      {showStats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Hash className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Total de Tags</span>
-            </div>
-            <div className="text-2xl font-bold">{stats.totalTags}</div>
-          </Card>
+          <div className="flex items-center gap-2">
+            {showAnalytics && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAnalyticsDialog(true)}
+              >
+                <TrendingUp size={16} className="mr-1" />
+                Analytics
+              </Button>
+            )}
 
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Mais Utilizada</span>
-            </div>
-            <div className="text-lg font-semibold">
-              {stats.mostUsed[0] ? (
-                <Badge 
-                  style={{ backgroundColor: stats.mostUsed[0].color + '20', color: stats.mostUsed[0].color }}
-                  className="border-0"
-                >
-                  {stats.mostUsed[0].name} ({stats.mostUsed[0].usageCount})
-                </Badge>
-              ) : (
-                <span className="text-muted-foreground">Nenhuma</span>
-              )}
-            </div>
-          </Card>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus size={16} className="mr-1" />
+                  Nova Tag
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Nova Tag</DialogTitle>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Nome da Tag</label>
+                    <Input
+                      value={newTagName}
+                      onChange={(e) => setNewTagName(e.target.value)}
+                      placeholder="Ex: Marketing Digital"
+                      maxLength={30}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Cor</label>
+                    <div className="flex gap-2 mb-2">
+                      {predefinedColors.map((color) => (
+                        <button
+                          key={color}
+                          className={`w-8 h-8 rounded-full border-2 ${
+                            newTagColor === color ? 'border-gray-900' : 'border-gray-300'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => setNewTagColor(color)}
+                        />
+                      ))}
+                    </div>
+                    <Input
+                      type="color"
+                      value={newTagColor}
+                      onChange={(e) => setNewTagColor(e.target.value)}
+                      className="w-20 h-10"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Descrição (opcional)</label>
+                    <Textarea
+                      value={newTagDescription}
+                      onChange={(e) => setNewTagDescription(e.target.value)}
+                      placeholder="Descreva quando usar esta tag..."
+                      rows={3}
+                      maxLength={200}
+                    />
+                  </div>
 
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Por Categoria</span>
-            </div>
-            <div className="space-y-1">
-              {Object.entries(stats.byCategory).slice(0, 2).map(([category, count]) => (
-                <div key={category} className="text-xs flex justify-between">
-                  <span>{categoryLabels[category as Tag['category']]}</span>
-                  <span className="font-medium">{count}</span>
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowCreateDialog(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      onClick={handleCreateTag}
+                      disabled={!newTagName.trim() || isLoading}
+                    >
+                      <Check size={16} className="mr-1" />
+                      Criar Tag
+                    </Button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Card>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      )}
 
-      {/* Filtros e Busca */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1 relative">
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
               placeholder="Buscar tags..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
           </div>
 
-          <Select
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-          >
-            <option value="all">Todas as categorias</option>
-            {Object.entries(categoryLabels).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </Select>
+          <div className="flex gap-2">
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="all">Todas</option>
+              <option value="user">Minhas Tags</option>
+              <option value="system">Tags do Sistema</option>
+            </select>
 
-          <Select
-            value={sortBy}
-            onValueChange={(value) => setSortBy(value as 'name' | 'usage' | 'date')}
-          >
-            <option value="usage">Mais usadas</option>
-            <option value="name">Nome</option>
-            <option value="date">Data de criação</option>
-          </Select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="usage">Mais Usadas</option>
+              <option value="name">Nome</option>
+              <option value="date">Recentes</option>
+            </select>
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          >
-            {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            >
+              {viewMode === 'grid' ? 'Lista' : 'Grade'}
+            </Button>
+          </div>
         </div>
-      </Card>
 
-      {/* Lista de Tags */}
-      <Card className="p-4">
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2" />
-            <p className="text-muted-foreground">Carregando tags...</p>
-          </div>
-        ) : filteredAndSortedTags.length === 0 ? (
-          <div className="text-center py-8">
-            <TagIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground">
-              {searchTerm || selectedCategory !== 'all' 
-                ? 'Nenhuma tag encontrada com os filtros aplicados'
-                : 'Nenhuma tag criada ainda'
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filteredAndSortedTags.map(tag => (
-              <div 
-                key={tag.id}
-                className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  {onTagSelect ? (
-                    <input
-                      type="checkbox"
-                      checked={selectedTags.includes(tag.name)}
-                      onChange={() => handleTagToggle(tag.name)}
-                      className="rounded"
-                    />
-                  ) : (
-                    <div 
-                      className="w-4 h-4 rounded-full border-2" 
-                      style={{ backgroundColor: tag.color }}
-                    />
-                  )}
-                  
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      style={{ 
-                        backgroundColor: tag.color + '20', 
-                        color: tag.color,
-                        borderColor: tag.color 
-                      }}
-                      className="font-medium"
-                    >
-                      {tag.name}
-                    </Badge>
-                    
-                    <Badge variant="outline" className="text-xs">
-                      {categoryLabels[tag.category]}
-                    </Badge>
-                    
-                    {tag.usageCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {tag.usageCount} usos
-                      </Badge>
-                    )}
-                    
-                    {tag.isSystemTag && (
-                      <Badge variant="outline" className="text-xs">
-                        Sistema
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {allowEdit && !tag.isSystemTag && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditingTag({ ...tag })}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  
-                  {allowDelete && !tag.isSystemTag && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteTag(tag)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+        {/* Bulk Actions */}
+        {allowBulkOperations && selectedTags.size > 0 && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                {selectedTags.size} tag{selectedTags.size > 1 ? 's' : ''} selecionada{selectedTags.size > 1 ? 's' : ''}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedTags(new Set())}
+                >
+                  Limpar Seleção
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 size={14} className="mr-1" />
+                  Excluir
+                </Button>
               </div>
-            ))}
+            </div>
           </div>
         )}
-      </Card>
+      </div>
 
-      {/* Dialog de Criação */}
-      {showCreateDialog && (
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4 p-6">
-              <h3 className="text-lg font-semibold mb-4">Criar Nova Tag</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Nome da Tag</label>
-                  <Input
-                    placeholder="Ex: Marketing, Tutorial, Viral..."
-                    value={newTag.name}
-                    onChange={(e) => setNewTag({ ...newTag, name: e.target.value })}
-                  />
-                </div>
+      {/* Tags Grid/List */}
+      <div className="p-6">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Categoria</label>
-                  <Select
-                    value={newTag.category}
-                    onValueChange={(value) => setNewTag({ ...newTag, category: value as Tag['category'] })}
-                  >
-                    {Object.entries(categoryLabels).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </Select>
-                </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-blue-600"></div>
+            <span className="ml-2 text-gray-600">Carregando tags...</span>
+          </div>
+        ) : filteredAndSortedTags.length === 0 ? (
+          <div className="text-center py-12">
+            <Tags size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {searchQuery ? 'Nenhuma tag encontrada' : 'Nenhuma tag criada'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {searchQuery 
+                ? 'Tente ajustar sua busca ou filtros.'
+                : 'Crie sua primeira tag ou importe tags padrão.'
+              }
+            </p>
+            {!searchQuery && (
+              <div className="flex justify-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCreateDefaultTags}
+                >
+                  <Star size={16} className="mr-1" />
+                  Criar Tags Padrão
+                </Button>
+                <Button onClick={() => setShowCreateDialog(true)}>
+                  <Plus size={16} className="mr-1" />
+                  Criar Tag
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Select All Checkbox */}
+            {allowBulkOperations && (
+              <div className="mb-4 flex items-center gap-2">
+                <Checkbox
+                  checked={selectedTags.size === filteredAndSortedTags.length}
+                  indeterminate={selectedTags.size > 0 && selectedTags.size < filteredAndSortedTags.length}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm text-gray-600">
+                  Selecionar todas ({filteredAndSortedTags.length})
+                </span>
+              </div>
+            )}
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {predefinedColors.map(color => (
-                      <button
-                        key={color}
-                        type="button"
-                        className={cn(
-                          "w-8 h-8 rounded-full border-2 transition-all",
-                          newTag.color === color ? "border-gray-900 scale-110" : "border-gray-300"
+            {/* Tags Grid/List */}
+            <div className={viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+              : 'space-y-2'
+            }>
+              {filteredAndSortedTags.map((tag) => (
+                <div
+                  key={tag.id}
+                  className={`relative border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${
+                    selectedTags.has(tag.id) ? 'ring-2 ring-blue-500 bg-blue-50' : 'bg-white'
+                  }`}
+                >
+                  {/* Selection Checkbox */}
+                  {allowBulkOperations && (
+                    <Checkbox
+                      checked={selectedTags.has(tag.id)}
+                      onCheckedChange={() => handleTagSelect(tag.id)}
+                      className="absolute top-3 left-3"
+                    />
+                  )}
+
+                  {/* Tag Content */}
+                  <div className={allowBulkOperations ? 'ml-8' : ''}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-4 h-4 rounded-full border"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        <span className="font-medium text-gray-900">{tag.name}</span>
+                        {tag.isSystem && (
+                          <Badge variant="outline" className="text-xs">
+                            Sistema
+                          </Badge>
                         )}
-                        style={{ backgroundColor: color }}
-                        onClick={() => setNewTag({ ...newTag, color })}
-                      />
-                    ))}
+                      </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical size={14} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem 
+                            onClick={() => setEditingTag(tag)}
+                          >
+                            <Edit3 size={14} className="mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Copy size={14} className="mr-2" />
+                            Duplicar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteTag(tag.id)}
+                            className="text-red-600"
+                            disabled={tag.isSystem}
+                          >
+                            <Trash2 size={14} className="mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {tag.description && (
+                      <p className="text-sm text-gray-600 mb-2">
+                        {tag.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{tag.usageCount} uso{tag.usageCount !== 1 ? 's' : ''}</span>
+                      <span>Última: {formatDate(tag.lastUsedAt)}</span>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowCreateDialog(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleCreateTag} disabled={!newTag.name.trim()}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Criar Tag
-                  </Button>
+      {/* Analytics Modal */}
+      {showAnalytics && (
+        <Dialog open={showAnalyticsDialog} onOpenChange={setShowAnalyticsDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Analytics de Tags</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Usage Stats */}
+              <div>
+                <h3 className="font-medium mb-3">Tags Mais Usadas</h3>
+                <div className="space-y-2">
+                  {usageStats.slice(0, 10).map((stat) => (
+                    <div key={stat.tagId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Hash size={14} className="text-gray-400" />
+                        <span className="font-medium">{stat.tagName}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${stat.percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm text-gray-600 w-12 text-right">
+                          {stat.usageCount}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </Card>
-          </div>
+            </div>
+          </DialogContent>
         </Dialog>
       )}
 
-      {/* Dialog de Edição */}
+      {/* Edit Tag Modal */}
       {editingTag && (
-        <Dialog open={true} onOpenChange={() => setEditingTag(null)}>
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4 p-6">
-              <h3 className="text-lg font-semibold mb-4">Editar Tag</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Nome da Tag</label>
-                  <Input
-                    value={editingTag.name}
-                    onChange={(e) => setEditingTag({ ...editingTag, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Categoria</label>
-                  <Select
-                    value={editingTag.category}
-                    onValueChange={(value) => setEditingTag({ ...editingTag, category: value as Tag['category'] })}
-                  >
-                    {Object.entries(categoryLabels).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {predefinedColors.map(color => (
-                      <button
-                        key={color}
-                        type="button"
-                        className={cn(
-                          "w-8 h-8 rounded-full border-2 transition-all",
-                          editingTag.color === color ? "border-gray-900 scale-110" : "border-gray-300"
-                        )}
-                        style={{ backgroundColor: color }}
-                        onClick={() => setEditingTag({ ...editingTag, color })}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setEditingTag(null)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleEditTag} disabled={!editingTag.name.trim()}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Salvar
-                  </Button>
-                </div>
+        <Dialog open={!!editingTag} onOpenChange={() => setEditingTag(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Tag</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nome da Tag</label>
+                <Input
+                  value={editingTag.name}
+                  onChange={(e) => setEditingTag({...editingTag, name: e.target.value})}
+                  maxLength={30}
+                />
               </div>
-            </Card>
-          </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Cor</label>
+                <div className="flex gap-2 mb-2">
+                  {predefinedColors.map((color) => (
+                    <button
+                      key={color}
+                      className={`w-8 h-8 rounded-full border-2 ${
+                        editingTag.color === color ? 'border-gray-900' : 'border-gray-300'
+                      }`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setEditingTag({...editingTag, color})}
+                    />
+                  ))}
+                </div>
+                <Input
+                  type="color"
+                  value={editingTag.color}
+                  onChange={(e) => setEditingTag({...editingTag, color: e.target.value})}
+                  className="w-20 h-10"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Descrição</label>
+                <Textarea
+                  value={editingTag.description || ''}
+                  onChange={(e) => setEditingTag({...editingTag, description: e.target.value})}
+                  rows={3}
+                  maxLength={200}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditingTag(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={() => handleUpdateTag(editingTag.id, {
+                    name: editingTag.name,
+                    color: editingTag.color,
+                    description: editingTag.description
+                  })}
+                  disabled={isLoading}
+                >
+                  <Check size={16} className="mr-1" />
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
         </Dialog>
       )}
     </div>
   );
-};
-
+}; 
 export default TagManager; 

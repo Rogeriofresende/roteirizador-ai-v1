@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { Label } from "@/components/ui/Label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { CircleAlert, Mail, Lock, LogIn } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/Separator";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
+import Navbar from '../components/Navbar';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -46,7 +47,9 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-background to-background/80 relative overflow-hidden">
+    <>
+      <Navbar />
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-background to-background/80 relative overflow-hidden pt-20">
       {/* Background decorative elements */}
       <div className="absolute inset-0 w-full h-full bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
       <div className="absolute h-[200px] w-[200px] rounded-full bg-primary/20 blur-3xl -top-20 -left-20" />
@@ -155,7 +158,8 @@ const LoginPage: React.FC = () => {
           </p>
         </CardFooter>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };
 

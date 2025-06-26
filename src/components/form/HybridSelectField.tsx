@@ -1,4 +1,5 @@
 import React from 'react';
+import { SelectOption, SelectFieldOptions } from '../../types';
 import { OTHER_KEY } from '../../constants';
 
 interface HybridSelectFieldProps {
@@ -8,9 +9,16 @@ interface HybridSelectFieldProps {
   onSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   textValue: string;
   onTextChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  options: string[];
+  options: SelectFieldOptions;
   disabled?: boolean;
 }
+
+// Função helper para normalizar opções
+const normalizeOption = (option: string | SelectOption): SelectOption => {
+  return typeof option === 'string' 
+    ? { value: option, label: option }
+    : option;
+};
 
 const HybridSelectField: React.FC<HybridSelectFieldProps> = ({
   id,
@@ -37,11 +45,14 @@ const HybridSelectField: React.FC<HybridSelectFieldProps> = ({
         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
       >
         <option value="" disabled>Selecione uma opção...</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
+        {options.map((option) => {
+          const normalizedOption = normalizeOption(option);
+          return (
+            <option key={normalizedOption.value} value={normalizedOption.value}>
+              {normalizedOption.label}
+            </option>
+          );
+        })}
       </select>
       {showTextInput && (
         <input

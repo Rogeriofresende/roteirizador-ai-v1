@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FormData } from '../types';
+import { FormData, SelectOption } from '../types';
 import {
   INITIAL_FORM_DATA,
   FORMAT_OPTIONS,
@@ -22,7 +22,7 @@ interface ScriptFormProps {
 
 const ScriptForm: React.FC<ScriptFormProps> = ({ onSubmit, isLoading, initialData }) => {
   const [formData, setFormData] = useState<FormData>({ ...INITIAL_FORM_DATA, ...initialData });
-  const [formatOptions, setFormatOptions] = useState<string[]>([]);
+  const [formatOptions, setFormatOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
     if (formData.platform && FORMAT_OPTIONS[formData.platform]) {
