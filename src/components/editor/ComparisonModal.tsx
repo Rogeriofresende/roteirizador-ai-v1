@@ -63,7 +63,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
       setSelectedVersion1(sortedVersions[0]?.id || '');
       setSelectedVersion2(sortedVersions[1]?.id || '');
     }
-  }, [versions, sortedVersions]);
+  }, [versions, sortedVersions, selectedVersion1, selectedVersion2]);
 
   // **AUTO-COMPARAR QUANDO VERSÕES MUDAM**
   useEffect(() => {

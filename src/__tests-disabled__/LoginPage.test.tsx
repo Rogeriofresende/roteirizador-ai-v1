@@ -3,10 +3,10 @@ import { describe, it, expect, jest, beforeEach, beforeAll } from '@testing-libr
 import LoginPage from './LoginPage';
 import { MemoryRouter } from 'react-router-dom';
 
-// jest.MockedFunction the firebase/auth module
+// Mock the firebase/auth module
 jest.mock('firebase/auth');
 
-// jest.MockedFunction the navigate function from react-router-dom
+// Mock the navigate function from react-router-dom
 const mockedNavigate = jest.fn();
 jest.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal();
@@ -16,23 +16,23 @@ jest.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-// jest.MockedFunction firebaseConfig
+// Mock firebaseConfig
 jest.mock('../firebaseConfig', () => ({
-  auth: {}, // jest.MockedFunctioned auth object
+  auth: {}, // Mocked auth object
 }));
 
 
 describe('LoginPage component', () => {
-  let signInWithEmailAndPassword: any;
+  let signInWithEmailAndPassword: jest.MockedFunction<typeof import('firebase/auth').signInWithEmailAndPassword>;
 
   beforeAll(async () => {
     const auth = await import('firebase/auth');
-    signInWithEmailAndPassword = auth.signInWithEmailAndPassword;
+    signInWithEmailAndPassword = auth.signInWithEmailAndPassword as jest.MockedFunction<typeof auth.signInWithEmailAndPassword>;
   });
 
   beforeEach(() => {
     // Reset mocks before each test
-    jest.clearAlljest.MockedFunctions();
+    jest.clearAllMocks();
   });
 
   it('renders all form elements correctly', () => {
@@ -67,8 +67,10 @@ describe('LoginPage component', () => {
   });
 
   it('handles successful login and navigates to home', async () => {
-    // jest.MockedFunction the signInWithEmailAndPassword to resolve successfully
-    signInWithEmailAndPassword.mockResolvedValueOnce({ user: { uid: '123' } });
+    // Mock the signInWithEmailAndPassword to resolve successfully
+    signInWithEmailAndPassword.mockResolvedValueOnce({ 
+      user: { uid: '123' } 
+    } as { user: { uid: string } });
 
     render(
       <MemoryRouter>
@@ -88,7 +90,7 @@ describe('LoginPage component', () => {
   });
 
   it('shows an error message on failed login', async () => {
-    // jest.MockedFunction the signInWithEmailAndPassword to reject with an error
+    // Mock the signInWithEmailAndPassword to reject with an error
     signInWithEmailAndPassword.mockRejectedValueOnce(new Error('Login failed'));
 
     render(

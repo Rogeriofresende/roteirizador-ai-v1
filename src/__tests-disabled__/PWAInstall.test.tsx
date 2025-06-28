@@ -11,7 +11,7 @@ jest.mock('../hooks/usePWA', () => ({
 const mockUsePWA = usePWA as jest.MockedFunction;
 
 describe('PWAInstall', () => {
-  const defaultjest.MockedFunctionReturn = {
+  const defaultMockReturn = {
     isInstallable: false,
     isInstalled: false,
     isOffline: false,
@@ -23,13 +23,13 @@ describe('PWAInstall', () => {
   };
 
   beforeEach(() => {
-    jest.clearAlljest.MockedFunctions();
-    mockUsePWA.mockReturnValue(defaultjest.MockedFunctionReturn);
+    jest.clearAllMocks();
+    mockUsePWA.mockReturnValue(defaultMockReturn);
   });
 
   it('não renderiza nada quando instalado e tudo OK', () => {
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isInstalled: true,
       hasUpdate: false,
       isOffline: false,
@@ -41,7 +41,7 @@ describe('PWAInstall', () => {
 
   it('mostra prompt de instalação quando instalável', () => {
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isInstallable: true,
       isInstalled: false,
     });
@@ -56,7 +56,7 @@ describe('PWAInstall', () => {
   it('executa instalação ao clicar no botão instalar', async () => {
     const mockInstall = jest.fn().mockResolvedValue(true);
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isInstallable: true,
       isInstalled: false,
       install: mockInstall,
@@ -80,7 +80,7 @@ describe('PWAInstall', () => {
     const mockInstall = jest.fn().mockRejectedValue(new Error('Install failed'));
     
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isInstallable: true,
       install: mockInstall,
     });
@@ -99,7 +99,7 @@ describe('PWAInstall', () => {
 
   it('mostra indicador offline quando offline', () => {
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isOffline: true,
     });
 
@@ -111,7 +111,7 @@ describe('PWAInstall', () => {
 
   it('expande detalhes offline ao clicar', () => {
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isOffline: true,
     });
 
@@ -126,7 +126,7 @@ describe('PWAInstall', () => {
 
   it('mostra prompt de atualização quando update disponível', () => {
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       hasUpdate: true,
     });
 
@@ -140,7 +140,7 @@ describe('PWAInstall', () => {
   it('executa atualização ao clicar no botão atualizar', async () => {
     const mockUpdate = jest.fn().mockResolvedValue(undefined);
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       hasUpdate: true,
       update: mockUpdate,
     });
@@ -161,7 +161,7 @@ describe('PWAInstall', () => {
   it('dispensa atualização ao clicar no X', () => {
     const mockDismissUpdate = jest.fn();
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       hasUpdate: true,
       dismissUpdate: mockDismissUpdate,
     });
@@ -179,7 +179,7 @@ describe('PWAInstall', () => {
     const mockUpdate = jest.fn().mockRejectedValue(new Error('Update failed'));
     
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       hasUpdate: true,
       update: mockUpdate,
     });
@@ -198,7 +198,7 @@ describe('PWAInstall', () => {
 
   it('mostra múltiplas seções quando necessário', () => {
     mockUsePWA.mockReturnValue({
-      ...defaultjest.MockedFunctionReturn,
+      ...defaultMockReturn,
       isOffline: true,
       hasUpdate: true,
       isInstallable: true,
@@ -214,7 +214,7 @@ describe('PWAInstall', () => {
 
 describe('PWAStatus', () => {
   beforeEach(() => {
-    jest.clearAlljest.MockedFunctions();
+    jest.clearAllMocks();
     mockUsePWA.mockReturnValue({
       isInstalled: false,
       isOffline: false,

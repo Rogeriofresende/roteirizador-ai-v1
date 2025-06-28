@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '../firebaseConfig';
+import { auth } from '../firebaseConfig';
 import { Button } from "./ui/Button";
 import { LogOut, Menu, X, Home, FileText, User, UserPlus, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,17 +10,19 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 import { SystemDashboard } from './SystemDashboard';
 import { tallyService } from '../services/tallyService';
 import { createLogger } from '../utils/logger';
+import PWAFeedback from './PWAFeedback';
+import { isPWAInstalled } from '../utils/pwaUtils';
 
 const logger = createLogger('Navbar');
 
 const Navbar: React.FC = () => {
   const { currentUser, isFirebaseEnabled } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<'healthy' | 'degraded' | 'down'>('healthy');
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [systemStatus] = useState<'healthy' | 'degraded' | 'down'>('healthy');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +38,12 @@ const Navbar: React.FC = () => {
       if (event.ctrlKey && event.shiftKey && event.key === 'D') {
         event.preventDefault();
         setShowDashboard(true);
+      }
+      
+      // Keyboard shortcut for feedback (Ctrl+Shift+F)
+      if (event.ctrlKey && event.shiftKey && event.key === 'F') {
+        event.preventDefault();
+        handleFeedbackClick();
       }
     };
 
@@ -91,17 +99,20 @@ const Navbar: React.FC = () => {
 
   const handleFeedbackClick = () => {
     try {
-      const success = tallyService.openFeedbackForm();
-      if (!success) {
-        logger.warn('Feedback form could not be opened');
-        // Fallback para URL direta
-        const fallbackUrl = tallyService.getFormUrl('feedback');
-        if (fallbackUrl) {
-          window.open(fallbackUrl, '_blank');
-        }
+      // Try Tally first (external form)
+      const tallySuccess = tallyService.openFeedbackForm();
+      
+      if (!tallySuccess) {
+        logger.info('Tally service unavailable, using built-in feedback modal');
+        // Use our enhanced PWA feedback as primary option
+        setShowFeedback(true);
+      } else {
+        logger.info('Feedback opened via Tally service');
       }
     } catch (error) {
-      logger.error('Error opening feedback form', { error });
+      logger.error('Error with feedback system', { error });
+      // Fallback to our enhanced feedback modal
+      setShowFeedback(true);
     }
   };
 
@@ -128,7 +139,7 @@ const Navbar: React.FC = () => {
               {!isFirebaseEnabled ? (
                 <>
                   <NavLink to="/generator" icon={<FileText size={16} />}>Gerador</NavLink>
-                  <NavLink to="/dashboard" icon={<Home size={16} />}>Dashboard</NavLink>
+                  <NavLink to="/dashboard" icon={<Home size={16} />}>Meus Roteiros</NavLink>
                 </>
               ) : currentUser ? (
                 <>
@@ -157,15 +168,17 @@ const Navbar: React.FC = () => {
               )}
             </nav>
 
-            {/* Feedback Button */}
+            {/* Enhanced Feedback Button with better UX */}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleFeedbackClick}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground transition-colors duration-200 hover:bg-accent"
+              title="Compartilhar feedback (Ctrl+Shift+F)"
+              aria-label="Abrir formulário de feedback"
             >
               <MessageCircle size={16} className="mr-2" />
-              Feedback
+              <span className="hidden sm:inline">Feedback</span>
             </Button>
 
             {/* System Status Indicator */}
@@ -210,7 +223,7 @@ const Navbar: React.FC = () => {
                 {!isFirebaseEnabled ? (
                   <>
                     <NavLink to="/generator" icon={<FileText size={18} />}>Gerador</NavLink>
-                    <NavLink to="/dashboard" icon={<Home size={18} />}>Dashboard</NavLink>
+                    <NavLink to="/dashboard" icon={<Home size={18} />}>Meus Roteiros</NavLink>
                   </>
                 ) : currentUser ? (
                   <>
@@ -242,6 +255,20 @@ const Navbar: React.FC = () => {
                     </Link>
                   </>
                 )}
+                
+                {/* Mobile Feedback Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    closeMenu();
+                    handleFeedbackClick();
+                  }}
+                  className="flex items-center gap-2 w-full justify-start px-2 py-2 text-muted-foreground hover:text-foreground"
+                >
+                  <MessageCircle size={16} />
+                  <span>Enviar Feedback</span>
+                </Button>
               </nav>
             </motion.div>
           )}
@@ -251,6 +278,15 @@ const Navbar: React.FC = () => {
       {/* System Dashboard Modal */}
       {showDashboard && (
         <SystemDashboard onClose={() => setShowDashboard(false)} />
+      )}
+
+      {/* Enhanced PWA Feedback Modal */}
+      {showFeedback && (
+        <PWAFeedback
+          variant="modal-only"
+          onClose={() => setShowFeedback(false)}
+          isInstalled={isPWAInstalled()}
+        />
       )}
     </header>
   );

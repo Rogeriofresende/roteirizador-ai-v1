@@ -2,8 +2,8 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// jest.MockedFunction do componente VoiceSynthesisPanel
-const jest.MockedFunctionVoiceSynthesisPanel = ({ onVoiceSelect, onPreview }: any) => (
+// Mock do componente VoiceSynthesisPanel
+const MockVoiceSynthesisPanel = ({ onVoiceSelect, onPreview }: any) => (
   <div data-testid="voice-synthesis-panel">
     <div role="tablist">
       <button role="tab" data-testid="voices-tab">Vozes</button>
@@ -47,7 +47,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
   describe('🎯 Renderização Básica', () => {
     it('deve renderizar o painel principal', () => {
       render(
-        <jest.MockedFunctionVoiceSynthesisPanel 
+        <MockVoiceSynthesisPanel 
           onVoiceSelect={mockOnVoiceSelect}
           onPreview={mockOnPreview}
         />
@@ -57,7 +57,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
     });
 
     it('deve renderizar tabs de navegação', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       expect(screen.getByTestId('voices-tab')).toBeInTheDocument();
       expect(screen.getByTestId('config-tab')).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
     });
 
     it('deve ter role tablist para acessibilidade', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const tablist = screen.getByRole('tablist');
       expect(tablist).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
   describe('🎯 Seleção de Vozes', () => {
     it('deve renderizar seletor de vozes', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const voiceSelect = screen.getByTestId('voice-select');
       expect(voiceSelect).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
     it('deve chamar callback ao selecionar voz', async () => {
       render(
-        <jest.MockedFunctionVoiceSynthesisPanel onVoiceSelect={mockOnVoiceSelect} />
+        <MockVoiceSynthesisPanel onVoiceSelect={mockOnVoiceSelect} />
       );
       
       const voiceSelect = screen.getByTestId('voice-select');
@@ -94,7 +94,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
     });
 
     it('deve mostrar opções de vozes disponíveis', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       expect(screen.getByText('Voz Feminina PT-BR')).toBeInTheDocument();
       expect(screen.getByText('Voz Masculina EN-US')).toBeInTheDocument();
@@ -103,13 +103,13 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
   describe('🎯 Sistema de Quota', () => {
     it('deve exibir informações de quota', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       expect(screen.getByText('Quota: 50/100')).toBeInTheDocument();
     });
 
     it('deve renderizar barra visual de quota', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const quotaBar = screen.getByTestId('quota-bar');
       expect(quotaBar).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
   describe('🎯 Preview de Vozes', () => {
     it('deve renderizar botão de preview', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const previewBtn = screen.getByTestId('preview-btn');
       expect(previewBtn).toBeInTheDocument();
@@ -128,7 +128,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
     it('deve chamar callback ao clicar em preview', async () => {
       render(
-        <jest.MockedFunctionVoiceSynthesisPanel onPreview={mockOnPreview} />
+        <MockVoiceSynthesisPanel onPreview={mockOnPreview} />
       );
       
       const previewBtn = screen.getByTestId('preview-btn');
@@ -142,7 +142,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
   describe('🎯 Controles Avançados', () => {
     it('deve renderizar controles de velocidade', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const speedControl = screen.getByTestId('speed-control');
       expect(speedControl).toBeInTheDocument();
@@ -151,7 +151,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
     });
 
     it('deve renderizar controles de tom', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const pitchControl = screen.getByTestId('pitch-control');
       expect(pitchControl).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
     });
 
     it('deve renderizar controles de volume', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const volumeControl = screen.getByTestId('volume-control');
       expect(volumeControl).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
   describe('🎯 Acessibilidade', () => {
     it('deve ter estrutura acessível para tabs', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const tabs = screen.getAllByRole('tab');
       expect(tabs).toHaveLength(3);
@@ -181,7 +181,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
     });
 
     it('deve ter controles acessíveis', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       // Verifica se controles têm atributos necessários
       const controls = screen.getByTestId('controls');
@@ -194,7 +194,7 @@ describe('🎨 VoiceSynthesisPanel - Testes Críticos', () => {
 
   describe('🎯 Estados e Interações', () => {
     it('deve permitir navegação entre tabs', () => {
-      render(<jest.MockedFunctionVoiceSynthesisPanel />);
+      render(<MockVoiceSynthesisPanel />);
       
       const voicesTab = screen.getByTestId('voices-tab');
       const configTab = screen.getByTestId('config-tab');

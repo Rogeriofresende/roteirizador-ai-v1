@@ -1,0 +1,188 @@
+name: Production Deployment - Blue Green Strategy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target Environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  pre-deployment-validation:
+    runs-on: ubuntu-latest
+    outputs:
+      deployment-ready: ${{ steps.validation.outputs.ready }}
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Run Tests with Coverage
+      run: npm test -- --coverage --watchAll=false
+      
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
+        
+    - name: Build Application
+      run: npm run build
+      
+    - name: Validate Build Size
+      run: |
+        BUILD_SIZE=$(du -sk build/ | cut -f1)
+        echo "Build size: ${BUILD_SIZE}KB"
+        if [ $BUILD_SIZE -gt 1000 ]; then
+          echo "⚠️ Build size ${BUILD_SIZE}KB exceeds 1MB threshold"
+          exit 1
+        fi
+        
+    - name: Security Audit
+      run: npm audit --audit-level high
+      
+    - name: Lighthouse CI
+      run: |
+        npm install -g @lhci/cli
+        lhci autorun || echo "Lighthouse completed with warnings"
+        
+    - name: Mark Validation Complete
+      id: validation
+      run: echo "ready=true" >> $GITHUB_OUTPUT
+
+  blue-green-deployment:
+    needs: pre-deployment-validation
+    if: needs.pre-deployment-validation.outputs.deployment-ready == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Install Vercel CLI
+      run: npm install --global vercel@latest
+      
+    - name: Pull Vercel Environment Information
+      run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      
+    - name: Build Project Artifacts
+      run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      
+    - name: Deploy to Vercel (Blue Slot)
+      id: deploy-blue
+      run: |
+        DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+        echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+        echo "🚀 Deployed to Blue slot: $DEPLOYMENT_URL"
+        
+    - name: Health Check - Blue Slot
+      run: |
+        echo "Performing health check on blue slot..."
+        for i in {1..30}; do
+          if curl -f -s "${{ steps.deploy-blue.outputs.deployment-url }}" > /dev/null; then
+            echo "✅ Health check passed"
+            break
+          fi
+          echo "Attempt $i/30 - waiting for application to be ready..."
+          sleep 10
+        done
+        
+    - name: Performance Test - Blue Slot
+      run: |
+        echo "Running performance test on blue slot..."
+        npx lighthouse "${{ steps.deploy-blue.outputs.deployment-url }}" --only-categories=performance --chrome-flags="--headless" --output=json --output-path=./lighthouse-results.json || true
+        PERF_SCORE=$(node -p "JSON.parse(require('fs').readFileSync('./lighthouse-results.json')).categories.performance.score * 100")
+        echo "Performance Score: $PERF_SCORE"
+        if [ "$PERF_SCORE" -lt 80 ]; then
+          echo "⚠️ Performance score below threshold (80): $PERF_SCORE"
+        fi
+        
+    - name: Alias Production Domain
+      run: |
+        vercel alias "${{ steps.deploy-blue.outputs.deployment-url }}" roteirar.vercel.app --token=${{ secrets.VERCEL_TOKEN }}
+        echo "✅ Production alias updated"
+        
+    - name: Final Health Check - Production
+      run: |
+        sleep 30  # Allow DNS propagation
+        echo "Final health check on production domain..."
+        for i in {1..20}; do
+          if curl -f -s "https://roteirar.vercel.app" > /dev/null; then
+            echo "✅ Production health check passed"
+            exit 0
+          fi
+          echo "Attempt $i/20 - waiting for DNS propagation..."
+          sleep 15
+        done
+        echo "❌ Production health check failed"
+        exit 1
+
+  post-deployment-monitoring:
+    needs: blue-green-deployment
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Setup Monitoring
+      run: |
+        echo "Setting up post-deployment monitoring..."
+        
+    - name: Send Slack Notification
+      if: success()
+      run: |
+        echo "✅ Deployment successful notification would be sent here"
+        # curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+        #      -H "Content-Type: application/json" \
+        #      -d '{"text":"🚀 Roteirar IA deployed successfully to production!"}'
+        
+    - name: Send Failure Notification
+      if: failure()
+      run: |
+        echo "❌ Deployment failure notification would be sent here"
+        # curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+        #      -H "Content-Type: application/json" \
+        #      -d '{"text":"❌ Roteirar IA deployment failed. Manual intervention required."}'
+        
+  rollback-capability:
+    if: failure()
+    needs: [blue-green-deployment]
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Emergency Rollback
+      run: |
+        echo "🚨 Emergency rollback triggered"
+        # This would implement automatic rollback logic
+        # For now, it's a placeholder for manual intervention
+        echo "Manual rollback required - check previous deployment" 

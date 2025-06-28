@@ -3,7 +3,7 @@
  * Componente profissional para configuração segura da API Gemini
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { geminiService } from '../services/geminiService';
 import { analyticsService } from '../services/analyticsService';
 import { Button } from './ui/Button';
@@ -11,7 +11,6 @@ import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { Card } from './ui/Card';
 import { Alert } from './ui/Alert';
-import { Separator } from './ui/Separator';
 import { Badge } from './ui/Badge';
 import { ExternalLink, Key, CheckCircle, AlertCircle, Globe, Shield, RefreshCw } from 'lucide-react';
 
@@ -51,14 +50,17 @@ export const GeminiApiConfig: React.FC = () => {
 
   // Inicializar status na montagem do componente
   useEffect(() => {
-    initializeStatus();
-    initializeConfigSteps();
-    trackComponentMount();
-  }, []);
+    const initializeComponent = async () => {
+      await initializeStatus();
+      initializeConfigSteps();
+      trackComponentMount();
+    };
+    
+    initializeComponent();
+  }, [initializeConfigSteps, initializeStatus, trackComponentMount]); // Fixed: Wrapped functions in async wrapper to avoid dependency issues
 
-  const initializeStatus = async () => {
+  const initializeStatus = useCallback(async () => {
     const isConfigured = geminiService.isConfigured();
-    const currentApiKey = localStorage.getItem('GEMINI_API_KEY') || '';
     
     setApiKey(isConfigured ? '••••••••••••••••••••••••••••••••••••••••' : '');
     setStatus(prev => ({
@@ -70,9 +72,9 @@ export const GeminiApiConfig: React.FC = () => {
     if (isConfigured) {
       await testConnection();
     }
-  };
+  }, [testConnection]);
 
-  const initializeConfigSteps = () => {
+  const initializeConfigSteps = useCallback(() => {
     const steps: ConfigurationStep[] = [
       {
         id: 'get-api-key',
@@ -101,14 +103,14 @@ export const GeminiApiConfig: React.FC = () => {
     ];
 
     setConfigSteps(steps);
-  };
+  }, []);
 
-  const trackComponentMount = () => {
+  const trackComponentMount = useCallback(() => {
     analyticsService.trackFeatureUsage('gemini_config_opened', {
       already_configured: geminiService.isConfigured(),
       timestamp: new Date().toISOString()
     });
-  };
+  }, []);
 
   const validateApiKey = (key: string): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
@@ -194,7 +196,7 @@ export const GeminiApiConfig: React.FC = () => {
     }
   };
 
-  const testConnection = async () => {
+  const testConnection = useCallback(async () => {
     setIsTestingConnection(true);
 
     try {
@@ -239,7 +241,7 @@ export const GeminiApiConfig: React.FC = () => {
     } finally {
       setIsTestingConnection(false);
     }
-  };
+  }, []);
 
   const updateConfigSteps = (stepIds: string[], status: ConfigurationStep['status']) => {
     setConfigSteps(prev => 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Tags, 
   Plus, 
@@ -89,16 +89,42 @@ export const TagManager: React.FC<TagManagerProps> = ({
   ];
 
   // Carregar dados iniciais
+  const loadTags = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const userTags = await tagService.getUserTags(userId);
+      setTags(userTags);
+      onTagsChange?.(userTags);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tags';
+      setError(errorMessage);
+      logger.error('Erro ao carregar tags', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, onTagsChange]);
+
+  const loadUsageStats = useCallback(async () => {
+    try {
+      const stats = await tagService.getTagUsageStats(userId);
+      setUsageStats(stats);
+    } catch (err) {
+      logger.error('Erro ao carregar estatísticas de tags', err);
+    }
+  }, [userId]);
+
+  // Carregar dados iniciais
   useEffect(() => {
     loadTags();
     if (showAnalytics) {
       loadUsageStats();
     }
-  }, [userId, showAnalytics]);
+  }, [userId, showAnalytics, loadTags, loadUsageStats]);
 
   // Filtrar e ordenar tags
   const filteredAndSortedTags = useMemo(() => {
-    let filtered = tags.filter(tag => {
+    const filtered = tags.filter(tag => {
       // Filtro de busca
       const matchesSearch = tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (tag.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
@@ -127,31 +153,6 @@ export const TagManager: React.FC<TagManagerProps> = ({
 
     return filtered;
   }, [tags, searchQuery, filterBy, sortBy]);
-
-  const loadTags = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const userTags = await tagService.getUserTags(userId);
-      setTags(userTags);
-      onTagsChange?.(userTags);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar tags';
-      setError(errorMessage);
-      logger.error('Erro ao carregar tags', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadUsageStats = async () => {
-    try {
-      const stats = await tagService.getTagUsageStats(userId);
-      setUsageStats(stats);
-    } catch (err) {
-      logger.error('Erro ao carregar estatísticas de tags', err);
-    }
-  };
 
   const handleCreateTag = async () => {
     if (!newTagName.trim()) return;

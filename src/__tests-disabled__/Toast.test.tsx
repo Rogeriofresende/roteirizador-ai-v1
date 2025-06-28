@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // jest.MockedFunction do componente Toast
-const jest.MockedFunctionToast = ({ 
+const MockToast = ({ 
   type = 'info', 
   message, 
   duration = 5000, 
@@ -91,7 +91,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
   describe('🎯 Renderização Básica', () => {
     it('deve renderizar toast com mensagem', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste de notificação" 
           onClose={mockOnClose}
         />
@@ -103,7 +103,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve ter role alert para acessibilidade', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste acessibilidade" 
           onClose={mockOnClose}
         />
@@ -118,7 +118,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
   describe('🎯 Tipos de Toast', () => {
     it('deve renderizar toast de sucesso', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           type="success"
           message="Operação realizada com sucesso" 
           onClose={mockOnClose}
@@ -131,7 +131,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve renderizar toast de erro', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           type="error"
           message="Erro na operação" 
           onClose={mockOnClose}
@@ -144,7 +144,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve renderizar toast de warning', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           type="warning"
           message="Atenção necessária" 
           onClose={mockOnClose}
@@ -157,7 +157,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve renderizar toast de info (padrão)', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Informação importante" 
           onClose={mockOnClose}
         />
@@ -171,7 +171,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
   describe('🎯 Controles de Interação', () => {
     it('deve renderizar botão de fechar', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste botão fechar" 
           onClose={mockOnClose}
         />
@@ -185,7 +185,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve chamar onClose ao clicar no botão', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste callback close" 
           onClose={mockOnClose}
         />
@@ -211,7 +211,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
       const duration = 3000;
       
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste auto dismiss" 
           duration={duration}
           onClose={mockOnClose}
@@ -224,7 +224,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve ter duração padrão de 5 segundos', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste duração padrão" 
           onClose={mockOnClose}
         />
@@ -237,7 +237,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve aceitar duração customizada', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste duração custom" 
           duration={10000}
           onClose={mockOnClose}
@@ -252,7 +252,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
   describe('🎯 Barra de Progresso', () => {
     it('deve renderizar barra de progresso', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste progress bar" 
           onClose={mockOnClose}
         />
@@ -267,7 +267,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
       const duration = 8000;
       
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Teste animação" 
           duration={duration}
           onClose={mockOnClose}
@@ -283,15 +283,15 @@ describe('🔔 Toast System - Testes Críticos', () => {
     it('deve suportar múltiplos toasts simultaneamente', () => {
       const { rerender } = render(
         <div>
-          <jest.MockedFunctionToast message="Toast 1" onClose={jest.fn()} />
+          <MockToast message="Toast 1" onClose={jest.fn()} />
         </div>
       );
       
       rerender(
         <div>
-          <jest.MockedFunctionToast message="Toast 1" onClose={jest.fn()} />
-          <jest.MockedFunctionToast message="Toast 2" type="success" onClose={jest.fn()} />
-          <jest.MockedFunctionToast message="Toast 3" type="error" onClose={jest.fn()} />
+          <MockToast message="Toast 1" onClose={jest.fn()} />
+          <MockToast message="Toast 2" type="success" onClose={jest.fn()} />
+          <MockToast message="Toast 3" type="error" onClose={jest.fn()} />
         </div>
       );
       
@@ -307,7 +307,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
   describe('🎯 Casos Edge', () => {
     it('deve lidar com mensagem vazia', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="" 
           onClose={mockOnClose}
         />
@@ -319,7 +319,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
 
     it('deve lidar com duração zero (sem auto-dismiss)', () => {
       render(
-        <jest.MockedFunctionToast 
+        <MockToast 
           message="Sem auto dismiss" 
           duration={0}
           onClose={mockOnClose}
@@ -333,7 +333,7 @@ describe('🔔 Toast System - Testes Críticos', () => {
     it('deve funcionar sem callback onClose', () => {
       expect(() => {
         render(
-          <jest.MockedFunctionToast message="Sem callback" />
+          <MockToast message="Sem callback" />
         );
       }).not.toThrow();
     });

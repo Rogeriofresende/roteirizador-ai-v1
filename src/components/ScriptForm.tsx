@@ -7,6 +7,8 @@ import {
   AUDIENCE_OPTIONS,
   TONE_OPTIONS,
   OTHER_KEY,
+  getPlatformValue,
+  getPlatformLabel,
 } from '../constants';
 import InputField from './form/InputField';
 import SelectField from './form/SelectField';
@@ -25,10 +27,16 @@ const ScriptForm: React.FC<ScriptFormProps> = ({ onSubmit, isLoading, initialDat
   const [formatOptions, setFormatOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
-    if (formData.platform && FORMAT_OPTIONS[formData.platform]) {
-      setFormatOptions(FORMAT_OPTIONS[formData.platform]);
+    const platformValue = getPlatformValue(formData.platform);
+    
+    if (platformValue && FORMAT_OPTIONS[platformValue]) {
+      setFormatOptions(FORMAT_OPTIONS[platformValue]);
+      console.log(`✅ Format options loaded for platform: ${formData.platform} → ${platformValue}`, FORMAT_OPTIONS[platformValue]);
     } else {
       setFormatOptions([]);
+      if (formData.platform) {
+        console.warn(`⚠️ No format options found for platform: ${formData.platform} → ${platformValue}`);
+      }
     }
   }, [formData.platform]);
 

@@ -1,0 +1,73 @@
+# CURSOR RULES - COORDENAÇÃO MULTI AI
+
+## 🤝 REGRAS DE COORDENAÇÃO ENTRE IAs (2-3 IAs)
+
+### OBRIGATÓRIO ANTES DE QUALQUER MODIFICAÇÃO:
+1. **LER COORDENACAO_MULTI_AI.md** para verificar status atual
+2. **VERIFICAR conflitos** na tabela de arquivos (AI_STATUS_TRACKER.json)
+3. **DECLARAR intenção** atualizando o arquivo de coordenação
+4. **EVITAR trabalho simultâneo** no mesmo arquivo
+
+### PROTOCOLO DE ATUALIZAÇÃO:
+- **SEMPRE** atualizar COORDENACAO_DUAL_AI.md ao iniciar trabalho
+- **SEMPRE** marcar status como "🔄 EM ANDAMENTO" durante execução  
+- **SEMPRE** marcar como "✅ CONCLUÍDO" ao finalizar
+- **SEMPRE** documentar mudanças significativas
+
+### ESPECIALIZAÇÃO POR IA:
+- **IA A (Backend Focus):** Architecture, performance, admin system, core services
+- **IA B (Frontend Focus):** UX, auth flow, responsive design, user journey
+- **IA C (DevOps Focus):** Testing, CI/CD, infrastructure, quality assurance
+
+### ARQUIVOS CRÍTICOS - COORDENAÇÃO OBRIGATÓRIA:
+- `src/App.tsx` - Requer coordenação
+- `src/pages/*.tsx` - Verificar tabela de status
+- `src/components/Navbar.tsx` - Verificar conflitos
+- Qualquer arquivo marcado como "🔄 EM ANDAMENTO" por outra IA
+
+### MERGE STRATEGY:
+- **PRESERVAR** trabalho da outra IA sempre que possível
+- **COMBINAR** soluções ao invés de substituir
+- **DOCUMENTAR** decisões de merge em MERGE_STRATEGY_INTELIGENTE.md
+- **TESTAR** integração após merge
+
+### COMUNICAÇÃO OBRIGATÓRIA:
+- **LOG todas mudanças** em COORDENACAO_MULTI_AI.md
+- **UPDATE status** em AI_STATUS_TRACKER.json
+- **EXPLICAR contexto** para facilitar review das outras IAs
+- **PERGUNTAR** antes de modificar trabalho já concluído
+- **CELEBRAR** conquistas conjuntas
+
+## 🎯 OBJETIVOS DE COLABORAÇÃO:
+- Zero conflitos destrutivos
+- Máxima especialização de cada IA
+- Quality através de review cruzado
+- Velocity através de paralelismo controlado
+
+## 📋 TEMPLATE DE INÍCIO DE TRABALHO:
+
+```
+🤖 [IA A/B/C] - INICIANDO TRABALHO
+📁 Arquivo: [nome do arquivo]
+🎯 Objetivo: [descrição breve]
+⏱️ Tempo estimado: [estimativa]
+🔄 Status: EM ANDAMENTO
+📅 Timestamp: [data/hora]
+
+✅ Verificado COORDENACAO_MULTI_AI.md: [sim/não]
+✅ Verificado AI_STATUS_TRACKER.json: [sim/não]
+⚠️ Conflitos detectados: [listar ou "nenhum"]
+🤝 Coordenação necessária: [sim/não]
+```
+
+## 🚨 REGRAS DE EMERGÊNCIA:
+- Se detectar conflito ATIVO, PARAR e atualizar coordenação
+- Se arquivo estiver "🔄 EM ANDAMENTO", aguardar ou coordenar
+- Se mudança quebrar trabalho da outra IA, fazer rollback e coordenar
+- NUNCA sobrescrever backup files (.backup.tsx)
+
+## 📊 SUCCESS METRICS:
+- 100% das mudanças documentadas
+- Zero conflitos não resolvidos  
+- Review cruzado em features críticas
+- Handoffs coordenados entre especializações 

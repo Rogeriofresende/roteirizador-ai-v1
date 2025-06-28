@@ -3,12 +3,12 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@testing-libr
 import { usePWAAnalytics } from './usePWAAnalytics';
 
 // jest.MockedFunction do localStorage
-const localStoragejest.MockedFunction = {
+const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
 };
-Object.defineProperty(window, 'localStorage', { value: localStoragejest.MockedFunction });
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // jest.MockedFunction do navigator
 const mockNavigator = {
@@ -31,7 +31,7 @@ Object.defineProperty(global, 'window', { value: mockWindow, writable: true });
 
 describe('usePWAAnalytics', () => {
   beforeEach(() => {
-    jest.clearAlljest.MockedFunctions();
+    jest.clearAllMocks();
     
     // jest.MockedFunction console.log e console.error
     jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -44,7 +44,7 @@ describe('usePWAAnalytics', () => {
     Object.defineProperty(navigator, 'onLine', { value: true, writable: true });
     
     // Reset localStorage
-    localStoragejest.MockedFunction.getItem.mockReturnValue(null);
+    localStorageMock.getItem.mockReturnValue(null);
   });
 
   afterEach(() => {
@@ -83,7 +83,7 @@ describe('usePWAAnalytics', () => {
         },
       };
 
-      localStoragejest.MockedFunction.getItem.mockReturnValue(JSON.stringify(savedData));
+      localStorageMock.getItem.mockReturnValue(JSON.stringify(savedData));
 
       const { result } = renderHook(() => usePWAAnalytics());
 
@@ -130,7 +130,7 @@ describe('usePWAAnalytics', () => {
         result.current.trackInstallPrompt();
       });
 
-      expect(localStoragejest.MockedFunction.setItem).toHaveBeenCalledWith(
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'pwa-analytics',
         expect.stringContaining('"installPromptShown":true')
       );
@@ -143,7 +143,7 @@ describe('usePWAAnalytics', () => {
         result.current.trackPageView('/home');
       });
 
-      expect(localStoragejest.MockedFunction.setItem).toHaveBeenCalledWith(
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'pwa-analytics',
         expect.stringContaining('"pageViews":1')
       );
@@ -368,7 +368,7 @@ describe('usePWAAnalytics', () => {
 
   describe('Edge Cases', () => {
     it('lida com localStorage indisponível', () => {
-      localStoragejest.MockedFunction.getItem.mockImplementation(() => {
+      localStorageMock.getItem.mockImplementation(() => {
         throw new Error('localStorage not available');
       });
 
@@ -379,7 +379,7 @@ describe('usePWAAnalytics', () => {
     });
 
     it('lida com dados corrompidos no localStorage', () => {
-      localStoragejest.MockedFunction.getItem.mockReturnValue('invalid json');
+      localStorageMock.getItem.mockReturnValue('invalid json');
 
       // Deve usar estado padrão quando JSON está inválido
       const { result } = renderHook(() => usePWAAnalytics());

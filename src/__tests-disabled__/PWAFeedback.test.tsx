@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach } from '@testing-library/jest-dom';
 import PWAFeedback from './PWAFeedback';
 
-// jest.MockedFunction do hook usePWAAnalytics se existir
+// Mock do hook usePWAAnalytics se existir
 jest.mock('../hooks/usePWAAnalytics', () => ({
   usePWAAnalytics: jest.fn(() => ({
     trackEvent: jest.fn(),
@@ -10,18 +10,18 @@ jest.mock('../hooks/usePWAAnalytics', () => ({
   })),
 }));
 
-// jest.MockedFunction do localStorage
-const localStoragejest.MockedFunction = {
+// Mock do localStorage
+const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
 };
-Object.defineProperty(window, 'localStorage', { value: localStoragejest.MockedFunction });
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 describe('PWAFeedback', () => {
   beforeEach(() => {
-    jest.clearAlljest.MockedFunctions();
-    localStoragejest.MockedFunction.getItem.mockReturnValue(null);
+    jest.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
   });
 
   it('renderiza corretamente', () => {
@@ -32,7 +32,7 @@ describe('PWAFeedback', () => {
   });
 
   it('não mostra feedback se já foi dispensado', () => {
-    localStoragejest.MockedFunction.getItem.mockReturnValue('dismissed');
+    localStorageMock.getItem.mockReturnValue('dismissed');
     
     const { container } = render(<PWAFeedback />);
     // Se foi dispensado, não deve mostrar conteúdo principal
@@ -67,7 +67,7 @@ describe('PWAFeedback', () => {
       fireEvent.click(dismissButtons[0]);
       
       // Verifica se foi salvo no localStorage
-      expect(localStoragejest.MockedFunction.setItem).toHaveBeenCalledWith(
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
         expect.stringContaining('feedback'),
         expect.any(String)
       );

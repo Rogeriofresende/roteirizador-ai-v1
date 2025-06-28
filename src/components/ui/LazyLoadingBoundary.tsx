@@ -345,7 +345,7 @@ export const LazyLoadingBoundary: React.FC<LazyLoadingBoundaryProps> = ({
  * Hook para preload de componentes lazy
  */
 export const useLazyPreload = () => {
-  const preloadComponent = useCallback((importFn: () => Promise<any>) => {
+  const preloadComponent = useCallback((importFn: () => Promise<{ default: React.ComponentType<unknown> }>) => {
     return importFn().catch(error => {
       logger.warn('Component preload failed', { error: error.message }, 'LAZY_LOADING');
     });

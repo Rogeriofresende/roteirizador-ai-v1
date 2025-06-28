@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -56,9 +56,39 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   const [animatedValues, setAnimatedValues] = useState<Record<string, number>>({});
 
   // Carregar dados iniciais
+  const loadDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      const [
+        productivityData,
+        analyticsData,
+        insightsData,
+        collaborationMetrics,
+        qualityMetrics
+      ] = await Promise.all([
+        AdvancedAnalyticsService.getProductivityMetrics(userId, timeRange),
+        AdvancedAnalyticsService.getUserAnalytics(userId),
+        AdvancedAnalyticsService.generateInsights(userId, timeRange),
+        AdvancedAnalyticsService.getCollaborationMetrics(userId, timeRange),
+        AdvancedAnalyticsService.getContentQualityMetrics(userId, timeRange)
+      ]);
+
+      setMetrics(productivityData);
+      setAnalytics(analyticsData);
+      setInsights(insightsData);
+      setCollaborationData(collaborationMetrics);
+      setQualityData(qualityMetrics);
+    } catch (error) {
+      console.error('Erro ao carregar dados do dashboard:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, timeRange]);
+
   useEffect(() => {
     loadDashboardData();
-  }, [userId, timeRange]);
+  }, [userId, timeRange, loadDashboardData]);
 
   // Animação de valores
   useEffect(() => {
@@ -87,36 +117,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       });
     }
   }, [metrics, qualityData, collaborationData]);
-
-  const loadDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      
-      const [
-        productivityData,
-        analyticsData,
-        insightsData,
-        collaborationMetrics,
-        qualityMetrics
-      ] = await Promise.all([
-        AdvancedAnalyticsService.getProductivityMetrics(userId, timeRange),
-        AdvancedAnalyticsService.getUserAnalytics(userId),
-        AdvancedAnalyticsService.generateInsights(userId, timeRange),
-        AdvancedAnalyticsService.getCollaborationMetrics(userId, timeRange),
-        AdvancedAnalyticsService.getContentQualityMetrics(userId, timeRange)
-      ]);
-
-      setMetrics(productivityData);
-      setAnalytics(analyticsData);
-      setInsights(insightsData);
-      setCollaborationData(collaborationMetrics);
-      setQualityData(qualityMetrics);
-    } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

@@ -3,7 +3,7 @@
  * React hook para detectar e prevenir vazamentos de memória
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { performanceService } from '../services/performance';
 
@@ -301,13 +301,13 @@ export function withMemoryLeakDetection<P extends object>(
   Component: React.ComponentType<P>,
   options?: MemoryLeakDetectionOptions
 ) {
-  const WrappedComponent = (props: P) => {
+  const WrappedComponent: React.FC<P> = (props: P) => {
     const memoryLeak = useMemoryLeak({
       componentName: Component.displayName || Component.name || 'WrappedComponent',
       ...options,
     });
 
-    return <Component {...props} />;
+    return React.createElement(Component, props);
   };
 
   WrappedComponent.displayName = `withMemoryLeakDetection(${Component.displayName || Component.name})`;

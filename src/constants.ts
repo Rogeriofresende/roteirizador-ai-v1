@@ -10,6 +10,28 @@ export const PLATFORM_OPTIONS = [
   { value: OTHER_KEY, label: "Outro" },
 ];
 
+// Platform mapping for consistency between labels and keys
+export const PLATFORM_MAPPING: { [label: string]: string } = {
+  "YouTube": "youtube",
+  "Instagram": "instagram", 
+  "TikTok": "tiktok",
+  "Facebook": "facebook",
+  "LinkedIn": "linkedin",
+  "Twitter/X": "twitter",
+  "Outro": OTHER_KEY
+};
+
+// Reverse mapping for getting label from value
+export const PLATFORM_LABELS: { [value: string]: string } = {
+  "youtube": "YouTube",
+  "instagram": "Instagram",
+  "tiktok": "TikTok", 
+  "facebook": "Facebook",
+  "linkedin": "LinkedIn",
+  "twitter": "Twitter/X",
+  [OTHER_KEY]: "Outro"
+};
+
 export const FORMAT_OPTIONS: { [key: string]: { value: string; label: string }[] } = {
   youtube: [
     { value: "short", label: "Short (até 60s)" },
@@ -37,6 +59,16 @@ export const FORMAT_OPTIONS: { [key: string]: { value: string; label: string }[]
     { value: "video", label: "Vídeo" },
   ],
   [OTHER_KEY]: [{ value: "custom", label: "Personalizado" }],
+};
+
+// Helper function to get platform value from label (fixes the bug)
+export const getPlatformValue = (label: string): string => {
+  return PLATFORM_MAPPING[label] || label.toLowerCase();
+};
+
+// Helper function to get platform label from value
+export const getPlatformLabel = (value: string): string => {
+  return PLATFORM_LABELS[value] || value;
 };
 
 export const GOAL_OPTIONS = [

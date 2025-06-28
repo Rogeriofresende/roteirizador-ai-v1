@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Save, 
   Bookmark, 
@@ -72,7 +72,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
   useEffect(() => {
     loadPresets();
     loadFilterHistory();
-  }, [userId]);
+  }, [userId, loadPresets]);
 
   // Auto-salvar filtros quando habilitado
   useEffect(() => {
@@ -81,7 +81,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
     }
   }, [currentFilters, preferences.autoSave]);
 
-  const loadPresets = async () => {
+  const loadPresets = useCallback(async () => {
     try {
       setIsLoading(true);
       const userPresets = await FilterPersistenceService.loadFilterPresets(userId);
@@ -91,7 +91,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
 
   const loadFilterHistory = () => {
     const history = FilterPersistenceService.getFilterHistory();

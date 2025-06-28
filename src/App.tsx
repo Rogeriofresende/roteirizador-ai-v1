@@ -2,11 +2,30 @@ import React, { useEffect, useRef, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
+// TypeScript declaration for global window extensions
+declare global {
+  interface Window {
+    debugServices?: {
+      analytics: typeof import('./services/analyticsService').analyticsService;
+      clarity: typeof import('./services/clarityService').clarityService;
+      tally: typeof import('./services/tallyService').tallyService;
+      performance: typeof import('./services/performance').performanceService;
+      config: typeof import('./config/environment').config;
+      getStatus: () => Record<string, boolean>;
+      getConfig: () => { environment: string; version: string; debugMode: boolean };
+      validateEnv: () => ReturnType<typeof import('./config/environment').validateEnvironment>;
+      preloadAllPages: () => Promise<unknown[]>;
+      testServices: () => Promise<Array<{ service: string; success: boolean }>>;
+    };
+  }
+}
+
 // Core components (loaded synchronously for critical path)
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { PWAInstall } from './components/PWAInstall';
 import ErrorBoundary from './components/ui/ErrorBoundary';
+import { suppressThirdPartyErrors } from './components/ui/ThirdPartyErrorBoundary';
 
 // Loading components
 import { PageLoadingSpinner } from './components/ui/PageLoadingSpinner';
@@ -60,10 +79,10 @@ const SignupPage = React.lazy(() =>
   )
 );
 
-const UserDashboardPage = React.lazy(() => 
-  performanceService.measureFunction('load_UserDashboardPage', () => 
-    import('./pages/UserDashboardPage').then(module => {
-      logger.debug('UserDashboardPage lazy loaded', {}, 'CODE_SPLITTING');
+const SimpleUserDashboard = React.lazy(() => 
+  performanceService.measureFunction('load_SimpleUserDashboard', () => 
+    import('./pages/SimpleUserDashboard').then(module => {
+      logger.debug('SimpleUserDashboard lazy loaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -82,7 +101,7 @@ const preloadPages = () => {
   
   // Preload user dashboard if authenticated
   if (localStorage.getItem('firebase:auth:user')) {
-    preloadPromises.push(import('./pages/UserDashboardPage'));
+    preloadPromises.push(import('./pages/SimpleUserDashboard'));
   }
   
   Promise.all(preloadPromises).then(() => {
@@ -109,6 +128,14 @@ const App: React.FC = () => {
     }
     
     initialized.current = true;
+    
+    // 🛡️ THIRD-PARTY ERROR SUPPRESSION
+    // Initialize global error suppression for scripts like Microsoft Clarity
+    const cleanupErrorSuppressor = suppressThirdPartyErrors();
+    logger.debug('Third-party error suppression activated', {
+      patterns: ['clarity.ms', 'Cannot read properties of undefined', 's05cslzjy5'],
+      status: 'active'
+    }, 'APP');
     
     // Record app initialization performance
     const initStartTime = performance.now();
@@ -187,7 +214,7 @@ const App: React.FC = () => {
             services: Object.keys(serviceStatus)
           }, 'APP');
 
-          (window as any).debugServices = {
+          window.debugServices = {
             analytics: analyticsService,
             clarity: clarityService,
             tally: tallyService,
@@ -210,7 +237,7 @@ const App: React.FC = () => {
                 import('./pages/GeneratorPage'),
                 import('./pages/LoginPage'),
                 import('./pages/SignupPage'),
-                import('./pages/UserDashboardPage'),
+                import('./pages/SimpleUserDashboard'),
               ];
               return Promise.all(allPages);
             },
@@ -267,14 +294,17 @@ const App: React.FC = () => {
       logger.debug('App cleanup initiated', {}, 'APP');
       initialized.current = false;
       
+      // 🛡️ Cleanup error suppression
+      cleanupErrorSuppressor();
+      logger.debug('Third-party error suppression cleaned up', {}, 'APP');
+      
       // Clean up debug services in development
-      if (isDevelopment() && (window as any).debugServices) {
-        delete (window as any).debugServices;
+      if (isDevelopment() && window.debugServices) {
+        delete window.debugServices;
         logger.debug('Debug services cleaned up', {}, 'APP');
       }
     };
   }, []); // Empty dependency array for one-time initialization
-
   return (
     <ErrorBoundary>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -289,7 +319,11 @@ const App: React.FC = () => {
                   />
                   <Route 
                     path="/generator" 
-                    element={<GeneratorPage />} 
+                    element={
+                      <ProtectedRoute>
+                        <GeneratorPage />
+                      </ProtectedRoute>
+                    } 
                   />
                   <Route 
                     path="/login" 
@@ -303,7 +337,7 @@ const App: React.FC = () => {
                     path="/dashboard" 
                     element={
                       <ProtectedRoute>
-                        <UserDashboardPage />
+                        <SimpleUserDashboard />
                       </ProtectedRoute>
                     } 
                   />

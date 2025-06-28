@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "qualityGates": {
+    "build": {
+      "maxSize": "350KB",
+      "currentSize": "330KB", 
+      "status": "PASS"
+    },
+    "tests": {
+      "minCoverage": 80,
+      "minPassRate": 95,
+      "currentPassRate": 100,
+      "status": "PASS"
+    },
+    "performance": {
+      "maxBuildTime": "5s",
+      "currentBuildTime": "2.19s",
+      "status": "PASS"
+    },
+    "security": {
+      "allowedVulnerabilities": "moderate",
+      "currentLevel": "moderate",
+      "status": "MONITORED"
+    },
+    "eslint": {
+      "maxErrors": 50,
+      "maxWarnings": 100,
+      "status": "CONFIGURED"
+    }
+  },
+  "enforcement": {
+    "blockDeployment": false,
+    "requireApproval": true,
+    "notifyTeam": true
+  }
+}

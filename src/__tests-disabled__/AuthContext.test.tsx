@@ -6,19 +6,19 @@ import { AuthProvider, useAuth } from './AuthContext';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 
-// jest.MockedFunction do Firebase Auth
+// Mock do Firebase Auth
 jest.mock('firebase/auth', () => ({
   onAuthStateChanged: jest.fn(),
 }));
 
-// jest.MockedFunction do firebaseConfig
+// Mock do firebaseConfig
 jest.mock('../firebaseConfig', () => ({
   auth: {},
 }));
 
-const mockOnAuthStateChanged = onAuthStateChanged as jest.MockedFunction;
+const mockOnAuthStateChanged = onAuthStateChanged as jest.MockedFunction<typeof onAuthStateChanged>;
 
-// jest.MockedFunction user do Firebase
+// Mock user do Firebase
 const mockUser: Partial<User> = {
   uid: 'test-uid-123',
   email: 'test@example.com',
@@ -27,23 +27,23 @@ const mockUser: Partial<User> = {
 };
 
 describe('AuthContext', () => {
-  let unsubscribejest.MockedFunction: ReturnType<typeof jest.fn>;
+  let unsubscribeMock: ReturnType<typeof jest.fn>;
 
   beforeEach(() => {
-    jest.clearAlljest.MockedFunctions();
-    unsubscribejest.MockedFunction = jest.fn();
-    mockOnAuthStateChanged.mockReturnValue(unsubscribejest.MockedFunction);
+    jest.clearAllMocks();
+    unsubscribeMock = jest.fn();
+    mockOnAuthStateChanged.mockReturnValue(unsubscribeMock);
   });
 
   afterEach(() => {
-    jest.restoreAlljest.MockedFunctions();
+    jest.restoreAllMocks();
   });
 
   describe('AuthProvider', () => {
     it('inicializa com loading true', () => {
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((_auth, _callback) => {
         // Não chama callback imediatamente para manter loading
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       render(
@@ -60,7 +60,7 @@ describe('AuthContext', () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         // Simular Firebase retornando null (não logado)
         setTimeout(() => callback(null), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       render(
@@ -78,7 +78,7 @@ describe('AuthContext', () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         // Simular Firebase retornando usuário logado
         setTimeout(() => callback(mockUser), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       render(
@@ -114,7 +114,7 @@ describe('AuthContext', () => {
 
       unmount();
 
-      expect(unsubscribejest.MockedFunction).toHaveBeenCalled();
+      expect(unsubscribeMock).toHaveBeenCalled();
     });
 
     it('atualiza estado quando usuário faz login', async () => {
@@ -122,7 +122,7 @@ describe('AuthContext', () => {
 
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         authCallback = callback;
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const TestComponent = () => {
@@ -159,7 +159,7 @@ describe('AuthContext', () => {
         authCallback = callback;
         // Iniciar com usuário logado
         setTimeout(() => callback(mockUser), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const TestComponent = () => {
@@ -202,7 +202,7 @@ describe('AuthContext', () => {
     it('retorna valores iniciais corretos', async () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         setTimeout(() => callback(null), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const { result } = renderHook(() => useAuth(), { wrapper });
@@ -220,7 +220,7 @@ describe('AuthContext', () => {
     it('retorna usuário quando logado', async () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         setTimeout(() => callback(mockUser), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const { result } = renderHook(() => useAuth(), { wrapper });
@@ -234,7 +234,7 @@ describe('AuthContext', () => {
     it('retorna null quando não logado', async () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         setTimeout(() => callback(null), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const { result } = renderHook(() => useAuth(), { wrapper });
@@ -252,7 +252,7 @@ describe('AuthContext', () => {
         authCallback = callback;
         // Iniciar sem usuário
         setTimeout(() => callback(null), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const { result } = renderHook(() => useAuth(), { wrapper });
@@ -282,7 +282,7 @@ describe('AuthContext', () => {
     });
 
     it('trava erro quando usado fora do AuthProvider', () => {
-      // jest.MockedFunction console.error para não poluir output dos testes
+      // Mock console.error para não poluir output dos testes
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
@@ -297,7 +297,7 @@ describe('AuthContext', () => {
     it('fornece valores corretos para componentes filhos', async () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         setTimeout(() => callback(mockUser), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const TestComponent = () => {
@@ -331,7 +331,7 @@ describe('AuthContext', () => {
     it('permite múltiplos componentes acessarem o mesmo contexto', async () => {
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         setTimeout(() => callback(mockUser), 0);
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const Component1 = () => {
@@ -364,7 +364,7 @@ describe('AuthContext', () => {
 
       mockOnAuthStateChanged.mockImplementation((auth, callback) => {
         authCallback = callback;
-        return unsubscribejest.MockedFunction;
+        return unsubscribeMock;
       });
 
       const { result } = renderHook(() => useAuth(), { 

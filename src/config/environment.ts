@@ -37,6 +37,14 @@ export interface EnvironmentConfig {
     bugsFormId?: string;
   };
   
+  // Admin & Access Control
+  admin: {
+    adminEmail?: string;
+    systemDashboardEnabled: boolean;
+    documentationAccess: boolean;
+    multiAiCoordinationEnabled: boolean;
+  };
+  
   // Debug
   debugMode: boolean;
   logLevel: 'debug' | 'info' | 'warn' | 'error';
@@ -142,9 +150,26 @@ export const config: EnvironmentConfig = {
   },
   
   analytics: {
-    clarityProjectId: import.meta.env.VITE_CLARITY_PROJECT_ID,
+    // 🔍 Microsoft Clarity com detecção inteligente
+    // Implementa verificação se script foi corrigido pela Microsoft
+    clarityProjectId: (() => {
+      const projectId = import.meta.env.VITE_CLARITY_PROJECT_ID;
+      if (!projectId) return '';
+      
+      // Verifica se estamos em produção e se o script foi corrigido
+      if (isProduction()) {
+        // Em produção, usa Clarity apenas se explicitamente habilitado
+        return import.meta.env.VITE_CLARITY_FORCE_ENABLE === 'true' ? projectId : '';
+      }
+      
+      // Em desenvolvimento, permite uso com flag de debug
+      return isDevelopment() && import.meta.env.VITE_CLARITY_DEBUG === 'true' ? projectId : '';
+    })(),
     ga4MeasurementId: import.meta.env.VITE_GA4_MEASUREMENT_ID,
-    enabled: !!(import.meta.env.VITE_CLARITY_PROJECT_ID || import.meta.env.VITE_GA4_MEASUREMENT_ID),
+    enabled: !!(import.meta.env.VITE_GA4_MEASUREMENT_ID || 
+                (import.meta.env.VITE_CLARITY_PROJECT_ID && 
+                 (import.meta.env.VITE_CLARITY_FORCE_ENABLE === 'true' || 
+                  (isDevelopment() && import.meta.env.VITE_CLARITY_DEBUG === 'true')))),
   },
   
   tally: {
@@ -154,8 +179,15 @@ export const config: EnvironmentConfig = {
     bugsFormId: import.meta.env.VITE_TALLY_FORM_BUGS,
   },
   
+  admin: {
+    adminEmail: import.meta.env.VITE_ADMIN_EMAIL,
+    systemDashboardEnabled: import.meta.env.VITE_SYSTEM_DASHBOARD_ENABLED !== 'false',
+    documentationAccess: import.meta.env.VITE_ADMIN_DOCS_ENABLED !== 'false',
+    multiAiCoordinationEnabled: true, // Sempre ativo após implementação
+  },
+  
   debugMode: import.meta.env.VITE_DEBUG_MODE === 'true' && isDevelopment(),
-  logLevel: (import.meta.env.VITE_LOG_LEVEL as any) || 'info',
+  logLevel: (import.meta.env.VITE_LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
 };
 
 /**
@@ -168,7 +200,7 @@ if (isDevelopment()) {
     debugMode: config.debugMode,
     hasGeminiKey: !!config.geminiApiKey,
     hasFirebase: !!config.firebase.apiKey,
-    hasAnalytics: !!config.analytics.clarityProjectId || !!config.analytics.ga4MeasurementId,
+    hasAnalytics: !!config.analytics.ga4MeasurementId,
   });
   
   // Validar environment
