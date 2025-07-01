@@ -314,14 +314,10 @@ const App: React.FC = () => {
             <ErrorBoundary isolateErrors>
               <Suspense fallback={<PageLoadingSpinner message="Carregando aplicação..." />}>
                 <Routes>
-                  {/* V5.1 CRITICAL: Direct access to main functionality */}
+                  {/* V5.1 CRITICAL: Direct access to main functionality - NO AUTH REQUIRED */}
                   <Route 
                     path="/" 
-                    element={
-                      <ProtectedRoute>
-                        <GeneratorPage />
-                      </ProtectedRoute>
-                    } 
+                    element={<GeneratorPage />} 
                   />
                   {/* V5.1: Marketing/About moved to secondary route */}
                   <Route 
@@ -330,11 +326,7 @@ const App: React.FC = () => {
                   />
                   <Route 
                     path="/generator" 
-                    element={
-                      <ProtectedRoute>
-                        <GeneratorPage />
-                      </ProtectedRoute>
-                    } 
+                    element={<GeneratorPage />} 
                   />
                   <Route 
                     path="/login" 

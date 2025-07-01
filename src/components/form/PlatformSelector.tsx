@@ -30,18 +30,21 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   });
   
   // Phase 6: Predictive UX integration
-  const { getSmartSuggestions } = usePredictiveUX({
-    enablePreloading: true,
-    enableSmartSuggestions: true,
-  });
+  const { 
+    trackAction, 
+    predictions, 
+    getMostLikelyNext,
+    getPredictionsFor 
+  } = usePredictiveUX();
   
   // Memoized platform options to prevent re-computation
   const memoizedPlatformOptions = useMemo(() => PLATFORM_OPTIONS, []);
   
-  // Phase 6: Smart suggestions based on user patterns  
+  // Phase 6: Smart suggestions based on user patterns - V5.0 FIX
   const smartSuggestions = useMemo(() => {
-    return getSmartSuggestions('platform-selector').slice(0, 2);
-  }, [getSmartSuggestions]);
+    const clickPredictions = getPredictionsFor('click');
+    return clickPredictions.slice(0, 2);
+  }, [getPredictionsFor]);
 
   // Optimized update size function with useCallback
   const updateSize = useCallback(() => {
@@ -108,12 +111,18 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
     };
   }, [updateSize]);
   
-  // Optimized platform change handler with useCallback
+  // Optimized platform change handler with useCallback + V5.0 Predictive UX
   const handlePlatformChange = useCallback((platform: Platform) => {
     if (!disabled) {
+      // Track action for predictive UX
+      trackAction('click', `platform-${platform}`, { 
+        component: 'PlatformSelector',
+        selectedPlatform: platform 
+      });
+      
       onPlatformChange(platform);
     }
-  }, [onPlatformChange, disabled]);
+  }, [onPlatformChange, disabled, trackAction]);
   
   // Memoized adaptive grid classes to prevent re-computation
   const adaptiveGridClasses = useMemo(() => {

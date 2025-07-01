@@ -48,32 +48,16 @@ export const GeminiApiConfig: React.FC = () => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [configSteps, setConfigSteps] = useState<ConfigurationStep[]>([]);
 
-  // Inicializar status na montagem do componente
-  useEffect(() => {
-    const initializeComponent = async () => {
-      await initializeStatus();
-      initializeConfigSteps();
-      trackComponentMount();
-    };
-    
-    initializeComponent();
-  }, [initializeConfigSteps, initializeStatus, trackComponentMount]); // Fixed: Wrapped functions in async wrapper to avoid dependency issues
+  // Define all helper functions first to avoid hoisting issues
+  const updateConfigSteps = (stepIds: string[], status: ConfigurationStep['status']) => {
+    setConfigSteps(prev => 
+      prev.map(step => 
+        stepIds.includes(step.id) ? { ...step, status } : step
+      )
+    );
+  };
 
-  const initializeStatus = useCallback(async () => {
-    const isConfigured = geminiService.isConfigured();
-    
-    setApiKey(isConfigured ? '••••••••••••••••••••••••••••••••••••••••' : '');
-    setStatus(prev => ({
-      ...prev,
-      isConfigured,
-      isValid: isConfigured
-    }));
-
-    if (isConfigured) {
-      await testConnection();
-    }
-  }, [testConnection]);
-
+  // Define all callback functions after helper functions
   const initializeConfigSteps = useCallback(() => {
     const steps: ConfigurationStep[] = [
       {
@@ -111,6 +95,79 @@ export const GeminiApiConfig: React.FC = () => {
       timestamp: new Date().toISOString()
     });
   }, []);
+
+  const testConnection = useCallback(async () => {
+    setIsTestingConnection(true);
+
+    try {
+      const isConnected = await geminiService.testConnection();
+      
+      setStatus(prev => ({
+        ...prev,
+        isConnected,
+        lastTested: new Date(),
+        errorMessage: isConnected ? undefined : 'Falha na conexão com API'
+      }));
+
+      if (isConnected) {
+        updateConfigSteps(['test-connection', 'ready'], 'completed');
+      } else {
+        updateConfigSteps(['test-connection'], 'error');
+      }
+
+      // Track resultado do teste
+      analyticsService.trackUserAction('connection_test_completed', {
+        success: isConnected,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Erro ao testar conexão:', error);
+      
+      setStatus(prev => ({
+        ...prev,
+        isConnected: false,
+        lastTested: new Date(),
+        errorMessage: error instanceof Error ? error.message : 'Erro de conectividade'
+      }));
+
+      updateConfigSteps(['test-connection'], 'error');
+
+      // Track erro
+      analyticsService.trackError('Connection Test Failed', {
+        error_message: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+
+    } finally {
+      setIsTestingConnection(false);
+    }
+  }, []);
+
+  const initializeStatus = useCallback(async () => {
+    const isConfigured = geminiService.isConfigured();
+    
+    setApiKey(isConfigured ? '••••••••••••••••••••••••••••••••••••••••' : '');
+    setStatus(prev => ({
+      ...prev,
+      isConfigured,
+      isValid: isConfigured
+    }));
+
+    if (isConfigured) {
+      await testConnection();
+    }
+  }, [testConnection]);
+
+  // Now initialize component after all functions are defined
+  useEffect(() => {
+    const initializeComponent = async () => {
+      await initializeStatus();
+      initializeConfigSteps();
+      trackComponentMount();
+    };
+    
+    initializeComponent();
+  }, [initializeConfigSteps, initializeStatus, trackComponentMount]);
 
   const validateApiKey = (key: string): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
@@ -194,61 +251,6 @@ export const GeminiApiConfig: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const testConnection = useCallback(async () => {
-    setIsTestingConnection(true);
-
-    try {
-      const isConnected = await geminiService.testConnection();
-      
-      setStatus(prev => ({
-        ...prev,
-        isConnected,
-        lastTested: new Date(),
-        errorMessage: isConnected ? undefined : 'Falha na conexão com API'
-      }));
-
-      if (isConnected) {
-        updateConfigSteps(['test-connection', 'ready'], 'completed');
-      } else {
-        updateConfigSteps(['test-connection'], 'error');
-      }
-
-      // Track resultado do teste
-      analyticsService.trackUserAction('connection_test_completed', {
-        success: isConnected,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Erro ao testar conexão:', error);
-      
-      setStatus(prev => ({
-        ...prev,
-        isConnected: false,
-        lastTested: new Date(),
-        errorMessage: error instanceof Error ? error.message : 'Erro de conectividade'
-      }));
-
-      updateConfigSteps(['test-connection'], 'error');
-
-      // Track erro
-      analyticsService.trackError('Connection Test Failed', {
-        error_message: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-
-    } finally {
-      setIsTestingConnection(false);
-    }
-  }, []);
-
-  const updateConfigSteps = (stepIds: string[], status: ConfigurationStep['status']) => {
-    setConfigSteps(prev => 
-      prev.map(step => 
-        stepIds.includes(step.id) ? { ...step, status } : step
-      )
-    );
   };
 
   const removeApiKey = () => {

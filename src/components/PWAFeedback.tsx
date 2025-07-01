@@ -62,54 +62,6 @@ const PWAFeedback: React.FC<PWAFeedbackProps> = ({
     setIsOpen(true);
   }, []);
 
-  // Enhanced keyboard shortcuts with optimized cleanup and dependencies
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // ESC to close
-      if (event.key === 'Escape') {
-        handleClose();
-      }
-      
-      // Ctrl/Cmd + Enter to submit
-      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-        event.preventDefault();
-        if (message.trim() && !isSubmittingRef.current) {
-          handleSubmit();
-        }
-      }
-    };
-
-    // Add event listener and set overflow
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    
-    // Focus the textarea when modal opens
-    const focusTimeout = setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 100);
-
-    // Cleanup function with proper validation
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-      clearTimeout(focusTimeout);
-    };
-  }, [isOpen, handleClose, handleSubmit, message]); // Fixed: Added missing dependencies
-
-  // Sync ref with state to prevent race conditions
-  useEffect(() => {
-    isSubmittingRef.current = isSubmitting;
-  }, [isSubmitting]);
-
-  // Backdrop click handler with useCallback
-  const handleBackdropClick = useCallback((event: React.MouseEvent) => {
-    if (event.target === backdropRef.current) {
-      handleClose();
-    }
-  }, [handleClose]);
-
   // Enhanced localStorage handling with robust error management
   const saveToLocalStorage = useCallback((data: FeedbackData): boolean => {
     try {
@@ -142,6 +94,7 @@ const PWAFeedback: React.FC<PWAFeedbackProps> = ({
     }
   }, []);
 
+  // V5.0 FIX: Move handleSubmit before useEffect to avoid hoisting issues
   const handleSubmit = useCallback(async () => {
     if (!message.trim() || isSubmittingRef.current) return;
 
@@ -200,6 +153,54 @@ const PWAFeedback: React.FC<PWAFeedbackProps> = ({
       isSubmittingRef.current = false;
     }
   }, [message, feedbackType, rating, isInstalled, saveToLocalStorage, onClose]);
+
+  // Enhanced keyboard shortcuts with optimized cleanup and dependencies
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // ESC to close
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+      
+      // Ctrl/Cmd + Enter to submit
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        if (message.trim() && !isSubmittingRef.current) {
+          handleSubmit();
+        }
+      }
+    };
+
+    // Add event listener and set overflow
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    
+    // Focus the textarea when modal opens
+    const focusTimeout = setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 100);
+
+    // Cleanup function with proper validation
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+      clearTimeout(focusTimeout);
+    };
+  }, [isOpen, handleClose, handleSubmit, message]); // Fixed: Added missing dependencies
+
+  // Sync ref with state to prevent race conditions
+  useEffect(() => {
+    isSubmittingRef.current = isSubmitting;
+  }, [isSubmitting]);
+
+  // Backdrop click handler with useCallback
+  const handleBackdropClick = useCallback((event: React.MouseEvent) => {
+    if (event.target === backdropRef.current) {
+      handleClose();
+    }
+  }, [handleClose]);
 
   // Don't render button if variant is modal-only
   if (!isOpen && variant === 'modal-only') {
