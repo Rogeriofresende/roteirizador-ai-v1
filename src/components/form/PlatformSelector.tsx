@@ -1,11 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { PLATFORM_OPTIONS } from '../../constants';
-import { darkModeClasses, animationClasses } from '../../design-system/tokens';
+import { animationClasses, darkModeClasses } from '../../design-system/tokens';
 import { PlatformLogo } from '../ui/PlatformLogos';
+import { SmartLoadingStates } from '../ui/SmartLoadingStates';
 import { usePredictiveUX } from '../../hooks/usePredictiveUX';
-// V5.0 RECOVERY: Re-imported lost components
-import { AdvancedMicroInteractions } from '../ui/AdvancedMicroInteractions';
-import { SmartLoading } from '../ui/SmartLoading';
 
 type Platform = 'YouTube' | 'Instagram' | 'TikTok' | '';
 
@@ -15,182 +13,99 @@ interface PlatformSelectorProps {
   disabled?: boolean;
 }
 
+/**
+ * Enhanced Platform Selector - Phase 6 Feature
+ * Includes predictive UX, smart loading, and advanced micro-interactions
+ */
 const PlatformSelector: React.FC<PlatformSelectorProps> = ({ 
   selectedPlatform, 
   onPlatformChange, 
   disabled 
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   
-  // Phase 6: Enhanced state with loading simulation
-  const [layoutState, setLayoutState] = useState({
-    width: 0,
-    scrollWidth: 0,
-    hasOverflow: false,
-    isLoading: false,
-    loadingProgress: 0
-  });
+  // Phase 6: Predictive UX integration
+  const { trackAction, predictions } = usePredictiveUX();
   
-  // Phase 6: Predictive UX integration - V5.0 RECOVERY: Full functionality restored
-  const { 
-    trackAction, 
-    predictions, 
-    getMostLikelyNext,
-    getPredictionsFor,
-    getSmartSuggestions 
-  } = usePredictiveUX();
-  
-  // Memoized platform options to prevent re-computation
-  const memoizedPlatformOptions = useMemo(() => PLATFORM_OPTIONS, []);
-  
-  // Phase 6: Smart suggestions based on user patterns - V5.0 RECOVERY: Original function restored
-  const smartSuggestions = useMemo(() => {
-    return getSmartSuggestions('platform-selector').slice(0, 2);
-  }, [getSmartSuggestions]);
-
-  // V5.0 RECOVERY: Enhanced loading simulation for platform changes
+  // Phase 6: Smart loading simulation
   const simulateSmartLoading = useCallback((platform: Platform) => {
-    setLayoutState(prev => ({ ...prev, isLoading: true, loadingProgress: 0 }));
+    setIsLoading(true);
+    setLoadingProgress(0);
     
-    // Simulate intelligent loading stages
     const stages = [
-      { progress: 20, delay: 100 },
-      { progress: 50, delay: 150 },
-      { progress: 80, delay: 100 },
-      { progress: 100, delay: 150 },
+      { progress: 25, delay: 100, stage: 'Validating platform...' },
+      { progress: 60, delay: 150, stage: 'Loading templates...' },
+      { progress: 90, delay: 100, stage: 'Finalizing...' },
+      { progress: 100, delay: 100, stage: 'Complete!' },
     ];
     
     stages.forEach(({ progress, delay }, index) => {
       setTimeout(() => {
-        setLayoutState(prev => ({ ...prev, loadingProgress: progress }));
+        setLoadingProgress(progress);
         if (progress === 100) {
           setTimeout(() => {
-            setLayoutState(prev => ({ ...prev, isLoading: false, loadingProgress: 0 }));
-            // V5.0 RECOVERY: Track action after loading completes
-            trackAction('click', `platform-${platform}`, { 
-              component: 'PlatformSelector',
-              selectedPlatform: platform,
-              loadingCompleted: true
-            });
+            setIsLoading(false);
+            setLoadingProgress(0);
             onPlatformChange(platform);
-          }, 300);
+          }, 200);
         }
       }, stages.slice(0, index + 1).reduce((acc, stage) => acc + stage.delay, 0));
     });
-  }, [trackAction, onPlatformChange]);
-
-  // Optimized update size function with useCallback
-  const updateSize = useCallback(() => {
-    if (!containerRef.current) return;
+  }, [onPlatformChange]);
+  
+  // Enhanced platform change handler with predictive tracking
+  const handlePlatformChange = useCallback((platform: Platform) => {
+    if (disabled || isLoading) return;
     
-    const width = containerRef.current.clientWidth;
-    const scrollWidth = containerRef.current.scrollWidth;
-    const hasOverflow = scrollWidth > width;
-    
-    // Only update if there's a meaningful change to prevent unnecessary re-renders
-    setLayoutState(prev => {
-      if (prev.width === width && prev.scrollWidth === scrollWidth && prev.hasOverflow === hasOverflow) {
-        return prev;
-      }
-      
-      return { ...prev, width, scrollWidth, hasOverflow };
+    // Track user action for learning
+    trackAction('click', `platform-${platform.toLowerCase()}`, { 
+      component: 'PlatformSelector',
+      previousPlatform: selectedPlatform,
+      sessionLength: Date.now() - performance.timeOrigin 
     });
     
-    // Debug overflow in development (throttled logging)
-    if (process.env.NODE_ENV === 'development' && hasOverflow) {
-      console.warn('🚨 PlatformSelector: Layout overflow detected!', {
-        platformCount: memoizedPlatformOptions.length,
-        containerWidth: width,
-        scrollWidth: scrollWidth,
-        overflow: scrollWidth - width
-      });
-    }
-  }, [memoizedPlatformOptions.length]);
-  
-  // Enhanced overflow detection with proper cleanup
-  useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
-    
-    // Initial size check
-    updateSize();
-    
-    // Create and setup resize observer with proper error handling
-    try {
-      resizeObserverRef.current = new ResizeObserver(() => {
-        // Use requestAnimationFrame to batch updates
-        requestAnimationFrame(updateSize);
-      });
-      
-      resizeObserverRef.current.observe(element);
-    } catch (error) {
-      console.warn('ResizeObserver not supported, falling back to window resize');
-    }
-    
-    // Window resize fallback
-    const handleWindowResize = () => {
-      requestAnimationFrame(updateSize);
-    };
-    
-    window.addEventListener('resize', handleWindowResize, { passive: true });
-    
-    // Enhanced cleanup function
-    return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-        resizeObserverRef.current = null;
-      }
-      window.removeEventListener('resize', handleWindowResize);
-    };
-  }, [updateSize]);
-  
-  // V5.0 RECOVERY: Enhanced platform change handler with smart loading
-  const handlePlatformChange = useCallback((platform: Platform) => {
-    if (disabled || layoutState.isLoading) return;
-    
-    // Immediate feedback for already selected platform
+    // Immediate feedback for selected state
     if (platform === selectedPlatform) {
-      trackAction('click', `platform-${platform}`, { 
-        component: 'PlatformSelector',
-        selectedPlatform: platform,
-        action: 'reselected'
-      });
       onPlatformChange(platform);
       return;
     }
     
-    // V5.0 RECOVERY: Use smart loading for new selections
+    // Smart loading for new selections
     simulateSmartLoading(platform);
-  }, [disabled, layoutState.isLoading, selectedPlatform, trackAction, onPlatformChange, simulateSmartLoading]);
-  
-  // Memoized adaptive grid classes to prevent re-computation
-  const adaptiveGridClasses = useMemo(() => {
-    const baseClasses = "grid gap-3 w-full";
+  }, [disabled, isLoading, selectedPlatform, trackAction, simulateSmartLoading, onPlatformChange]);
+
+  // Hover handlers for predictive learning
+  const handleMouseEnter = useCallback((platform: string) => {
+    setHoveredPlatform(platform);
     
-    // If overflow detected, use smaller grid
-    if (layoutState.hasOverflow) {
-      return `${baseClasses} grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`;
-    }
-    
-    // Standard responsive grid - improved to prevent overflow
-    return `${baseClasses} grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-${Math.min(memoizedPlatformOptions.length, 6)}`;
-  }, [layoutState.hasOverflow, memoizedPlatformOptions.length]);
-  
-  // Memoized button classes function
-  const getEnhancedButtonClasses = useCallback((option: { label: string; value: string }) => {
+    trackAction('hover', `platform-${platform.toLowerCase()}`, { 
+      component: 'PlatformSelector',
+      currentlySelected: selectedPlatform 
+    });
+  }, [trackAction, selectedPlatform]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredPlatform(null);
+  }, []);
+
+  // Enhanced button styling with predictive hints
+  const getButtonClasses = useCallback((option: any) => {
     const isSelected = selectedPlatform === option.label;
+    const isHovered = hoveredPlatform === option.value;
+    const isPredicted = predictions.some(p => p.nextAction.includes(`platform-${option.value.toLowerCase()}`));
     
     const baseClasses = `
       relative border-2 rounded-xl font-medium text-center
       transition-all duration-300 ease-out
-      focus:outline-none focus:ring-3 focus:ring-offset-2
-      min-h-[56px] flex flex-col items-center justify-center p-3
+      focus:outline-none focus:ring-2 focus:ring-offset-2
+      min-h-[80px] flex flex-col items-center justify-center p-4
+      group overflow-hidden cursor-pointer
       ${animationClasses.themeTransition}
-      group overflow-hidden
     `;
     
-    if (disabled) {
+    if (disabled || isLoading) {
       return `${baseClasses} opacity-50 cursor-not-allowed border-border bg-muted text-muted-foreground`;
     }
     
@@ -199,173 +114,150 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
         border-primary bg-primary/10 text-primary
         shadow-lg shadow-primary/20
         scale-[1.02] 
-        ring-2 ring-primary/20 ring-offset-background
+        ring-2 ring-primary/20
         dark:bg-primary/20 dark:border-primary
       `;
     }
     
+    if (isPredicted) {
+      return `${baseClasses}
+        border-blue-300 dark:border-blue-600
+        bg-blue-50 dark:bg-blue-900/20
+        hover:border-blue-400 hover:bg-blue-100 hover:scale-[1.02]
+        hover:shadow-lg hover:shadow-blue-200/50
+        ring-1 ring-blue-200/50
+        dark:hover:bg-blue-800/30
+        ${darkModeClasses.card}
+      `;
+    }
+    
+    if (isHovered) {
+      return `${baseClasses}
+        border-primary/50 bg-primary/5 scale-[1.01]
+        shadow-md shadow-primary/10
+        dark:bg-primary/10 dark:border-primary/30
+        ${darkModeClasses.card}
+      `;
+    }
+    
     return `${baseClasses}
-      ${darkModeClasses.card} border-border
-      hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.01]
+      border-border hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.01]
       hover:shadow-md hover:shadow-primary/10
       active:scale-[0.98]
       dark:hover:bg-primary/10 dark:hover:border-primary/30
+      ${darkModeClasses.card}
     `;
-  }, [selectedPlatform, disabled]);
-  
-  // Memoized text classes function
-  const getTextClasses = useCallback((option: { label: string; value: string }) => {
-    const isSelected = selectedPlatform === option.label;
-    
-    if (layoutState.hasOverflow) {
-      return `text-xs mt-1 transition-colors duration-300 ${
-        isSelected ? 'font-semibold' : 'font-medium'
-      }`;
-    }
-    
-    return `text-sm mt-2 transition-colors duration-300 ${
-      isSelected ? 'font-semibold' : 'font-medium'
-    }`;
-  }, [selectedPlatform, layoutState.hasOverflow]);
+  }, [selectedPlatform, hoveredPlatform, predictions, disabled, isLoading]);
 
   return (
     <div className="mb-6">
-      <label className="block text-sm font-medium text-foreground mb-3">
+      <label className="block text-sm font-medium text-foreground mb-4">
         Plataforma <span className="text-destructive">*</span>
-        {/* V5.0 RECOVERY: Smart suggestions indicator */}
-        {smartSuggestions.length > 0 && (
+        {predictions.length > 0 && (
           <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
-            🧠 {smartSuggestions.length} sugestão{smartSuggestions.length > 1 ? 'ões' : ''} inteligente{smartSuggestions.length > 1 ? 's' : ''}
+            🔮 {predictions.length} sugestão{predictions.length > 1 ? 'ões' : ''} inteligente{predictions.length > 1 ? 's' : ''}
           </span>
         )}
       </label>
       
-      {/* V5.0 RECOVERY: Smart loading indicator */}
-      {layoutState.isLoading && (
+      {/* Smart loading indicator */}
+      {isLoading && (
         <div className="mb-4">
-          <SmartLoading
-            isLoading={layoutState.isLoading}
-            progress={layoutState.loadingProgress}
-            stage="Carregando plataforma selecionada..."
-            type="progress"
-            size="sm"
-            showProgress={true}
-            showStage={false}
-            showTimeEstimate={false}
+          <SmartLoadingStates 
+            isLoading={isLoading}
+            type="navigation"
+            context={`platform-switch-preparation`}
           />
         </div>
       )}
       
-      {/* Enhanced responsive grid with logos */}
+      {/* Enhanced platform grid */}
       <div 
-        ref={containerRef}
-        className={adaptiveGridClasses}
-        style={{
-          maxWidth: '100%',
-          overflow: 'hidden'
-        }}
-        role="group"
-        aria-label="Seleção de plataforma"
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${
+          isLoading ? 'opacity-60 pointer-events-none' : ''
+        }`}
       >
-        {memoizedPlatformOptions.map((option) => {
+        {PLATFORM_OPTIONS.map((option) => {
           const isSelected = selectedPlatform === option.label;
-          const platformValue = option.value;
+          const isPredicted = predictions.some(p => p.nextAction.includes(`platform-${option.value.toLowerCase()}`));
           
           return (
             <button
               key={option.value}
               type="button"
               onClick={() => handlePlatformChange(option.label as Platform)}
-              disabled={disabled}
+              onMouseEnter={() => handleMouseEnter(option.value)}
+              onMouseLeave={handleMouseLeave}
+              disabled={disabled || isLoading}
               aria-pressed={isSelected}
-              className={getEnhancedButtonClasses(option)}
-              style={{
-                minWidth: 0,
-                maxWidth: '100%'
-              }}
+              className={getButtonClasses(option)}
+              data-track-id={`platform-${option.value.toLowerCase()}`}
             >
               {/* Platform Logo */}
-              <div className="flex items-center justify-center mb-1">
+              <div className="flex items-center justify-center mb-3">
                 <PlatformLogo 
-                  platform={platformValue}
+                  platform={option.value}
                   selected={isSelected}
-                  size={layoutState.hasOverflow ? 'sm' : 'md'}
+                  size="lg"
                 />
               </div>
               
               {/* Platform Name */}
-              <span className={`truncate ${getTextClasses(option)}`}>
+              <span className="text-sm font-medium truncate">
                 {option.label}
               </span>
               
-              {/* Selection indicator */}
-              {isSelected && (
-                <div className="absolute top-1 right-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              {/* Enhanced indicators */}
+              <div className="absolute top-2 right-2 flex gap-1">
+                {isSelected && (
+                  <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse" />
+                )}
+                {isPredicted && !isSelected && (
+                  <div 
+                    className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-pulse" 
+                    title="Sugestão baseada no seu padrão de uso"
+                  />
+                )}
+              </div>
+              
+              {/* Hover effect overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+              
+              {/* Ripple effect for interactions */}
+              {hoveredPlatform === option.value && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-0 bg-current opacity-5 rounded-xl animate-ping" />
                 </div>
               )}
-              
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
             </button>
           );
         })}
       </div>
       
-      {/* Development feedback */}
-      {process.env.NODE_ENV === 'development' && layoutState.hasOverflow && (
-        <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-xs text-yellow-800 dark:text-yellow-200">
-          ⚠️ Layout overflow detected - grid automatically adjusted
-          <span className="text-muted-foreground ml-2">
-            ({layoutState.scrollWidth}px → {layoutState.width}px)
-          </span>
-        </div>
-      )}
-      
-      {/* Success indicator */}
-      {process.env.NODE_ENV === 'development' && !layoutState.hasOverflow && layoutState.width > 0 && (
-        <div className="mt-2 text-xs text-green-600 dark:text-green-400 opacity-75">
-          ✅ Responsive layout working ({layoutState.width}px) • Logos loaded
-        </div>
-      )}
-      
-      {/* Selection feedback */}
-      {selectedPlatform && (
-        <div className="mt-3 text-xs text-muted-foreground">
-          📱 Platform selected: <span className="font-medium text-foreground">{selectedPlatform}</span>
-        </div>
-      )}
-
-      {/* V5.0 RECOVERY: Enhanced development feedback */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 space-y-2">
-          {/* Smart suggestions details */}
-          {smartSuggestions.length > 0 && (
-            <div className="text-xs text-blue-600 dark:text-blue-400 opacity-75">
-              🧠 Smart suggestions: {smartSuggestions.map(s => s.replace('platform-', '')).join(', ')}
-            </div>
-          )}
-          
-          {/* Predictive insights */}
-          {predictions.length > 0 && (
-            <div className="text-xs text-purple-600 dark:text-purple-400 opacity-75">
-              🔮 {predictions.length} prediction{predictions.length > 1 ? 's' : ''} available (avg confidence: {Math.round(predictions.reduce((acc, p) => acc + p.confidence, 0) / predictions.length * 100)}%)
-            </div>
-          )}
-          
-          {/* Loading state indicator */}
-          {layoutState.isLoading && (
-            <div className="text-xs text-orange-600 dark:text-orange-400 opacity-75">
-              ⚡ Smart loading: {layoutState.loadingProgress}% • Enhanced UX active
-            </div>
-          )}
-          
-          {/* Phase 6 feature indicator */}
-          <div className="text-xs text-green-600 dark:text-green-400 opacity-75">
-            ✨ Phase 6 Enhanced: Predictive UX • Smart Loading • Advanced Feedback
+      {/* Enhanced feedback section */}
+      <div className="mt-4 space-y-2">
+        {/* Selection feedback */}
+        {selectedPlatform && (
+          <div className="text-sm text-muted-foreground">
+            📱 <span className="font-medium text-foreground">{selectedPlatform}</span> selecionado
+            {isLoading && <span className="ml-2 animate-pulse">• Carregando...</span>}
           </div>
-        </div>
-      )}
+        )}
+        
+        {/* Predictive insights */}
+        {predictions.length > 0 && !isLoading && (
+          <div className="text-xs text-blue-600 dark:text-blue-400 opacity-75">
+            💡 Baseado no seu uso: {predictions.slice(0, 2).map(p => p.nextAction.replace('click:platform-', '')).join(', ')}
+          </div>
+        )}
+        
+        {/* Development info */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="text-xs text-green-600 dark:text-green-400 opacity-75">
+            ✨ Phase 6 Enhanced: Predictive UX • Smart Loading • Advanced Micro-interactions
+          </div>
+        )}
+      </div>
     </div>
   );
 };
