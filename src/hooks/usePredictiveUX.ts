@@ -232,6 +232,18 @@ export const usePredictiveUX = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
+  // V5.0 RECOVERY: Implement missing getSmartSuggestions function
+  const getSmartSuggestions = useCallback((context: string) => {
+    const contextPredictions = state.predictions.filter(p => 
+      p.nextAction.includes(context) || p.sequence.some(s => s.includes(context))
+    );
+    
+    return contextPredictions
+      .filter(p => p.confidence > 0.4)
+      .map(p => p.nextAction)
+      .slice(0, 3);
+  }, [state.predictions]);
+
   return {
     // Core tracking
     trackAction,
@@ -241,6 +253,9 @@ export const usePredictiveUX = () => {
     getMostLikelyNext,
     getPredictionsFor,
     isPredictedAction,
+    
+    // V5.0 RECOVERY: Re-added missing function
+    getSmartSuggestions,
     
     // Prefetching
     suggestPrefetch,

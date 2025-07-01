@@ -3,6 +3,9 @@ import { PLATFORM_OPTIONS } from '../../constants';
 import { darkModeClasses, animationClasses } from '../../design-system/tokens';
 import { PlatformLogo } from '../ui/PlatformLogos';
 import { usePredictiveUX } from '../../hooks/usePredictiveUX';
+// V5.0 RECOVERY: Re-imported lost components
+import { AdvancedMicroInteractions } from '../ui/AdvancedMicroInteractions';
+import { SmartLoading } from '../ui/SmartLoading';
 
 type Platform = 'YouTube' | 'Instagram' | 'TikTok' | '';
 
@@ -29,22 +32,53 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
     loadingProgress: 0
   });
   
-  // Phase 6: Predictive UX integration
+  // Phase 6: Predictive UX integration - V5.0 RECOVERY: Full functionality restored
   const { 
     trackAction, 
     predictions, 
     getMostLikelyNext,
-    getPredictionsFor 
+    getPredictionsFor,
+    getSmartSuggestions 
   } = usePredictiveUX();
   
   // Memoized platform options to prevent re-computation
   const memoizedPlatformOptions = useMemo(() => PLATFORM_OPTIONS, []);
   
-  // Phase 6: Smart suggestions based on user patterns - V5.0 FIX
+  // Phase 6: Smart suggestions based on user patterns - V5.0 RECOVERY: Original function restored
   const smartSuggestions = useMemo(() => {
-    const clickPredictions = getPredictionsFor('click');
-    return clickPredictions.slice(0, 2);
-  }, [getPredictionsFor]);
+    return getSmartSuggestions('platform-selector').slice(0, 2);
+  }, [getSmartSuggestions]);
+
+  // V5.0 RECOVERY: Enhanced loading simulation for platform changes
+  const simulateSmartLoading = useCallback((platform: Platform) => {
+    setLayoutState(prev => ({ ...prev, isLoading: true, loadingProgress: 0 }));
+    
+    // Simulate intelligent loading stages
+    const stages = [
+      { progress: 20, delay: 100 },
+      { progress: 50, delay: 150 },
+      { progress: 80, delay: 100 },
+      { progress: 100, delay: 150 },
+    ];
+    
+    stages.forEach(({ progress, delay }, index) => {
+      setTimeout(() => {
+        setLayoutState(prev => ({ ...prev, loadingProgress: progress }));
+        if (progress === 100) {
+          setTimeout(() => {
+            setLayoutState(prev => ({ ...prev, isLoading: false, loadingProgress: 0 }));
+            // V5.0 RECOVERY: Track action after loading completes
+            trackAction('click', `platform-${platform}`, { 
+              component: 'PlatformSelector',
+              selectedPlatform: platform,
+              loadingCompleted: true
+            });
+            onPlatformChange(platform);
+          }, 300);
+        }
+      }, stages.slice(0, index + 1).reduce((acc, stage) => acc + stage.delay, 0));
+    });
+  }, [trackAction, onPlatformChange]);
 
   // Optimized update size function with useCallback
   const updateSize = useCallback(() => {
@@ -111,18 +145,24 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
     };
   }, [updateSize]);
   
-  // Optimized platform change handler with useCallback + V5.0 Predictive UX
+  // V5.0 RECOVERY: Enhanced platform change handler with smart loading
   const handlePlatformChange = useCallback((platform: Platform) => {
-    if (!disabled) {
-      // Track action for predictive UX
+    if (disabled || layoutState.isLoading) return;
+    
+    // Immediate feedback for already selected platform
+    if (platform === selectedPlatform) {
       trackAction('click', `platform-${platform}`, { 
         component: 'PlatformSelector',
-        selectedPlatform: platform 
+        selectedPlatform: platform,
+        action: 'reselected'
       });
-      
       onPlatformChange(platform);
+      return;
     }
-  }, [onPlatformChange, disabled, trackAction]);
+    
+    // V5.0 RECOVERY: Use smart loading for new selections
+    simulateSmartLoading(platform);
+  }, [disabled, layoutState.isLoading, selectedPlatform, trackAction, onPlatformChange, simulateSmartLoading]);
   
   // Memoized adaptive grid classes to prevent re-computation
   const adaptiveGridClasses = useMemo(() => {
@@ -192,7 +232,29 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
     <div className="mb-6">
       <label className="block text-sm font-medium text-foreground mb-3">
         Plataforma <span className="text-destructive">*</span>
+        {/* V5.0 RECOVERY: Smart suggestions indicator */}
+        {smartSuggestions.length > 0 && (
+          <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+            🧠 {smartSuggestions.length} sugestão{smartSuggestions.length > 1 ? 'ões' : ''} inteligente{smartSuggestions.length > 1 ? 's' : ''}
+          </span>
+        )}
       </label>
+      
+      {/* V5.0 RECOVERY: Smart loading indicator */}
+      {layoutState.isLoading && (
+        <div className="mb-4">
+          <SmartLoading
+            isLoading={layoutState.isLoading}
+            progress={layoutState.loadingProgress}
+            stage="Carregando plataforma selecionada..."
+            type="progress"
+            size="sm"
+            showProgress={true}
+            showStage={false}
+            showTimeEstimate={false}
+          />
+        </div>
+      )}
       
       {/* Enhanced responsive grid with logos */}
       <div 
@@ -274,10 +336,34 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
         </div>
       )}
 
-      {/* Smart suggestions indicator (only in development) */}
-      {process.env.NODE_ENV === 'development' && smartSuggestions.length > 0 && (
-        <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 opacity-75">
-          🧠 Smart suggestions active: {smartSuggestions.length} patterns detected
+      {/* V5.0 RECOVERY: Enhanced development feedback */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-4 space-y-2">
+          {/* Smart suggestions details */}
+          {smartSuggestions.length > 0 && (
+            <div className="text-xs text-blue-600 dark:text-blue-400 opacity-75">
+              🧠 Smart suggestions: {smartSuggestions.map(s => s.replace('platform-', '')).join(', ')}
+            </div>
+          )}
+          
+          {/* Predictive insights */}
+          {predictions.length > 0 && (
+            <div className="text-xs text-purple-600 dark:text-purple-400 opacity-75">
+              🔮 {predictions.length} prediction{predictions.length > 1 ? 's' : ''} available (avg confidence: {Math.round(predictions.reduce((acc, p) => acc + p.confidence, 0) / predictions.length * 100)}%)
+            </div>
+          )}
+          
+          {/* Loading state indicator */}
+          {layoutState.isLoading && (
+            <div className="text-xs text-orange-600 dark:text-orange-400 opacity-75">
+              ⚡ Smart loading: {layoutState.loadingProgress}% • Enhanced UX active
+            </div>
+          )}
+          
+          {/* Phase 6 feature indicator */}
+          <div className="text-xs text-green-600 dark:text-green-400 opacity-75">
+            ✨ Phase 6 Enhanced: Predictive UX • Smart Loading • Advanced Feedback
+          </div>
         </div>
       )}
     </div>
