@@ -41,7 +41,10 @@
     "test:silent": "jest --config jest.config.optimized.cjs --silent",
     "learning:scan": "node scripts/learning-recovery-cli.js scan",
     "learning:report": "node scripts/learning-recovery-cli.js report",
-    "learning:apply": "node scripts/learning-recovery-cli.js apply"
+    "learning:apply": "node scripts/learning-recovery-cli.js apply",
+    "learning:pending": "node scripts/extended-learning-recovery-cli.js analyze",
+    "learning:status": "node scripts/extended-learning-recovery-cli.js status",
+    "learning:roadmap": "node scripts/extended-learning-recovery-cli.js plan"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
