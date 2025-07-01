@@ -8,12 +8,20 @@
 
 ## ⚡ **PARA NOVAS IAs - START HERE**
 
+### **🚀 METODOLOGIA V6.0 AUTOMATIZADA (OBRIGATÓRIA)**
+**👉 Leia primeiro:** [`METODOLOGIA_V6_0_AUTOMATIZADA.md`](./METODOLOGIA_V6_0_AUTOMATIZADA.md)
+
 ### **🎯 ONBOARDING COMPLETO (10 minutos)**
-**👉 Leia primeiro:** [`ROTEIRAR_IA_STATUS_ATUAL_2025.md`](./ROTEIRAR_IA_STATUS_ATUAL_2025.md)
+**👉 Context completo:** [`ROTEIRAR_IA_STATUS_ATUAL_2025.md`](./ROTEIRAR_IA_STATUS_ATUAL_2025.md)
 
 **👉 Coordenação:** [`COORDENACAO_SIMPLES.md`](./COORDENACAO_SIMPLES.md)
 
-Estes 2 arquivos têm **tudo** que você precisa para ser produtivo em 10 minutos.
+### **🔍 HEALTH CHECK OBRIGATÓRIO**
+```bash
+./METODOLOGIA_AUTOMATIZADA_V6_0.md  # Execute ANTES de qualquer trabalho
+```
+
+Estes arquivos têm **tudo** que você precisa + automação completa.
 
 ---
 

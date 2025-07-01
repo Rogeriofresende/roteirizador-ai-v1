@@ -36,11 +36,18 @@
 
 ### **✅ TRABALHOS CONCLUÍDOS HOJE**
 ```
-27/01/2025 20:45 - IA Senior
+27/01/2025 21:15 - IA Senior
+✅ Implementado: METODOLOGIA_V6_0_AUTOMATIZADA.md (metodologia completa)
+✅ Criado: METODOLOGIA_AUTOMATIZADA_V6_0.md (health check script)
+✅ Criado: scripts/weekly-cleanup.sh (automação de limpeza)
+✅ Atualizado: README.md (direcionamento para metodologia V6.0)
+📋 Próximo: Testar metodologia com nova IA + continuar redução arquivos .md (50→15)
+
+27/01/2025 20:45 - IA Senior  
 ✅ Resolvido: date-fns dependency instalada
 ✅ Criado: ROTEIRAR_IA_STATUS_ATUAL_2025.md (documento mestre)
 ✅ Criado: COORDENACAO_SIMPLES.md (este arquivo)
-📋 Próximo: Arquivar documentação histórica (task #1 prioridade alta)
+✅ Completado: Arquivar documentação histórica (170 arquivos movidos)
 ```
 
 ---
