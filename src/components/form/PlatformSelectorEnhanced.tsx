@@ -81,7 +81,7 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
     
     // Smart loading for new selections
     simulateSmartLoading(platform);
-  }, [disabled, isLoading, selectedPlatform, trackAction, simulateSmartLoading]);
+  }, [disabled, isLoading, selectedPlatform, trackAction, simulateSmartLoading, onPlatformChange]);
 
   // Hover handlers for predictive learning
   const handleMouseEnter = useCallback((platform: string) => {

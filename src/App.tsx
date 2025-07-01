@@ -93,10 +93,11 @@ const SimpleUserDashboard = React.lazy(() =>
 // =============================================================================
 
 const preloadPages = () => {
-  // Preload critical pages after initial load
+  // V5.1: Preload critical generator page first (principal UX flow)
   const preloadPromises = [
-    import('./pages/GeneratorPage'),
-    import('./pages/LoginPage'),
+    import('./pages/GeneratorPage'), // Priority 1: main functionality
+    import('./pages/HomePage'),      // Priority 2: about/marketing
+    import('./pages/LoginPage'),     // Priority 3: auth flow
   ];
   
   // Preload user dashboard if authenticated
@@ -105,7 +106,7 @@ const preloadPages = () => {
   }
   
   Promise.all(preloadPromises).then(() => {
-    logger.debug('Critical pages preloaded', {}, 'CODE_SPLITTING');
+    logger.debug('Critical pages preloaded - V5.1 order', {}, 'CODE_SPLITTING');
   }).catch(error => {
     logger.warn('Page preloading failed', { error }, 'CODE_SPLITTING');
   });
@@ -313,8 +314,18 @@ const App: React.FC = () => {
             <ErrorBoundary isolateErrors>
               <Suspense fallback={<PageLoadingSpinner message="Carregando aplicação..." />}>
                 <Routes>
+                  {/* V5.1 CRITICAL: Direct access to main functionality */}
                   <Route 
                     path="/" 
+                    element={
+                      <ProtectedRoute>
+                        <GeneratorPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* V5.1: Marketing/About moved to secondary route */}
+                  <Route 
+                    path="/about" 
                     element={<HomePage />} 
                   />
                   <Route 

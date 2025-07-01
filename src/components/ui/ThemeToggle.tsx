@@ -188,6 +188,17 @@ export function useTheme() {
     }
   }, [systemPrefersDark, theme]);
 
+  // Apply theme with transition
+  React.useEffect(() => {
+    const currentTimeoutRef = themeTransitionTimeoutRef.current;
+    
+    return () => {
+      if (currentTimeoutRef) {
+        clearTimeout(currentTimeoutRef);
+      }
+    };
+  }, []);
+
   return { theme, toggleTheme, isMounted: isMounted && isInitializedRef.current };
 }
 

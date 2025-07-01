@@ -377,3 +377,61 @@ export const InteractiveRegion: React.FC<{
     </div>
   );
 }; 
+
+// **KEYBOARD NAVIGATION**
+useEffect(() => {
+  if (!containerRef.current) return;
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case 'Tab':
+        if (e.shiftKey) {
+          e.preventDefault();
+          focusPrevious();
+        } else {
+          e.preventDefault();
+          focusNext();
+        }
+        break;
+      case 'Home':
+        e.preventDefault();
+        focusFirst();
+        break;
+      case 'End':
+        e.preventDefault();
+        focusLast();
+        break;
+      case 'ArrowDown':
+        if (direction === 'vertical' || direction === 'grid') {
+          e.preventDefault();
+          focusNext();
+        }
+        break;
+      case 'ArrowUp':
+        if (direction === 'vertical' || direction === 'grid') {
+          e.preventDefault();
+          focusPrevious();
+        }
+        break;
+      case 'ArrowRight':
+        if (direction === 'horizontal' || direction === 'grid') {
+          e.preventDefault();
+          focusNext();
+        }
+        break;
+      case 'ArrowLeft':
+        if (direction === 'horizontal' || direction === 'grid') {
+          e.preventDefault();
+          focusPrevious();
+        }
+        break;
+    }
+  };
+
+  const container = containerRef.current;
+  container.addEventListener('keydown', handleKeyDown);
+  
+  return () => {
+    container.removeEventListener('keydown', handleKeyDown);
+  };
+}, [direction, focusFirst, focusLast, focusNext, focusPrevious]); 

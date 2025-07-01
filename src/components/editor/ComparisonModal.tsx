@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Icons } from '../ui/Icons';
@@ -38,7 +38,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
   const sortedVersions = [...versions].sort((a, b) => b.versionNumber - a.versionNumber);
 
   // **COMPARAR VERSÕES**
-  const handleCompare = async () => {
+  const handleCompare = useCallback(async () => {
     if (!selectedVersion1 || !selectedVersion2) return;
 
     setIsLoading(true);
@@ -54,7 +54,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedVersion1, selectedVersion2, onSelectVersions]);
 
   // **AUTO-SELECIONAR VERSÕES**
   useEffect(() => {
@@ -70,7 +70,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
     if (selectedVersion1 && selectedVersion2 && selectedVersion1 !== selectedVersion2) {
       handleCompare();
     }
-  }, [selectedVersion1, selectedVersion2]);
+  }, [selectedVersion1, selectedVersion2, handleCompare]);
 
   // **FORMATAÇÃO DE DATA**
   const formatDate = (timestamp: any) => {

@@ -128,23 +128,25 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-primary relative group" onClick={closeMenu}>
-            <span className="relative z-10">RoteiroPro</span>
+            <span className="relative z-10">Roteirar IA</span>
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
           </Link>
 
           <div className="flex items-center gap-4">
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - V5.1 Enhanced Quick Access */}
             <nav className="hidden md:flex items-center space-x-6">
-              {/* Se Firebase não configurado, mostrar acesso direto às funcionalidades */}
+              {/* V5.1 Critical: Direct access to main functionality */}
               {!isFirebaseEnabled ? (
                 <>
-                  <NavLink to="/generator" icon={<FileText size={16} />}>Gerador</NavLink>
-                  <NavLink to="/dashboard" icon={<Home size={16} />}>Meus Roteiros</NavLink>
+                  <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
+                  <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
                 </>
               ) : currentUser ? (
                 <>
-                  <NavLink to="/generator" icon={<FileText size={16} />}>Gerador</NavLink>
-                  <NavLink to="/dashboard" icon={<Home size={16} />}>Meus Roteiros</NavLink>
+                  <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
+                  <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
                   <Button variant="destructive" size="sm" onClick={handleLogout} className="flex items-center gap-2">
                     <LogOut size={16} />
                     <span>Sair</span>
@@ -152,6 +154,8 @@ const Navbar: React.FC = () => {
                 </>
               ) : (
                 <>
+                  <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <Link to="/login">
                     <Button variant="outline" size="sm" className="flex items-center gap-2">
                       <User size={16} />
@@ -220,15 +224,18 @@ const Navbar: React.FC = () => {
               className="md:hidden overflow-hidden"
             >
               <nav className="flex flex-col space-y-4 py-4">
+                {/* V5.1 Enhanced Mobile Navigation */}
                 {!isFirebaseEnabled ? (
                   <>
-                    <NavLink to="/generator" icon={<FileText size={18} />}>Gerador</NavLink>
-                    <NavLink to="/dashboard" icon={<Home size={18} />}>Meus Roteiros</NavLink>
+                    <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
+                    <NavLink to="/dashboard" icon={<User size={18} />}>Dashboard</NavLink>
                   </>
                 ) : currentUser ? (
                   <>
-                    <NavLink to="/generator" icon={<FileText size={18} />}>Gerador</NavLink>
-                    <NavLink to="/dashboard" icon={<Home size={18} />}>Meus Roteiros</NavLink>
+                    <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
+                    <NavLink to="/dashboard" icon={<User size={18} />}>Dashboard</NavLink>
                     <Button 
                       variant="destructive" 
                       size="sm" 
@@ -241,6 +248,8 @@ const Navbar: React.FC = () => {
                   </>
                 ) : (
                   <>
+                    <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
                     <Link to="/login" onClick={closeMenu} className="w-full">
                       <Button variant="outline" size="sm" className="flex items-center gap-2 w-full justify-start">
                         <User size={16} />

@@ -1,151 +1,275 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+/**
+ * V5.1 Enhanced Framework - usePredictiveUX Hook
+ * Predictive User Experience - Antecipa ações do usuário
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { analyticsService } from '../services/analyticsService';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('usePredictiveUX');
 
 interface UserAction {
-  type: 'click' | 'hover' | 'focus' | 'scroll' | 'input';
+  type: 'click' | 'hover' | 'scroll' | 'input' | 'focus' | 'navigation';
   target: string;
   timestamp: number;
-  context?: Record<string, any>;
+  context: Record<string, any>;
+  sessionId: string;
 }
 
 interface PredictionPattern {
   sequence: string[];
   probability: number;
-  nextActions: string[];
-  frequency: number;
+  nextAction: string;
+  confidence: number;
+  avgTime: number;
 }
 
 interface PredictiveState {
-  patterns: PredictionPattern[];
-  currentSession: UserAction[];
-  predictions: string[];
-  preloadedResources: Set<string>;
+  currentSequence: string[];
+  predictions: PredictionPattern[];
+  isLearning: boolean;
+  sessionPatterns: Map<string, number>;
+  prefetchQueue: string[];
 }
 
-/**
- * Advanced Predictive UX Hook - Phase 6 Feature
- * Learns user behavior patterns and anticipates actions
- */
-export const usePredictiveUX = (options: {
-  maxSessionActions?: number;
-  predictionThreshold?: number;
-  enablePreloading?: boolean;
-  enableSmartSuggestions?: boolean;
-} = {}) => {
-  const {
-    maxSessionActions = 50,
-    predictionThreshold = 0.6,
-    enablePreloading = true,
-    enableSmartSuggestions = true,
-  } = options;
-
+export const usePredictiveUX = () => {
   const [state, setState] = useState<PredictiveState>({
-    patterns: [],
-    currentSession: [],
+    currentSequence: [],
     predictions: [],
-    preloadedResources: new Set(),
+    isLearning: true,
+    sessionPatterns: new Map(),
+    prefetchQueue: []
   });
 
-  const sessionRef = useRef<UserAction[]>([]);
-  const patternsRef = useRef<PredictionPattern[]>([]);
+  const sessionId = useRef<string>(
+    `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  );
+  const actionHistory = useRef<UserAction[]>([]);
+  const learningWindow = useRef<number>(5); // Consider last 5 actions
 
-  // Load patterns from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedPatterns = localStorage.getItem('predictive-ux-patterns');
-      if (savedPatterns) {
-        const patterns = JSON.parse(savedPatterns);
-        patternsRef.current = patterns;
-        setState(prev => ({ ...prev, patterns }));
-      }
-    } catch (error) {
-      console.warn('Failed to load predictive patterns:', error);
-    }
-  }, []);
+  // Track user action
+  const trackAction = useCallback((
+    type: UserAction['type'], 
+    target: string, 
+    context: Record<string, any> = {}
+  ) => {
+    const action: UserAction = {
+      type,
+      target,
+      timestamp: Date.now(),
+      context,
+      sessionId: sessionId.current
+    };
 
-  // Save patterns to localStorage when they change
-  const savePatterns = useCallback((patterns: PredictionPattern[]) => {
-    try {
-      localStorage.setItem('predictive-ux-patterns', JSON.stringify(patterns));
-    } catch (error) {
-      console.warn('Failed to save predictive patterns:', error);
+    actionHistory.current.push(action);
+    
+    // Keep only recent actions (performance optimization)
+    if (actionHistory.current.length > 100) {
+      actionHistory.current = actionHistory.current.slice(-50);
     }
-  }, []);
+
+    // Update current sequence
+    const newSequence = [...state.currentSequence, `${type}:${target}`];
+    if (newSequence.length > learningWindow.current) {
+      newSequence.shift();
+    }
+
+    setState(prev => ({
+      ...prev,
+      currentSequence: newSequence
+    }));
+
+    // Analytics integration
+    analyticsService.trackEvent?.('predictive_ux_action', {
+      type,
+      target,
+      sequenceLength: newSequence.length,
+      sessionId: sessionId.current,
+      ...context
+    });
+
+    logger.debug('Action tracked', { action, sequenceLength: newSequence.length });
+  }, [state.currentSequence]);
 
   // Analyze patterns and generate predictions
-  const analyzePatterns = useCallback((session: UserAction[]): string[] => {
-    if (session.length < 2) return [];
+  const analyzePatterns = useCallback(() => {
+    if (actionHistory.current.length < 3) return;
 
-    const recentActions = session.slice(-5).map(action => action.target);
-    const patterns = patternsRef.current;
-    
-    const predictions: Array<{ action: string; score: number }> = [];
+    const patterns = new Map<string, { count: number; nextActions: Map<string, number>; timings: number[] }>();
+    const actions = actionHistory.current;
 
-    // Find matching patterns
-    patterns.forEach(pattern => {
-      if (pattern.sequence.length === 0) return;
+    // Build pattern sequences
+    for (let i = 0; i < actions.length - 1; i++) {
+      const window = Math.min(learningWindow.current, actions.length - i);
+      
+      for (let w = 2; w <= window; w++) {
+        const sequence = actions.slice(i, i + w - 1)
+          .map(a => `${a.type}:${a.target}`)
+          .join(' → ');
+        
+        const nextAction = `${actions[i + w - 1].type}:${actions[i + w - 1].target}`;
+        
+        if (!patterns.has(sequence)) {
+          patterns.set(sequence, { count: 0, nextActions: new Map(), timings: [] });
+        }
+        
+        const pattern = patterns.get(sequence)!;
+        pattern.count++;
+        pattern.nextActions.set(nextAction, (pattern.nextActions.get(nextAction) || 0) + 1);
+        
+        // Calculate timing
+        const timeDiff = actions[i + w - 1].timestamp - actions[i + w - 2].timestamp;
+        pattern.timings.push(timeDiff);
+      }
+    }
 
-      // Check if recent actions match pattern sequence
-      const sequenceMatch = pattern.sequence.every((action, index) => {
-        const sessionIndex = recentActions.length - pattern.sequence.length + index;
-        return sessionIndex >= 0 && recentActions[sessionIndex] === action;
-      });
+    // Generate predictions
+    const predictions: PredictionPattern[] = [];
+    const currentSeq = state.currentSequence.join(' → ');
 
-      if (sequenceMatch) {
-        pattern.nextActions.forEach(nextAction => {
-          const existingPrediction = predictions.find(p => p.action === nextAction);
-          if (existingPrediction) {
-            existingPrediction.score += pattern.probability * pattern.frequency;
-          } else {
+    patterns.forEach((data, sequence) => {
+      if (data.count >= 2 && (currentSeq.endsWith(sequence) || sequence.includes(currentSeq))) {
+        data.nextActions.forEach((count, nextAction) => {
+          const probability = count / data.count;
+          const confidence = Math.min(probability * (data.count / 10), 1);
+          const avgTime = data.timings.reduce((a, b) => a + b, 0) / data.timings.length;
+
+          if (probability > 0.3) { // Only predictions with >30% probability
             predictions.push({
-              action: nextAction,
-              score: pattern.probability * pattern.frequency,
+              sequence: sequence.split(' → '),
+              probability,
+              nextAction,
+              confidence,
+              avgTime
             });
           }
         });
       }
     });
 
-    // Return top predictions above threshold
-    return predictions
-      .filter(p => p.score >= predictionThreshold)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map(p => p.action);
-  }, [predictionThreshold]);
+    // Sort by confidence
+    predictions.sort((a, b) => b.confidence - a.confidence);
 
-  // Track user action
-  const trackAction = useCallback((action: UserAction) => {
-    const newSession = [...sessionRef.current, action];
-    
-    // Limit session size
-    if (newSession.length > maxSessionActions) {
-      newSession.shift();
-    }
-
-    sessionRef.current = newSession;
-    
-    // Generate predictions
-    const predictions = enableSmartSuggestions ? analyzePatterns(newSession) : [];
-    
     setState(prev => ({
       ...prev,
-      currentSession: newSession,
-      predictions,
+      predictions: predictions.slice(0, 5) // Keep top 5 predictions
     }));
-  }, [maxSessionActions, enableSmartSuggestions, analyzePatterns]);
+
+    logger.debug('Patterns analyzed', { 
+      totalPatterns: patterns.size, 
+      predictions: predictions.length,
+      currentSequence: state.currentSequence 
+    });
+  }, [state.currentSequence]);
+
+  // Get most likely next action
+  const getMostLikelyNext = useCallback(() => {
+    if (state.predictions.length === 0) return null;
+    
+    const best = state.predictions[0];
+    return {
+      action: best.nextAction,
+      confidence: best.confidence,
+      expectedTime: best.avgTime
+    };
+  }, [state.predictions]);
+
+  // Get predictions for specific action type
+  const getPredictionsFor = useCallback((actionType: UserAction['type']) => {
+    return state.predictions.filter(p => 
+      p.nextAction.startsWith(`${actionType}:`)
+    );
+  }, [state.predictions]);
+
+  // Check if action matches prediction
+  const isPredictedAction = useCallback((type: UserAction['type'], target: string) => {
+    const actionStr = `${type}:${target}`;
+    return state.predictions.some(p => p.nextAction === actionStr && p.confidence > 0.5);
+  }, [state.predictions]);
+
+  // Suggest prefetch targets
+  const suggestPrefetch = useCallback(() => {
+    const navigationPredictions = getPredictionsFor('navigation');
+    const prefetchTargets = navigationPredictions
+      .filter(p => p.confidence > 0.6)
+      .map(p => p.nextAction.split(':')[1])
+      .slice(0, 3);
+
+    setState(prev => ({
+      ...prev,
+      prefetchQueue: prefetchTargets
+    }));
+
+    return prefetchTargets;
+  }, [getPredictionsFor]);
+
+  // Auto-analyze patterns periodically
+  useEffect(() => {
+    if (!state.isLearning) return;
+
+    const interval = setInterval(() => {
+      if (actionHistory.current.length >= 3) {
+        analyzePatterns();
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [state.isLearning, analyzePatterns]);
+
+  // Session analytics
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      analyticsService.trackEvent?.('predictive_ux_session_end', {
+        sessionId: sessionId.current,
+        totalActions: actionHistory.current.length,
+        uniqueTargets: new Set(actionHistory.current.map(a => a.target)).size,
+        sessionDuration: Date.now() - (actionHistory.current[0]?.timestamp || Date.now())
+      });
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   return {
-    // State
-    patterns: state.patterns,
-    currentSession: state.currentSession,
-    predictions: state.predictions,
-    preloadedResources: state.preloadedResources,
-    
-    // Actions
+    // Core tracking
     trackAction,
     
+    // Predictions
+    predictions: state.predictions,
+    getMostLikelyNext,
+    getPredictionsFor,
+    isPredictedAction,
+    
+    // Prefetching
+    suggestPrefetch,
+    prefetchQueue: state.prefetchQueue,
+    
+    // State
+    currentSequence: state.currentSequence,
+    isLearning: state.isLearning,
+    sessionId: sessionId.current,
+    
     // Analytics
-    sessionLength: state.currentSession.length,
-    patternCount: state.patterns.length,
+    getSessionStats: () => ({
+      totalActions: actionHistory.current.length,
+      uniqueTargets: new Set(actionHistory.current.map(a => a.target)).size,
+      averageTimeBetweenActions: actionHistory.current.length > 1 
+        ? (actionHistory.current[actionHistory.current.length - 1].timestamp - actionHistory.current[0].timestamp) / (actionHistory.current.length - 1)
+        : 0
+    }),
+    
+    // Control
+    toggleLearning: () => setState(prev => ({ ...prev, isLearning: !prev.isLearning })),
+    clearHistory: () => {
+      actionHistory.current = [];
+      setState(prev => ({
+        ...prev,
+        currentSequence: [],
+        predictions: [],
+        prefetchQueue: []
+      }));
+    }
   };
 };

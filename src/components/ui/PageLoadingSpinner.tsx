@@ -87,7 +87,7 @@ export const PageLoadingSpinner: React.FC<PageLoadingSpinnerProps> = ({
     }, 50);
 
     return () => clearInterval(interval);
-  }, [showProgress, variant]);
+  }, [showProgress, variant, stages]);
 
   // Timeout handling
   useEffect(() => {
@@ -196,126 +196,10 @@ export const PageLoadingSpinner: React.FC<PageLoadingSpinnerProps> = ({
                   transition={{ duration: 0.3 }}
                 />
               </div>
-              <p className="text-sm text-muted-foreground">
-                {Math.round(progress)}% concluído
-              </p>
             </div>
           )}
-
-          {/* Loading stages */}
-          {showProgress && (
-            <div className="space-y-2 mb-4">
-              {stages.map((stage, index) => (
-                <motion.div
-                  key={stage.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ 
-                    opacity: index <= currentStage ? 1 : 0.5,
-                    x: 0 
-                  }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex items-center space-x-2 text-sm ${
-                    index < currentStage ? 'text-primary' : 
-                    index === currentStage ? 'text-foreground' : 'text-muted-foreground'
-                  }`}
-                >
-                  <motion.div
-                    animate={index === currentStage ? { scale: [1, 1.2, 1] } : {}}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    {stage.icon}
-                  </motion.div>
-                  <span>{stage.name}</span>
-                  {index < currentStage && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="text-green-500"
-                    >
-                      ✓
-                    </motion.div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          )}
-
-          {/* Timeout warning */}
-          <AnimatePresence>
-            {timedOut && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800"
-              >
-                <div className="flex items-center justify-center space-x-2 text-yellow-700 dark:text-yellow-300 mb-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Carregamento demorado</span>
-                </div>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                  O carregamento está levando mais tempo que o esperado. 
-                  Verifique sua conexão ou tente recarregar a página.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Performance tip */}
-          <div className="mt-4 text-xs text-muted-foreground">
-            <span>💡 Dica: Páginas são carregadas sob demanda para melhor performance</span>
-          </div>
         </div>
       </Card>
     </div>
   );
 };
-
-// =============================================================================
-// LOADING SKELETON VARIANTS
-// =============================================================================
-
-export const PageSkeleton: React.FC<{ variant?: 'page' | 'dashboard' | 'form' }> = ({ 
-  variant = 'page' 
-}) => {
-  const skeletonClass = "animate-pulse bg-muted rounded";
-
-  if (variant === 'dashboard') {
-    return (
-      <div className="p-6 space-y-6">
-        <div className={`h-8 w-64 ${skeletonClass}`} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={`h-32 ${skeletonClass}`} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (variant === 'form') {
-    return (
-      <div className="p-6 space-y-4">
-        <div className={`h-6 w-48 ${skeletonClass}`} />
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="space-y-2">
-            <div className={`h-4 w-24 ${skeletonClass}`} />
-            <div className={`h-10 w-full ${skeletonClass}`} />
-          </div>
-        ))}
-        <div className={`h-10 w-32 ${skeletonClass}`} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6 space-y-4">
-      <div className={`h-6 w-3/4 ${skeletonClass}`} />
-      <div className={`h-4 w-full ${skeletonClass}`} />
-      <div className={`h-4 w-5/6 ${skeletonClass}`} />
-      <div className={`h-4 w-4/5 ${skeletonClass}`} />
-    </div>
-  );
-};
-
-export default PageLoadingSpinner; 

@@ -38,7 +38,10 @@
     "monitor:performance": "node performance-monitor.js",
     "build:monitor": "npm run build && npm run monitor:performance",
     "test:fast": "jest --config jest.config.optimized.cjs --maxWorkers=50%",
-    "test:silent": "jest --config jest.config.optimized.cjs --silent"
+    "test:silent": "jest --config jest.config.optimized.cjs --silent",
+    "learning:scan": "node scripts/learning-recovery-cli.js scan",
+    "learning:report": "node scripts/learning-recovery-cli.js report",
+    "learning:apply": "node scripts/learning-recovery-cli.js apply"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

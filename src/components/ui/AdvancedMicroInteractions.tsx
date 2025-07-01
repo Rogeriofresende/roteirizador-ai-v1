@@ -12,7 +12,7 @@ interface MicroInteractionProps {
 }
 
 /**
- * Advanced Micro-interactions Component - Phase 6 Feature
+ * V5.1 Enhanced Framework - Advanced Micro-interactions Component
  * Provides premium visual feedback and predictive hover states
  */
 export const AdvancedMicroInteractions: React.FC<MicroInteractionProps> = ({
@@ -30,28 +30,26 @@ export const AdvancedMicroInteractions: React.FC<MicroInteractionProps> = ({
   const [showPredictiveHint, setShowPredictiveHint] = useState(false);
   
   const elementRef = useRef<HTMLDivElement>(null);
-  const { trackAction, predictions } = usePredictiveUX({ enableSmartSuggestions: predictiveHover });
+  const { trackAction, isPredictedAction, getMostLikelyNext } = usePredictiveUX();
 
-  // Check if this element is predicted to be interacted with
+  // V5.1: Enhanced predictive behavior
   useEffect(() => {
-    if (trackId && predictions.includes(trackId)) {
-      setShowPredictiveHint(true);
-      const timer = setTimeout(() => setShowPredictiveHint(false), 3000);
-      return () => clearTimeout(timer);
+    if (trackId && predictiveHover) {
+      const prediction = getMostLikelyNext();
+      if (prediction && prediction.action.includes(trackId) && prediction.confidence > 0.7) {
+        setShowPredictiveHint(true);
+        const timer = setTimeout(() => setShowPredictiveHint(false), 3000);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [trackId, predictions]);
+  }, [trackId, predictiveHover, getMostLikelyNext]);
 
   // Enhanced hover handler with predictive tracking
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
     
     if (trackId) {
-      trackAction({
-        type: 'hover',
-        target: trackId,
-        timestamp: Date.now(),
-        context: { elementType: type },
-      });
+      trackAction('hover', trackId, { elementType: type });
     }
   }, [trackId, trackAction, type]);
 
@@ -60,7 +58,7 @@ export const AdvancedMicroInteractions: React.FC<MicroInteractionProps> = ({
     setIsPressed(false);
   }, []);
 
-  // Enhanced click handler with visual feedback
+  // V5.1: Enhanced click handler with smart feedback
   const handleClick = useCallback(async () => {
     if (!enhancedFeedback) {
       onClick?.();
@@ -71,46 +69,48 @@ export const AdvancedMicroInteractions: React.FC<MicroInteractionProps> = ({
     setIsLoading(true);
 
     if (trackId) {
-      trackAction({
-        type: 'click',
-        target: trackId,
-        timestamp: Date.now(),
-        context: { elementType: type },
+      const wasPredicted = isPredictedAction('click', trackId);
+      trackAction('click', trackId, { 
+        elementType: type,
+        wasPredicted,
+        predictionAccuracy: wasPredicted ? 'correct' : 'unexpected'
       });
     }
 
-    // Add haptic feedback if available
+    // V5.1: Smart haptic feedback based on importance
     if ('vibrate' in navigator) {
-      navigator.vibrate(10);
+      const vibrationPattern = type === 'button' ? [10] : [5];
+      navigator.vibrate(vibrationPattern);
     }
 
     try {
       await onClick?.();
     } finally {
-      // Minimum animation duration for smooth UX
+      // V5.1: Adaptive animation duration based on predicted action
+      const animationDuration = showPredictiveHint ? 100 : 150;
       setTimeout(() => {
         setIsPressed(false);
         setIsLoading(false);
-      }, 150);
+      }, animationDuration);
     }
-  }, [enhancedFeedback, onClick, trackId, trackAction, type]);
+  }, [enhancedFeedback, onClick, trackId, trackAction, type, isPredictedAction, showPredictiveHint]);
 
-  // Dynamic styles based on type and state
+  // V5.1: Enhanced dynamic styles with predictive states
   const getInteractionStyles = () => {
     const baseStyles = 'transition-all duration-200 ease-out relative overflow-hidden';
     
     const stateStyles = {
-      hover: isHovered ? 'transform scale-105' : '',
+      hover: isHovered ? 'transform scale-105 brightness-110' : '',
       pressed: isPressed ? 'transform scale-95' : '',
-      loading: isLoading ? 'opacity-80' : '',
-      predictive: showPredictiveHint ? 'ring-2 ring-blue-400/50 ring-offset-2' : '',
+      loading: isLoading ? 'opacity-80 cursor-wait' : '',
+      predictive: showPredictiveHint ? 'ring-2 ring-blue-400/60 ring-offset-2 shadow-lg shadow-blue-400/20' : '',
     };
 
     const typeStyles = {
-      button: 'rounded-lg shadow-md hover:shadow-lg active:shadow-sm',
-      card: 'rounded-xl shadow-sm hover:shadow-md active:shadow-xs',
+      button: 'rounded-lg shadow-md hover:shadow-lg active:shadow-sm cursor-pointer',
+      card: 'rounded-xl shadow-sm hover:shadow-md active:shadow-xs cursor-pointer',
       input: 'rounded-md focus-within:ring-2 focus-within:ring-primary/20',
-      navigation: 'rounded-lg hover:bg-accent/50',
+      navigation: 'rounded-lg hover:bg-accent/50 cursor-pointer',
     };
 
     return [
@@ -132,22 +132,28 @@ export const AdvancedMicroInteractions: React.FC<MicroInteractionProps> = ({
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       data-track-id={trackId}
+      role={type === 'button' ? 'button' : undefined}
+      tabIndex={type === 'button' ? 0 : undefined}
     >
-      {/* Ripple effect overlay */}
+      {/* V5.1: Enhanced ripple effect overlay */}
       {enhancedFeedback && isPressed && (
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-current opacity-10 rounded-inherit animate-ping" />
+          <div className="absolute inset-0 bg-gradient-radial from-current/20 to-transparent rounded-inherit animate-pulse" />
         </div>
       )}
 
-      {/* Predictive hint overlay */}
+      {/* V5.1: Enhanced predictive hint overlay */}
       {showPredictiveHint && (
-        <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-pulse" />
+        <div className="absolute -top-1 -right-1">
+          <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse" />
+          <div className="w-3 h-3 bg-blue-300 rounded-full animate-ping absolute top-0 right-0" />
+        </div>
       )}
 
-      {/* Loading overlay */}
+      {/* V5.1: Enhanced loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-inherit">
+        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center rounded-inherit">
           <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       )}
@@ -157,7 +163,7 @@ export const AdvancedMicroInteractions: React.FC<MicroInteractionProps> = ({
   );
 };
 
-// Enhanced Button wrapper
+// V5.1 Enhanced Button wrapper
 export const PredictiveButton: React.FC<{
   children: React.ReactNode;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
@@ -169,14 +175,15 @@ export const PredictiveButton: React.FC<{
 }> = ({ children, className = '', disabled, ...props }) => (
   <AdvancedMicroInteractions
     type="button"
-    className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${className}`}
+    className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${disabled ? 'cursor-not-allowed' : ''} ${className}`}
+    enhancedFeedback={!disabled}
     {...props}
   >
     {children}
   </AdvancedMicroInteractions>
 );
 
-// Enhanced Card wrapper
+// V5.1 Enhanced Card wrapper
 export const PredictiveCard: React.FC<{
   children: React.ReactNode;
   className?: string;
@@ -185,7 +192,24 @@ export const PredictiveCard: React.FC<{
 }> = ({ children, className = '', ...props }) => (
   <AdvancedMicroInteractions
     type="card"
-    className={`border bg-card text-card-foreground ${className}`}
+    className={`border bg-card text-card-foreground hover:border-accent-foreground/20 ${className}`}
+    {...props}
+  >
+    {children}
+  </AdvancedMicroInteractions>
+);
+
+// V5.1: New Navigation wrapper for predictive navigation
+export const PredictiveNavigation: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  'data-track-id'?: string;
+}> = ({ children, className = '', ...props }) => (
+  <AdvancedMicroInteractions
+    type="navigation"
+    className={`transition-colors duration-200 ${className}`}
+    predictiveHover={true}
     {...props}
   >
     {children}

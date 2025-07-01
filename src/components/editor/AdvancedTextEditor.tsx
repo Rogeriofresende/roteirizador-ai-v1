@@ -84,6 +84,21 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
     ...config
   };
 
+  // **CARREGAMENTO DE DADOS**
+  const loadVersions = useCallback(async () => {
+    try {
+      const [projectVersions, current] = await Promise.all([
+        VersioningService.getProjectVersions(projectId, 20),
+        VersioningService.getCurrentVersion(projectId)
+      ]);
+      
+      setVersions(projectVersions);
+      setCurrentVersion(current);
+    } catch (error) {
+      console.error('Erro ao carregar versões:', error);
+    }
+  }, [projectId]);
+
   // **INICIALIZAÇÃO**
   useEffect(() => {
     loadVersions();
@@ -96,22 +111,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
         autoSaveRef.current();
       }
     };
-  }, [projectId, autoSaveEnabled]);
-
-  // **CARREGAMENTO DE DADOS**
-  const loadVersions = async () => {
-    try {
-      const [projectVersions, current] = await Promise.all([
-        VersioningService.getProjectVersions(projectId, 20),
-        VersioningService.getCurrentVersion(projectId)
-      ]);
-      
-      setVersions(projectVersions);
-      setCurrentVersion(current);
-    } catch (error) {
-      console.error('Erro ao carregar versões:', error);
-    }
-  };
+  }, [projectId, autoSaveEnabled, loadVersions, enableAutoSave]);
 
   // **AUTO-SAVE**
   const enableAutoSave = useCallback(() => {
@@ -179,10 +179,10 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
       }
     }, 1000);
 
-  }, [content, userId, callbacks, onSelectionChange, editorConfig.preferences.aiSuggestionsEnabled]);
+  }, [content, userId, callbacks, onSelectionChange, editorConfig.preferences.aiSuggestionsEnabled, getContextualSuggestions]);
 
   // **SUGESTÕES CONTEXTUAIS**
-  const getContextualSuggestions = async (selection: TextSelection) => {
+  const getContextualSuggestions = useCallback(async (selection: TextSelection) => {
     try {
       setUIState(prev => ({ ...prev, isProcessing: true }));
 
@@ -206,7 +206,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
       console.error('Erro ao obter sugestões contextuais:', error);
       setUIState(prev => ({ ...prev, isProcessing: false }));
     }
-  };
+  }, [content]);
 
   // **REFINAMENTO COM IA**
   const requestAIRefinement = async (refinementType: string, instructions = '') => {

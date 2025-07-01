@@ -13,7 +13,7 @@ const HomePage: React.FC = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text">
               Crie Roteiros Incríveis com
-              <span className="block text-yellow-300">Inteligência Artificial</span>
+              <span className="block text-yellow-300">Roteirar IA</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto leading-relaxed">
               A plataforma mais avançada do Brasil para criação de conteúdo. 
@@ -55,7 +55,7 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Por que mais de 10.000 criadores escolhem o RoteirAR IA?
+              Por que mais de 10.000 criadores escolhem o Roteirar IA?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               A única plataforma que combina IA avançada, interface intuitiva e resultados profissionais
