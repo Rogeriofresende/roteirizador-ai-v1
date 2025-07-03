@@ -80,7 +80,7 @@ const GeneratorPage: React.FC = () => {
       'success',
       { entryPoint: 'direct_access' }
     );
-  }, [trackAction]);
+  }, []);
 
   // STEP 2: Initialize project ID for Advanced Editor
   useEffect(() => {

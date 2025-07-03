@@ -27,10 +27,7 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   
   // Phase 6: Predictive UX integration
-  const { trackAction, predictions } = usePredictiveUX({
-    enablePreloading: true,
-    enableSmartSuggestions: true,
-  });
+  const { trackAction, predictions } = usePredictiveUX();
   
   // Phase 6: Smart loading simulation
   const simulateSmartLoading = useCallback((platform: Platform) => {
@@ -63,15 +60,14 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
     if (disabled || isLoading) return;
     
     // Track user action for learning
-    trackAction({
-      type: 'click',
-      target: `platform-${platform.toLowerCase()}`,
-      timestamp: Date.now(),
-      context: { 
+    trackAction(
+      'click',
+      `platform-${platform.toLowerCase()}`,
+      { 
         previousPlatform: selectedPlatform,
         sessionLength: Date.now() - performance.timeOrigin 
-      },
-    });
+      }
+    );
     
     // Immediate feedback for selected state
     if (platform === selectedPlatform) {
@@ -87,12 +83,11 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
   const handleMouseEnter = useCallback((platform: string) => {
     setHoveredPlatform(platform);
     
-    trackAction({
-      type: 'hover',
-      target: `platform-${platform.toLowerCase()}`,
-      timestamp: Date.now(),
-      context: { currentlySelected: selectedPlatform },
-    });
+    trackAction(
+      'hover',
+      `platform-${platform.toLowerCase()}`,
+      { currentlySelected: selectedPlatform }
+    );
   }, [trackAction, selectedPlatform]);
 
   const handleMouseLeave = useCallback(() => {
@@ -103,7 +98,10 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
   const getButtonClasses = useCallback((option: any) => {
     const isSelected = selectedPlatform === option.label;
     const isHovered = hoveredPlatform === option.value;
-    const isPredicted = predictions.includes(`platform-${option.value.toLowerCase()}`);
+    
+    // FIX: Get predicted actions correctly from predictions array
+    const predictedActions = predictions.map(p => p.nextAction || '');
+    const isPredicted = predictedActions.includes(`platform-${option.value.toLowerCase()}`);
     
     const baseClasses = `
       relative border-2 rounded-xl font-medium text-center
@@ -193,7 +191,9 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
       >
         {PLATFORM_OPTIONS.map((option) => {
           const isSelected = selectedPlatform === option.label;
-          const isPredicted = predictions.includes(`platform-${option.value.toLowerCase()}`);
+          // FIX: Get predicted actions correctly
+          const predictedActions = predictions.map(p => p.nextAction || '');
+          const isPredicted = predictedActions.includes(`platform-${option.value.toLowerCase()}`);
           
           return (
             <button
@@ -261,7 +261,7 @@ const PlatformSelectorEnhanced: React.FC<PlatformSelectorEnhancedProps> = ({
         {/* Predictive insights */}
         {predictions.length > 0 && !isLoading && (
           <div className="text-xs text-blue-600 dark:text-blue-400 opacity-75">
-            💡 Baseado no seu uso: {predictions.slice(0, 2).map(p => p.replace('platform-', '')).join(', ')}
+            💡 Baseado no seu uso: {predictions.slice(0, 2).map(p => p.nextAction?.replace('platform-', '') || '').filter(Boolean).join(', ')}
           </div>
         )}
         

@@ -69,28 +69,30 @@ export const usePredictiveUX = () => {
       actionHistory.current = actionHistory.current.slice(-50);
     }
 
-    // Update current sequence
-    const newSequence = [...state.currentSequence, `${type}:${target}`];
-    if (newSequence.length > learningWindow.current) {
-      newSequence.shift();
-    }
-
-    setState(prev => ({
-      ...prev,
-      currentSequence: newSequence
-    }));
+    // Update current sequence using setState callback to avoid dependency
+    setState(prev => {
+      const newSequence = [...prev.currentSequence, `${type}:${target}`];
+      if (newSequence.length > learningWindow.current) {
+        newSequence.shift();
+      }
+      
+      return {
+        ...prev,
+        currentSequence: newSequence
+      };
+    });
 
     // Analytics integration
     analyticsService.trackEvent?.('predictive_ux_action', {
       type,
       target,
-      sequenceLength: newSequence.length,
+      sequenceLength: actionHistory.current.length,
       sessionId: sessionId.current,
       ...context
     });
 
-    logger.debug('Action tracked', { action, sequenceLength: newSequence.length });
-  }, [state.currentSequence]);
+    logger.debug('Action tracked', { action, sequenceLength: actionHistory.current.length });
+  }, []); // Remove state.currentSequence dependency to prevent loop
 
   // Analyze patterns and generate predictions
   const analyzePatterns = useCallback(() => {
@@ -124,44 +126,45 @@ export const usePredictiveUX = () => {
       }
     }
 
-    // Generate predictions
-    const predictions: PredictionPattern[] = [];
-    const currentSeq = state.currentSequence.join(' → ');
+    // Generate predictions using state callback
+    setState(prev => {
+      const currentSeq = prev.currentSequence.join(' → ');
+      const predictions: PredictionPattern[] = [];
 
-    patterns.forEach((data, sequence) => {
-      if (data.count >= 2 && (currentSeq.endsWith(sequence) || sequence.includes(currentSeq))) {
-        data.nextActions.forEach((count, nextAction) => {
-          const probability = count / data.count;
-          const confidence = Math.min(probability * (data.count / 10), 1);
-          const avgTime = data.timings.reduce((a, b) => a + b, 0) / data.timings.length;
+      patterns.forEach((data, sequence) => {
+        if (data.count >= 2 && (currentSeq.endsWith(sequence) || sequence.includes(currentSeq))) {
+          data.nextActions.forEach((count, nextAction) => {
+            const probability = count / data.count;
+            const confidence = Math.min(probability * (data.count / 10), 1);
+            const avgTime = data.timings.reduce((a, b) => a + b, 0) / data.timings.length;
 
-          if (probability > 0.3) { // Only predictions with >30% probability
-            predictions.push({
-              sequence: sequence.split(' → '),
-              probability,
-              nextAction,
-              confidence,
-              avgTime
-            });
-          }
-        });
-      }
+            if (probability > 0.3) { // Only predictions with >30% probability
+              predictions.push({
+                sequence: sequence.split(' → '),
+                probability,
+                nextAction,
+                confidence,
+                avgTime
+              });
+            }
+          });
+        }
+      });
+
+      // Sort by confidence
+      predictions.sort((a, b) => b.confidence - a.confidence);
+
+      return {
+        ...prev,
+        predictions: predictions.slice(0, 5) // Keep top 5 predictions
+      };
     });
-
-    // Sort by confidence
-    predictions.sort((a, b) => b.confidence - a.confidence);
-
-    setState(prev => ({
-      ...prev,
-      predictions: predictions.slice(0, 5) // Keep top 5 predictions
-    }));
 
     logger.debug('Patterns analyzed', { 
-      totalPatterns: patterns.size, 
-      predictions: predictions.length,
-      currentSequence: state.currentSequence 
+      totalPatterns: patterns.size,
+      actionsLength: actionHistory.current.length
     });
-  }, [state.currentSequence]);
+  }, []); // Remove state.currentSequence dependency
 
   // Get most likely next action
   const getMostLikelyNext = useCallback(() => {

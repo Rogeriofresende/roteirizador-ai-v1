@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, Settings, Activity, FileText, Shield, BarChart3, BookOpen, Brain } from 'lucide-react';
+import { X, Users, Settings, Activity, FileText, Shield, BarChart3, BookOpen, Brain, Bot } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
 import { Tabs } from './ui/Tabs';
@@ -9,6 +9,7 @@ import { AdminDashboardGuard, SystemLogsGuard, UserManagementGuard } from './aut
 import { adminService } from '../services/adminService';
 import AdminDocumentation from './admin/AdminDocumentation';
 import AIInsightsDashboard from './analytics/AIInsightsDashboard';
+import MultiAIVisualDashboard from './MultiAIVisualDashboard';
 import { createLogger } from '../utils/logger';
 
 interface SystemDashboardProps {
@@ -137,6 +138,12 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({ onClose }) => 
     </AdminDashboardGuard>
   );
 
+  const renderMultiAITab = () => (
+    <div className="h-[80vh] overflow-auto">
+      <MultiAIVisualDashboard />
+    </div>
+  );
+
   const renderAIAnalyticsTab = () => (
     <AdminDashboardGuard
       fallback={
@@ -262,6 +269,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({ onClose }) => 
 
   const tabs = [
     { id: 'overview', label: 'Visão Geral', icon: Activity },
+    { id: 'multi-ai', label: 'Multi-AI Control', icon: Bot },
     ...(isAdmin ? [
       { id: 'admin', label: 'Administração', icon: Shield },
       { id: 'ai-analytics', label: 'AI Analytics', icon: Brain },
@@ -332,6 +340,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({ onClose }) => 
             {/* Tab Content */}
             <div className="overflow-y-auto max-h-[60vh]">
               {activeTab === 'overview' && renderOverviewTab()}
+              {activeTab === 'multi-ai' && renderMultiAITab()}
               {activeTab === 'admin' && renderAdminTab()}
               {activeTab === 'ai-analytics' && renderAIAnalyticsTab()}
               {activeTab === 'documentation' && renderDocumentationTab()}
