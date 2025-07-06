@@ -99,7 +99,7 @@ export const createManifestBlob = (): string => {
     });
     
     return URL.createObjectURL(blob);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('PWA: Error creating manifest blob:', error);
     
     // Fallback to static data
@@ -143,7 +143,7 @@ export const injectManifest = (): void => {
       href: manifestLink.href,
       timestamp: manifestLink.getAttribute('data-timestamp')
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('PWA: Failed to inject manifest:', error);
   }
 };
@@ -161,7 +161,7 @@ export const checkStaticManifest = async (): Promise<boolean> => {
     });
     
     return isOk;
-  } catch (error) {
+  } catch (error: unknown) {
     console.log('PWA: Static manifest not available:', error.message);
     return false;
   }
@@ -191,7 +191,7 @@ export const validateManifestUrls = (manifest: any): boolean => {
     
     console.log('PWA: Manifest URLs validation passed');
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('PWA: Manifest URLs validation failed:', error);
     return false;
   }
@@ -232,7 +232,7 @@ export const initializeManifest = async (): Promise<void> => {
       manifestLink.href = URL.createObjectURL(blob);
       document.head.appendChild(manifestLink);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('PWA: Failed to initialize manifest:', error);
   }
 };

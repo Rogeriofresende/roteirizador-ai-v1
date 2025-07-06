@@ -272,7 +272,7 @@ const App: React.FC = () => {
           }, 'APP');
         }
 
-      } catch (error) {
+      } catch (error: unknown) {
         logger.error('Critical error during service initialization', { 
           error: error instanceof Error ? error.message : 'Unknown error',
           stack: error instanceof Error ? error.stack : undefined,

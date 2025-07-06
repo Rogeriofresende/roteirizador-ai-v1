@@ -99,7 +99,7 @@ export const loadTest = async (
     try {
       await renderFunction();
       results.push(monitor.getMetrics());
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`Load test iteration ${i} failed:`, error);
     }
   }
@@ -110,7 +110,7 @@ export const loadTest = async (
 // Component stress testing
 export const stressTestComponent = async (
   component: React.ComponentType<any>,
-  propsVariations: any[],
+  propsVariations: unknown[],
   renderFunction: (Component: React.ComponentType<any>, props: any) => Promise<void>
 ): Promise<{ passed: number; failed: number; errors: Error[] }> => {
   let passed = 0;
@@ -121,7 +121,7 @@ export const stressTestComponent = async (
     try {
       await renderFunction(component, props);
       passed++;
-    } catch (error) {
+    } catch (error: unknown) {
       failed++;
       errors.push(error as Error);
     }

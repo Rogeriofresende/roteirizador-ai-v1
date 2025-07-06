@@ -16,11 +16,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       useESM: true,
-      tsconfig: {
-        jsx: 'react-jsx',
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
-      }
+      tsconfig: './tsconfig.test.json'
     }],
   },
   
@@ -40,7 +36,6 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/build/',
     '<rootDir>/playwright-report/',
-    '<rootDir>/src/__tests-disabled__/',
     '<rootDir>/tests/e2e/',
   ],
   

@@ -151,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateExtendedUser(firebaseUser);
       
       logger.info('User data refreshed successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to refresh user data', { error });
     }
   };
@@ -198,7 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       logger.info('User preferences updated successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to update user preferences', { error });
     }
   };

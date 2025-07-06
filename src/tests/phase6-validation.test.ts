@@ -159,7 +159,7 @@ describe('Phase 6: Advanced UX Features - Validation', () => {
     });
 
     it('should manage memory efficiently with limited history', () => {
-      const manageHistory = (history: any[], newItem: any, maxSize: number = 50) => {
+      const manageHistory = (history: unknown[], newItem: any, maxSize: number = 50) => {
         const newHistory = [...history, newItem];
         
         if (newHistory.length > maxSize) {
@@ -194,7 +194,7 @@ describe('Phase 6: Advanced UX Features - Validation', () => {
           
           localStorage.setItem(key, JSON.stringify(value));
           return true;
-        } catch (error) {
+        } catch (error: unknown) {
           if ((error as any).name === 'QuotaExceededError') {
             console.warn('Storage quota exceeded');
             // Try with smaller dataset
@@ -220,7 +220,7 @@ describe('Phase 6: Advanced UX Features - Validation', () => {
             return new ResizeObserver(() => {});
           }
           return null;
-        } catch (error) {
+        } catch (error: unknown) {
           console.warn('ResizeObserver not supported');
           return null;
         }

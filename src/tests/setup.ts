@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/jest-globals';
 
 // Enhanced error handling for tests
 const originalError = console.error;
