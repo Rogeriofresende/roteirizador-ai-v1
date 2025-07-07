@@ -13,7 +13,7 @@ interface UserAction {
   type: 'click' | 'hover' | 'scroll' | 'input' | 'focus' | 'navigation';
   target: string;
   timestamp: number;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   sessionId: string;
 }
 
@@ -52,7 +52,7 @@ export const usePredictiveUX = () => {
   const trackAction = useCallback((
     type: UserAction['type'], 
     target: string, 
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ) => {
     const action: UserAction = {
       type,

@@ -47,7 +47,7 @@ describe('UserDashboardPage component', () => {
   const mockGetDocs = getDocs as jest.MockedFunction<typeof 
   const mockDeleteDoc = deleteDoc as jest.MockedFunction<typeof 
 
-  const setup = (user: User | null, scripts: any[], error = false) => {
+  const setup = (user: User | null, scripts: unknown[], error = false) => {
     mockUseAuth.mockReturnValue({ currentUser: user });
     if (error) {
       mockGetDocs.mockRejectedValue(new Error('Falha ao carregar roteiros.'));

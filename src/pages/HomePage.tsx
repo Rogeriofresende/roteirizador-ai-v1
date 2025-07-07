@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { ArrowRight, Sparkles, Target, Users, TrendingUp, Check, Star, PlayCircle, Globe } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   return (

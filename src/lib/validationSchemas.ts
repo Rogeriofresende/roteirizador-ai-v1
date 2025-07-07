@@ -421,7 +421,7 @@ export function validateData<T>(
   try {
     const validatedData = schema.parse(data);
     return { success: true, data: validatedData };
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       const errors = error.issues.map(issue => {
         const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
@@ -455,7 +455,7 @@ export function validatePartial<T>(
   
   try {
     schema.partial().parse(data);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       error.issues.forEach(issue => {
         const field = issue.path[0] as keyof T;

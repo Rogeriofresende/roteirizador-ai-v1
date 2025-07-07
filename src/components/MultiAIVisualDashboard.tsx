@@ -110,7 +110,7 @@ export const MultiAIVisualDashboard: React.FC = () => {
     }
   ]);
 
-  const [projectMetrics, setProjectMetrics] = useState<ProjectMetrics>({
+  const [projectMetrics] = useState<ProjectMetrics>({
     totalProgress: 87,
     tasksRemaining: 2,
     estimatedCompletion: new Date(Date.now() + 25 * 60 * 1000),

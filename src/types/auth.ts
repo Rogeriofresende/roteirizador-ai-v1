@@ -279,7 +279,7 @@ export interface AdminNotification {
   type: 'user_registered' | 'system_error' | 'security_alert' | 'performance_issue';
   title: string;
   message: string;
-  data: any;
+  data: unknown;
   severity: 'low' | 'medium' | 'high' | 'critical';
   isRead: boolean;
   createdAt: Date;

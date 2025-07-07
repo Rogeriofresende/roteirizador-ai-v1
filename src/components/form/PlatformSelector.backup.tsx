@@ -114,7 +114,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
       });
       
       resizeObserverRef.current.observe(element);
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('ResizeObserver not supported, falling back to window resize');
     }
     

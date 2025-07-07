@@ -166,7 +166,7 @@ export const usePWA = (): PWAState & PWAActions => {
       }
       
       return registration;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('PWA Hook: Service worker registration failed:', error);
       return null;
     }
@@ -192,7 +192,7 @@ export const usePWA = (): PWAState & PWAActions => {
         console.log('PWA Hook: Install dismissed by user');
         return false;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('PWA Hook: Install failed:', error);
       return false;
     } finally {
@@ -222,7 +222,7 @@ export const usePWA = (): PWAState & PWAActions => {
           window.location.reload();
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('PWA Hook: Update failed:', error);
     }
   };
@@ -276,7 +276,7 @@ export const usePWA = (): PWAState & PWAActions => {
       await cache.put(`/script/${script.id}`, response);
       console.log('PWA Hook: Script cached:', script.id);
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('PWA Hook: Failed to cache script:', error);
       return false;
     }
@@ -298,7 +298,7 @@ export const usePWA = (): PWAState & PWAActions => {
       );
       
       return scripts.filter(Boolean);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('PWA Hook: Failed to get cached scripts:', error);
       return [];
     }

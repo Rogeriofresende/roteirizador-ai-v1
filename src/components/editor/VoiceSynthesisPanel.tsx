@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Square, Volume2, VolumeX, Settings, Download, Mic, Zap, Clock, Users, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Select } from '../ui/Select';
@@ -68,7 +67,7 @@ export const VoiceSynthesisPanel: React.FC<VoiceSynthesisPanelProps> = ({
         // Obter quota do usuário
         const quota = await VoiceSynthesisService.checkUserQuota(userId);
         setUserQuota(quota);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Erro ao inicializar síntese de voz:', error);
       }
     };
@@ -134,7 +133,7 @@ export const VoiceSynthesisPanel: React.FC<VoiceSynthesisPanelProps> = ({
         const sampleText = previewText || getPreviewText(voice.language);
         await VoiceSynthesisService.previewVoice(targetVoice, sampleText);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao fazer preview da voz:', error);
     } finally {
       setIsPreviewingVoice(false);
@@ -177,7 +176,7 @@ export const VoiceSynthesisPanel: React.FC<VoiceSynthesisPanelProps> = ({
       // Feedback de sucesso
       setActiveTab('preview');
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na síntese:', error);
       alert('❌ Erro ao sintetizar voz. Tente novamente em alguns momentos.');
     } finally {

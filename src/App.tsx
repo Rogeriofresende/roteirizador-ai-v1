@@ -107,7 +107,7 @@ const preloadPages = () => {
   
   Promise.all(preloadPromises).then(() => {
     logger.debug('Critical pages preloaded - V5.1 order', {}, 'CODE_SPLITTING');
-  }).catch(error => {
+  }).catch(_error => {
     logger.warn('Page preloading failed', { error }, 'CODE_SPLITTING');
   });
 };

@@ -49,7 +49,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
       );
       setComparisonData(comparison);
       onSelectVersions(selectedVersion1, selectedVersion2);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao comparar versões:', error);
     } finally {
       setIsLoading(false);

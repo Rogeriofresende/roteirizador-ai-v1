@@ -69,7 +69,7 @@ export const MonitoringDashboard: React.FC = () => {
       try {
         const data = await fetchMetrics();
         setMetrics(data);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to load metrics:', error);
       } finally {
         setLoading(false);

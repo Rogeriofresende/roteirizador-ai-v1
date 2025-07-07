@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
     try {
       await signOut(auth);
       navigate('/login');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao fazer logout:', error);
     }
   };
@@ -109,7 +109,7 @@ const Navbar: React.FC = () => {
       } else {
         logger.info('Feedback opened via Tally service');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error with feedback system', { error });
       // Fallback to our enhanced feedback modal
       setShowFeedback(true);

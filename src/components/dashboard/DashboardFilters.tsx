@@ -2,7 +2,6 @@
 // Professional-grade filtering with persistence and advanced options
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, Filter, Search, X, ChevronDown, Clock, Star, Folder } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';

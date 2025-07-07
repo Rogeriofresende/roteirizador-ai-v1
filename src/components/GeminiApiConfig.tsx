@@ -121,7 +121,7 @@ export const GeminiApiConfig: React.FC = () => {
         timestamp: new Date().toISOString()
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao testar conexão:', error);
       
       setStatus(prev => ({
@@ -232,7 +232,7 @@ export const GeminiApiConfig: React.FC = () => {
       // Track sucesso
       analyticsService.trackUserAction('api_key_configured_successfully');
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao configurar API key:', error);
       
       setStatus(prev => ({

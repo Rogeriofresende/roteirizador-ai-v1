@@ -86,7 +86,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
       setIsLoading(true);
       const userPresets = await FilterPersistenceService.loadFilterPresets(userId);
       setPresets(userPresets);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao carregar presets', error);
     } finally {
       setIsLoading(false);
@@ -124,7 +124,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
       setEditingPreset(null);
       setPresetName('');
       setPresetDescription('');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao salvar preset', error);
     } finally {
       setIsLoading(false);
@@ -136,7 +136,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
       setIsLoading(true);
       await FilterPersistenceService.deleteFilterPreset(presetId);
       await loadPresets();
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao deletar preset', error);
     } finally {
       setIsLoading(false);
@@ -148,7 +148,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
       await FilterPersistenceService.incrementPresetUsage(preset.id);
       onApplyFilters(preset.filters);
       await loadPresets(); // Recarregar para atualizar contadores
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao aplicar preset', error);
     }
   };
@@ -326,7 +326,7 @@ export const FilterPresets: React.FC<FilterPresetsProps> = ({
             </DialogHeader>
             
             <div className="max-h-96 overflow-y-auto space-y-2">
-              {filterHistory.map((item, index) => (
+              {filterHistory.map((item, _index) => (
                 <div
                   key={`${item.timestamp}-${index}`}
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"

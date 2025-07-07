@@ -124,7 +124,7 @@ class Logger {
     try {
       // Aqui iria a integração real
       console.error('External Logger:', entry);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to send log to external service:', error);
     }
   }

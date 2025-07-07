@@ -17,7 +17,7 @@ const ThemeStorage = {
       
       const stored = localStorage.getItem(this.key);
       return stored === "dark" || stored === "light" ? stored : null;
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('ThemeToggle: Failed to read from localStorage:', error);
       return null;
     }
@@ -31,7 +31,7 @@ const ThemeStorage = {
       
       localStorage.setItem(this.key, theme);
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('ThemeToggle: Failed to write to localStorage:', error);
       return false;
     }
@@ -71,7 +71,7 @@ const useSystemPreference = () => {
           }
         }
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('ThemeToggle: System preference detection failed:', error);
       setSystemPrefersDark(false);
     }
@@ -142,7 +142,7 @@ export function useTheme() {
         if (!saved) {
           console.warn('ThemeToggle: Failed to persist theme preference');
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('ThemeToggle: Failed to apply theme:', error);
       }
     });
@@ -168,7 +168,7 @@ export function useTheme() {
           window.dispatchEvent(new CustomEvent('themechange', { 
             detail: { theme: newTheme, previousTheme: prevTheme } 
           }));
-        } catch (error) {
+        } catch (error: unknown) {
           // Ignore event dispatch errors
         }
       }

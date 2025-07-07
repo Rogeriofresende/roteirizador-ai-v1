@@ -246,7 +246,7 @@ describe('useShare hook', () => {
     await act(async () => {
       try {
         await result.current.share({ title: 'Teste' });
-      } catch (error) {
+      } catch (error: unknown) {
         expect(error.message).toBe('Share failed');
       }
     });

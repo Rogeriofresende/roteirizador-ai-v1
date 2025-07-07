@@ -9,11 +9,16 @@ import {
   OTHER_KEY,
   getPlatformValue,
   getPlatformLabel,
+  PLATFORM_OPTIONS,
 } from '../constants';
 import InputField from './form/InputField';
 import TextareaField from './form/TextareaField';
 import { ButtonGrid } from './form/ButtonGrid';
 import PlatformSelectorEnhanced from './form/PlatformSelectorEnhanced';
+import { getPlatformColor } from '../utils/platformStyles';
+import { SelectField } from './form/SelectField';
+import HybridSelectField from './form/HybridSelectField';
+import { PlatformSelector } from './form/PlatformSelector';
 
 interface ScriptFormProps {
   onSubmit: (data: FormData) => void;
@@ -49,7 +54,7 @@ const VISUAL_TONE_OPTIONS = [
   { value: 'urgente', label: 'Urgente', icon: '⚡', description: 'Direto e impactante' }
 ];
 
-const VISUAL_FORMAT_OPTIONS: { [key: string]: any[] } = {
+const VISUAL_FORMAT_OPTIONS: { [key: string]: unknown[] } = {
   youtube: [
     { value: 'shorts', label: 'YouTube Shorts', icon: '📱', description: 'Vídeo vertical até 60s' },
     { value: 'longo', label: 'Vídeo Longo', icon: '🎬', description: 'Conteúdo aprofundado 10-30min' },
@@ -72,7 +77,7 @@ const VISUAL_FORMAT_OPTIONS: { [key: string]: any[] } = {
 
 const ScriptForm: React.FC<ScriptFormProps> = ({ onSubmit, isLoading, initialData }) => {
   const [formData, setFormData] = useState<FormData>({ ...INITIAL_FORM_DATA, ...initialData });
-  const [formatOptions, setFormatOptions] = useState<any[]>([]);
+  const [formatOptions, setFormatOptions] = useState<unknown[]>([]);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
   // 🎯 Enhanced Form Validation

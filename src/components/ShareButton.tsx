@@ -46,7 +46,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
 
       await navigator.share(sharePayload);
       console.log('Share API: Content shared successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       // Usuário cancelou ou erro no compartilhamento
       if (error.name !== 'AbortError') {
         console.error('Share API: Error sharing content', error);
@@ -227,7 +227,7 @@ export const useShare = () => {
         ...(data.url && { url: data.url }),
       });
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error.name !== 'AbortError') {
         console.error('Share failed:', error);
       }

@@ -87,7 +87,7 @@ const PWAFeedback: React.FC<PWAFeedbackProps> = ({
         }
         throw quotaError;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('PWA Feedback: Failed to save to localStorage:', error);
       // Could implement alternative storage here (IndexedDB, etc.)
       return false;
@@ -133,7 +133,7 @@ const PWAFeedback: React.FC<PWAFeedbackProps> = ({
         setFeedbackType('suggestion');
         onClose?.();
       }, 2000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error submitting feedback:', error);
       
       // ✅ User-friendly error message implementation

@@ -167,7 +167,7 @@ export const generateTestData = {
   }),
   
   largeDataset: (size: number = 100) => {
-    return Array.from({ length: size }, (_, index) => ({
+    return Array.from({ length: size }, (_, _index) => ({
       id: index,
       name: `Item ${index}`,
       value: Math.random() * 100,

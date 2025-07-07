@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, Settings, Activity, FileText, Shield, BarChart3, BookOpen, Brain, Bot } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
 import { Tabs } from './ui/Tabs';
@@ -21,7 +20,7 @@ const logger = createLogger('SystemDashboard');
 export const SystemDashboard: React.FC<SystemDashboardProps> = ({ onClose }) => {
   const { currentUser, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     uptime: '99.9%',
     response: '150ms',
     status: 'healthy' as 'healthy' | 'degraded' | 'down',

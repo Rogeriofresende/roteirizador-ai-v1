@@ -1,8 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebaseConfig';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { 
   Grid, 
   List, 

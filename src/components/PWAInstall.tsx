@@ -50,7 +50,7 @@ export const PWAInstall: React.FC<PWAInstallProps> = ({
       onInstall?.();
         logger.info('PWA installed successfully');
         // trackInstallation('browser-prompt'); // Rastrear instalação bem-sucedida
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('PWA installation failed', { error });
       // trackError(error.toString(), 'install-process');
     } finally {

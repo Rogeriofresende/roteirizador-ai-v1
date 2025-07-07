@@ -220,7 +220,7 @@ export function useMemoryLeak(options: MemoryLeakDetectionOptions = {}) {
         try {
           cleanup();
           memoryStatsRef.current.leaksPrevented++;
-        } catch (error) {
+        } catch (error: unknown) {
           logger.error('Error in cleanup function', {
             component: componentName,
             error: error instanceof Error ? error.message : 'Unknown',

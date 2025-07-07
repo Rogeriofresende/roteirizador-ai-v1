@@ -14,7 +14,7 @@ export interface AIAnalyticsState {
 }
 
 export interface AIAnalyticsActions {
-  trackAction: (actionType: string, context: string, metadata?: Record<string, any>) => void;
+  trackAction: (actionType: string, context: string, metadata?: Record<string, unknown>) => void;
   predictNextAction: (context: string) => Promise<{
     action: string;
     confidence: number;
@@ -41,7 +41,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
   const trackingQueue = useRef<Array<{
     actionType: string;
     context: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }>>([]);
 
   const isInitialized = useRef(false);
@@ -50,7 +50,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
   const trackActionInternal = useCallback((
     actionType: string, 
     context: string, 
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) => {
     if (!currentUser?.uid) {
       logger.warn('Cannot track action: user not authenticated');
@@ -66,7 +66,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
       });
       
       logger.debug('Action tracked', { actionType, context, userId: currentUser.uid });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to track action', { error, actionType, context });
     }
   }, [currentUser?.uid]);
@@ -109,7 +109,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
           segmentsCount: segments.length,
           userId: currentUser?.uid
         });
-      } catch (error) {
+      } catch (error: unknown) {
         logger.error('Failed to initialize AI Analytics', { error });
         setState(prev => ({
           ...prev,
@@ -135,7 +135,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
           lastUpdated: new Date()
         }));
         logger.debug('Insights auto-refreshed', { count: insights.length });
-      } catch (error) {
+      } catch (error: unknown) {
         logger.warn('Failed to auto-refresh insights', { error });
       }
     }, 5 * 60 * 1000); // Every 5 minutes
@@ -147,7 +147,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
   const trackAction = useCallback((
     actionType: string, 
     context: string, 
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) => {
     if (!isInitialized.current) {
       // Queue the action for later processing
@@ -173,7 +173,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
         confidence: prediction?.confidence 
       });
       return prediction;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to predict next action', { error, context });
       return null;
     }
@@ -206,7 +206,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
         insightsCount: insights.length,
         segmentsCount: segments.length 
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to refresh insights', { error });
       setState(prev => ({
         ...prev,
@@ -233,7 +233,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
         resourceCount: strategy.preloadResources.length 
       });
       return strategy;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get caching strategy', { error });
       return {
         preloadResources: [],
@@ -260,7 +260,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
 };
 
 // Custom hook for page-level tracking
-export const usePageTracking = (pageName: string, metadata?: Record<string, any>) => {
+export const usePageTracking = (pageName: string, metadata?: Record<string, unknown>) => {
   const { trackAction } = useAIAnalytics();
 
   useEffect(() => {
@@ -279,7 +279,7 @@ export const useFeatureTracking = () => {
   const trackFeatureUsage = useCallback((
     featureName: string, 
     action: 'start' | 'complete' | 'error' | 'cancel',
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) => {
     trackAction('feature', `${featureName}:${action}`, {
       ...metadata,

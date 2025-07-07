@@ -79,7 +79,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       setInsights(insightsData);
       setCollaborationData(collaborationMetrics);
       setQualityData(qualityMetrics);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
       setIsLoading(false);

@@ -123,7 +123,7 @@ export const usePWAPerformance = () => {
           memoryUsage: metrics.memoryUsage ? `${Math.round(metrics.memoryUsage)}%` : 'N/A',
         });
 
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error measuring PWA performance:', error);
         setPerformanceData(prev => ({ 
           ...prev, 

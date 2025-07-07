@@ -74,7 +74,7 @@ export const PerformanceDashboard: React.FC = () => {
         },
         lastUpdated: new Date().toISOString(),
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to update metrics:', error);
     } finally {
       setIsRefreshing(false);

@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface FormData {
   platform: string;
   format: string;
@@ -24,7 +26,7 @@ export interface SavedScript {
   title: string;
   script: string;
   scriptContent: string;
-  createdAt: any; // Using `any` for Firebase ServerTimestamp
+  createdAt: Timestamp; // Using `any` for Firebase ServerTimestamp
   formData: FormData;
   userId: string;
 }
@@ -45,9 +47,9 @@ export interface EnhancedProject {
   status: 'draft' | 'completed' | 'published';
   
   // Timestamps aprimorados
-  createdAt: any; // Firebase Timestamp
-  updatedAt: any; // Firebase Timestamp
-  lastEditedAt?: any; // Firebase Timestamp
+  createdAt: Timestamp; // Firebase Timestamp
+  updatedAt: Timestamp; // Firebase Timestamp
+  lastEditedAt?: Timestamp; // Firebase Timestamp
   
   // Métricas
   version: number;
@@ -58,7 +60,7 @@ export interface EnhancedProject {
   // Compartilhamento
   isShared: boolean;
   shareLink?: string;
-  shareExpiresAt?: any; // Firebase Timestamp
+  shareExpiresAt?: Timestamp; // Firebase Timestamp
 }
 
 export interface Tag {
@@ -68,7 +70,7 @@ export interface Tag {
   color: string;
   category: 'platform' | 'tone' | 'audience' | 'status' | 'custom';
   usageCount: number;
-  createdAt: any; // Firebase Timestamp
+  createdAt: Timestamp; // Firebase Timestamp
   isSystemTag: boolean;
 }
 
@@ -79,8 +81,8 @@ export interface Folder {
   description?: string;
   parentId?: string; // Para hierarquia
   color: string;
-  createdAt: any; // Firebase Timestamp
-  updatedAt: any; // Firebase Timestamp
+  createdAt: Timestamp; // Firebase Timestamp
+  updatedAt: Timestamp; // Firebase Timestamp
   projectCount: number;
   isDefault: boolean;
 }
@@ -134,8 +136,8 @@ export interface TextSelection {
   paragraphContext: string;
   isActive: boolean;
   hasActiveImprovement: boolean;
-  createdAt: any; // Firebase Timestamp
-  lastModifiedAt: any; // Firebase Timestamp
+  createdAt: Timestamp; // Firebase Timestamp
+  lastModifiedAt: Timestamp; // Firebase Timestamp
 }
 
 export interface AISuggestion {
@@ -166,8 +168,8 @@ export interface AIImprovement {
     input: number;
     output: number;
   };
-  createdAt: any; // Firebase Timestamp
-  resolvedAt?: any; // Firebase Timestamp
+  createdAt: Timestamp; // Firebase Timestamp
+  resolvedAt?: Timestamp; // Firebase Timestamp
 }
 
 export type ImprovementType = 
@@ -199,7 +201,7 @@ export interface ScriptVersion {
     reasoning?: string;
     aiSuggestionId?: string;
   }>;
-  createdAt: any; // Firebase Timestamp
+  createdAt: Timestamp; // Firebase Timestamp
   wordCount: number;
   characterCount: number;
   readabilityScore?: number;
@@ -342,7 +344,7 @@ export interface EditorAction {
   id: string;
   type: 'selection' | 'ai_request' | 'suggestion_accepted' | 'suggestion_rejected' | 'manual_edit' | 'version_save';
   timestamp: Timestamp;
-  data: any;
+  data: unknown;
   duration?: number;
 }
 
@@ -517,7 +519,7 @@ export interface GeminiCandidate {
   content: GeminiContent;
   finishReason: string;
   safetyRatings: GeminiSafetyRating[];
-  citationMetadata?: any;
+  citationMetadata?: unknown;
 }
 
 export interface GeminiSafetyRating {
@@ -560,7 +562,7 @@ export interface KeyboardShortcut {
 
 export interface ValidationRule {
   type: 'length' | 'words' | 'sentences' | 'pattern' | 'custom';
-  constraint: any;
+  constraint: string | number | RegExp | ValidationFunction;
   message: string;
   severity: 'error' | 'warning' | 'info';
 }
@@ -573,7 +575,7 @@ export interface ContentConstraints {
   requiredKeywords: string[];
   forbiddenWords: string[];
   toneConstraints: string[];
-  platformSpecific: Record<string, any>;
+  platformSpecific: Record<string, unknown>;
 }
 
 // **TIPOS PARA FASE 3 - FUNCIONALIDADES AVANÇADAS**
@@ -821,7 +823,7 @@ export interface ProductivityInsight {
   type: 'tip' | 'achievement' | 'goal' | 'warning';
   title: string;
   description: string;
-  data: any;
+  data: unknown;
   priority: 'low' | 'medium' | 'high';
   isRead: boolean;
   createdAt: Timestamp;
@@ -930,7 +932,7 @@ export interface TemplatePlaceholder {
   name: string;
   description: string;
   type: 'text' | 'number' | 'select' | 'multiselect' | 'image' | 'video';
-  defaultValue?: any;
+  defaultValue?: unknown;
   options?: string[];
   validation?: {
     required: boolean;
@@ -944,7 +946,7 @@ export interface TemplatePlaceholder {
 export interface OfflineData {
   id: string;
   type: 'project' | 'template' | 'analytics' | 'settings';
-  data: any;
+  data: unknown;
   lastModified: Timestamp;
   syncStatus: 'synced' | 'pending' | 'conflict' | 'error';
   syncAttempts: number;
@@ -984,7 +986,7 @@ export interface NotificationPermission {
     type: 'desktop' | 'mobile' | 'tablet';
     browser: string;
     lastActive: Timestamp;
-    pushSubscription?: any;
+    pushSubscription?: PushSubscription;
   }[];
 }
 
@@ -1076,7 +1078,7 @@ export interface AIWorkflow {
 export interface AIWorkflowStep {
   id: string;
   type: 'analyze' | 'generate' | 'refine' | 'translate' | 'summarize' | 'enhance' | 'validate';
-  config: any;
+  config: unknown;
   order: number;
   isOptional: boolean;
   retryOnFailure: boolean;

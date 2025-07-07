@@ -94,7 +94,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
       
       setVersions(projectVersions);
       setCurrentVersion(current);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar versões:', error);
     }
   }, [projectId]);
@@ -202,7 +202,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
         showSuggestions: contextualSuggestions.length > 0
       }));
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter sugestões contextuais:', error);
       setUIState(prev => ({ ...prev, isProcessing: false }));
     }
@@ -251,7 +251,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
 
       callbacks.onAIRequest?.(request);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro no refinamento de IA:', error);
       setUIState(prev => ({ 
         ...prev, 
@@ -284,7 +284,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
       // Remover sugestão da lista
       setSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao aplicar sugestão:', error);
     }
   };
@@ -314,7 +314,7 @@ export const AdvancedTextEditor: React.FC<AdvancedTextEditorProps> = ({
 
       callbacks.onVersionSave?.(version);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar versão:', error);
       setUIState(prev => ({ ...prev, isProcessing: false }));
     }
