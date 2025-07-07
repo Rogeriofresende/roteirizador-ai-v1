@@ -62,7 +62,7 @@ export class AIEditorService {
 
       return suggestions;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro no refinamento de texto:', error);
       await this.updateRequestStatus(request.id, 'failed');
       throw new Error(`Falha no refinamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -104,7 +104,7 @@ export class AIEditorService {
         return acc;
       }, {} as Record<string, AISuggestion[]>);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro no batch de sugestões:', error);
       throw error;
     }
@@ -157,7 +157,7 @@ export class AIEditorService {
         suggestions: analysis.suggestions || []
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na análise de conteúdo:', error);
       return {
         sentiment: 0,
@@ -204,7 +204,7 @@ export class AIEditorService {
       const suggestions = JSON.parse(suggestionsText.trim());
       return Array.isArray(suggestions) ? suggestions : ['Erro no formato das sugestões'];
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro nas sugestões contextuais:', error);
       return ['Erro ao gerar sugestões'];
     }
@@ -277,7 +277,7 @@ export class AIEditorService {
 
       return result;
 
-    } catch (error) {
+    } catch (error: unknown) {
       if (retryCount < this.MAX_RETRIES && !(error instanceof Error && error.name === 'AbortError')) {
         console.warn(`Tentativa ${retryCount + 1} falhou, tentando novamente...`);
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
@@ -362,7 +362,7 @@ export class AIEditorService {
 
       return [suggestion];
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao processar resposta do Gemini:', error);
       throw new Error('Falha ao processar resposta da IA');
     }
@@ -382,7 +382,7 @@ export class AIEditorService {
     try {
       const requestRef = doc(db, 'ai_refinement_requests', request.id);
       await setDoc(requestRef, request);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar request de refinamento:', error);
       throw error;
     }
@@ -392,7 +392,7 @@ export class AIEditorService {
     try {
       const suggestionRef = doc(db, 'ai_suggestions', suggestion.id);
       await setDoc(suggestionRef, suggestion);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar sugestão:', error);
       throw error;
     }
@@ -405,7 +405,7 @@ export class AIEditorService {
     try {
       const requestRef = doc(db, 'ai_refinement_requests', requestId);
       await updateDoc(requestRef, { status });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar status:', error);
     }
   }
@@ -430,7 +430,7 @@ export class AIEditorService {
       const suggestionsSnapshot = await getDocs(suggestionsQuery);
       return suggestionsSnapshot.docs.map(doc => doc.data() as AISuggestion);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter histórico de IA:', error);
       return [];
     }
@@ -447,7 +447,7 @@ export class AIEditorService {
       // Calcular analytics se não existir
       return await this.calculateAIAnalytics(userId);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter analytics de IA:', error);
       return null;
     }
@@ -502,7 +502,7 @@ export class AIEditorService {
       
       return analytics;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao calcular analytics:', error);
       throw error;
     }
@@ -521,7 +521,7 @@ export class AIEditorService {
         data,
         timestamp: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao rastrear interação de IA:', error);
     }
   }

@@ -763,6 +763,25 @@ export interface CommentReply {
   updatedAt: Timestamp;
 }
 
+export interface CollaborationMessage {
+  id: string;
+  sessionId: string;
+  userId: string;
+  content: string;
+  type: 'text' | 'system';
+  timestamp: number;
+  createdAt: Timestamp;
+}
+
+export interface SessionData {
+  sessionId: string;
+  userId: string;
+  startTime: Date;
+  pageViews: number;
+  events: number;
+  duration: number;
+}
+
 // **ANALYTICS AVANÇADO**
 export interface AdvancedAnalytics {
   userId: string;

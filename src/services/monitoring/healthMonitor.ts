@@ -47,7 +47,7 @@ export class InfrastructureHealthMonitor {
         timestamp: Date.now()
       };
       
-    } catch (error) {
+    } catch (error: unknown) {
       return {
         name,
         status: 'critical',

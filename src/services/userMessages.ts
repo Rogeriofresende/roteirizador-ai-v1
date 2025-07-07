@@ -19,7 +19,7 @@ export interface UserMessage {
   actions?: UserMessageAction[];
   autoClose?: boolean;
   duration?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UserMessageAction {
@@ -193,7 +193,7 @@ class UserMessageService {
     error: Error | string,
     category: ErrorCategory,
     severity: ErrorSeverity,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): UserMessage {
     const errorMessage = typeof error === 'string' ? error : error.message;
     const template = this.findTemplate(category, errorMessage, context);
@@ -230,7 +230,7 @@ class UserMessageService {
    */
   createSuccessMessage(
     key: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): UserMessage {
     const template = successTemplates[key] || {
       title: 'Operação realizada com sucesso',
@@ -255,7 +255,7 @@ class UserMessageService {
   /**
    * Get message for API error status
    */
-  getApiErrorMessage(status: number, context?: Record<string, any>): UserMessage {
+  getApiErrorMessage(status: number, context?: Record<string, unknown>): UserMessage {
     const statusKey = status.toString();
     const template = errorTemplates.api[statusKey] || errorTemplates.api['500'];
     
@@ -278,7 +278,7 @@ class UserMessageService {
   private findTemplate(
     category: ErrorCategory,
     errorMessage: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): MessageTemplate {
     const categoryTemplates = errorTemplates[category];
     
@@ -294,7 +294,7 @@ class UserMessageService {
 
   private matchErrorToTemplate(
     errorMessage: string,
-    context: Record<string, any> = {},
+    context: Record<string, unknown> = {},
     templates: Record<string, MessageTemplate>
   ): string {
     const message = errorMessage.toLowerCase();
@@ -365,10 +365,10 @@ class UserMessageService {
 export const userMessageService = new UserMessageService();
 
 // Helper functions
-export const createErrorMessage = (error: Error | string, category: ErrorCategory, severity: ErrorSeverity, context?: Record<string, any>) =>
+export const createErrorMessage = (error: Error | string, category: ErrorCategory, severity: ErrorSeverity, context?: Record<string, unknown>) =>
   userMessageService.createErrorMessage(error, category, severity, context);
 
-export const createSuccessMessage = (key: string, context?: Record<string, any>) =>
+export const createSuccessMessage = (key: string, context?: Record<string, unknown>) =>
   userMessageService.createSuccessMessage(key, context);
 
 export default userMessageService; 

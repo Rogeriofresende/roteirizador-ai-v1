@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
 import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { Plus, Edit3, Copy, Trash2, Search, Grid, List } from 'lucide-react';
+import { Timestamp } from 'firebase/firestore';
 
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -15,9 +16,13 @@ interface SimpleProject {
   title: string;
   content: string;
   platform: string;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   isFavorite?: boolean;
+  formData: {
+    platform: string;
+    duration: string;
+  };
 }
 
 const SimpleUserDashboard: React.FC = () => {
@@ -121,18 +126,24 @@ const SimpleUserDashboard: React.FC = () => {
     }
   };
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return '';
+  const formatDate = (timestamp: Timestamp | Date) => {
+    if (!timestamp) return 'Data inválida';
     
     try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch {
-      return '';
+      // Se é um Timestamp do Firebase
+      if (timestamp && typeof timestamp.toDate === 'function') {
+        return timestamp.toDate().toLocaleDateString('pt-BR');
+      }
+      
+      // Se é uma Date regular
+      if (timestamp instanceof Date) {
+        return timestamp.toLocaleDateString('pt-BR');
+      }
+      
+      return 'Data inválida';
+    } catch (error) {
+      console.error('Erro ao formatar data:', error);
+      return 'Data inválida';
     }
   };
 

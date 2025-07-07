@@ -157,7 +157,7 @@ class OfflineStorageManager {
 
       this.currentUsage += dataSize;
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to store offline data', { key, error }, 'PWA');
       return false;
     }
@@ -166,7 +166,7 @@ class OfflineStorageManager {
   async getOfflineData<T>(key: string): Promise<T | null> {
     try {
       return await cacheService.get<T>(key);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to retrieve offline data', { key, error }, 'PWA');
       return null;
     }
@@ -177,7 +177,7 @@ class OfflineStorageManager {
       try {
         const estimate = await navigator.storage.estimate();
         this.currentUsage = estimate.usage || 0;
-      } catch (error) {
+      } catch (error: unknown) {
         logger.warn('Failed to estimate storage usage', { error }, 'PWA');
       }
     }
@@ -229,7 +229,7 @@ export class PWAOptimizationService {
 
       logger.info('PWA Optimization Service initialized', {}, 'PWA');
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize PWA Optimization Service', { error }, 'PWA');
       return false;
     }
@@ -244,7 +244,7 @@ export class PWAOptimizationService {
         const data = await fetchFunction();
         await this.offlineStorage.storeOfflineData(key, data);
         return data;
-      } catch (error) {
+      } catch (error: unknown) {
         logger.warn('Online request failed, falling back to offline', { key, error }, 'PWA');
       }
     }
@@ -292,7 +292,7 @@ export class PWAOptimizationService {
                 ttl: 24 * 60 * 60 * 1000 // 24 hours
               });
             }
-          } catch (error) {
+          } catch (error: unknown) {
             logger.warn('Failed to preload resource', { url: resource.url, error }, 'PWA');
           }
         })
@@ -303,7 +303,7 @@ export class PWAOptimizationService {
         resourceCount: resources.length
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Critical resource preloading failed', { error }, 'PWA');
     }
   }

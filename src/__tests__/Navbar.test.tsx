@@ -3,24 +3,23 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { MemoryRouter } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useAuth } from '../contexts/AuthContext';
 
-// jest.MockedFunction do contexto de autenticação
+// Mock do contexto de autenticação
 jest.mock('../contexts/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 
-const mockUseAuth = useAuth as jest.MockedFunction<typeof 
+// Import após o mock
+import { useAuth } from '../contexts/AuthContext';
+
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockNavigate = jest.fn();
 
-// jest.MockedFunction do react-router-dom
-jest.mock('react-router-dom', async () => {
-  const actual = await jest.importActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+// Mock do react-router-dom
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
 
 describe('Navbar', () => {
   const renderWithRouter = (component: React.ReactElement) => {
@@ -35,7 +34,12 @@ describe('Navbar', () => {
     jest.clearAllMocks();
     mockUseAuth.mockReturnValue({
       currentUser: null,
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
       logout: jest.fn(),
+      updateUserProfile: jest.fn()
     });
   });
 
@@ -58,9 +62,16 @@ describe('Navbar', () => {
       currentUser: { 
         uid: 'test-uid', 
         email: 'user@test.com',
-        displayName: 'Usuário Teste'
+        displayName: 'Usuário Teste',
+        photoURL: null,
+        emailVerified: true
       },
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
       logout: jest.fn(),
+      updateUserProfile: jest.fn()
     });
 
     renderWithRouter(<Navbar />);
@@ -72,8 +83,19 @@ describe('Navbar', () => {
   it('executa logout ao clicar no botão sair', () => {
     const mockLogout = jest.fn();
     mockUseAuth.mockReturnValue({
-      currentUser: { uid: 'test-uid', email: 'user@test.com' },
+      currentUser: { 
+        uid: 'test-uid', 
+        email: 'user@test.com',
+        displayName: null,
+        photoURL: null,
+        emailVerified: true
+      },
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
       logout: mockLogout,
+      updateUserProfile: jest.fn()
     });
 
     renderWithRouter(<Navbar />);
@@ -130,9 +152,15 @@ describe('Navbar', () => {
         uid: 'test-uid', 
         email: 'user@test.com',
         photoURL: 'https://example.com/avatar.jpg',
-        displayName: 'Usuário Teste'
+        displayName: 'Usuário Teste',
+        emailVerified: true
       },
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
       logout: jest.fn(),
+      updateUserProfile: jest.fn()
     });
 
     renderWithRouter(<Navbar />);
@@ -142,7 +170,7 @@ describe('Navbar', () => {
   });
 
   it('mostra indicador de status PWA quando instalado', () => {
-    // jest.MockedFunction do status PWA
+    // Mock do status PWA
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation(query => ({
@@ -182,8 +210,19 @@ describe('Navbar', () => {
 
   it('mostra contador de roteiros para usuário logado', () => {
     mockUseAuth.mockReturnValue({
-      currentUser: { uid: 'test-uid', email: 'user@test.com' },
+      currentUser: { 
+        uid: 'test-uid', 
+        email: 'user@test.com',
+        displayName: null,
+        photoURL: null,
+        emailVerified: true
+      },
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
       logout: jest.fn(),
+      updateUserProfile: jest.fn()
     });
 
     renderWithRouter(<Navbar />);
@@ -208,7 +247,7 @@ describe('Navbar', () => {
   });
 
   it('mostra breadcrumb em páginas internas', () => {
-    renderWithRouter(<Navbar currentPage="Generator" />);
+    renderWithRouter(<Navbar />);
     
     const breadcrumb = screen.queryByText(/gerador|criar roteiro/i);
     if (breadcrumb) {

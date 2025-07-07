@@ -1,35 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
 interface SystemMetrics {
-  performance: {
-    renderTime: number;
-    memoryUsage: number;
-    bundleSize: number;
-    cacheHitRate: number;
-  };
-  health: {
-    status: 'healthy' | 'warning' | 'critical';
-    uptime: number;
-    lastCheck: number;
-    services: Array<{
-      name: string;
-      status: 'healthy' | 'warning' | 'critical';
-      latency: number;
-    }>;
-  };
-  deployment: {
-    version: string;
-    environment: string;
-    lastDeploy: number;
-    buildSize: number;
-  };
+  cpu: number;
+  memory: number;
+  network: number;
+  responseTime: number;
+  errorRate: number;
+  throughput: number;
+}
+
+interface AlertData {
+  id: string;
+  type: 'error' | 'warning' | 'info';
+  message: string;
+  timestamp: Date;
+  resolved: boolean;
+}
+
+interface LogEntry {
+  id: string;
+  level: 'error' | 'warn' | 'info' | 'debug';
+  message: string;
+  timestamp: Date;
+  source: string;
+  details?: Record<string, unknown>;
 }
 
 export const MonitoringDashboard: React.FC = () => {
-  const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+  const [metrics, setMetrics] = useState<SystemMetrics>({
+    cpu: 0,
+    memory: 0,
+    network: 0,
+    responseTime: 0,
+    errorRate: 0,
+    throughput: 0
+  });
+  
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -39,28 +50,12 @@ export const MonitoringDashboard: React.FC = () => {
     const navTiming = performanceEntries[0];
     
     return {
-      performance: {
-        renderTime: navTiming ? navTiming.loadEventEnd - navTiming.loadEventStart : 0,
-        memoryUsage: 'memory' in performance ? (performance as any).memory.usedJSHeapSize / 1024 / 1024 : 0,
-        bundleSize: 330, // KB - from our optimizations
-        cacheHitRate: 85.5
-      },
-      health: {
-        status: 'healthy',
-        uptime: Date.now() - (Date.now() - 24 * 60 * 60 * 1000), // 24h uptime simulation
-        lastCheck: Date.now(),
-        services: [
-          { name: 'Frontend App', status: 'healthy', latency: 45 },
-          { name: 'CDN', status: 'healthy', latency: 120 },
-          { name: 'Analytics', status: 'healthy', latency: 89 }
-        ]
-      },
-      deployment: {
-        version: 'v2.1.0-phase6',
-        environment: 'production',
-        lastDeploy: Date.now() - 2 * 60 * 60 * 1000, // 2 hours ago
-        buildSize: 330
-      }
+      cpu: 0,
+      memory: 'memory' in performance ? (performance as any).memory.usedJSHeapSize / 1024 / 1024 : 0,
+      network: 0,
+      responseTime: navTiming ? navTiming.loadEventEnd - navTiming.loadEventStart : 0,
+      errorRate: 0,
+      throughput: 0
     };
   };
 
@@ -108,6 +103,29 @@ export const MonitoringDashboard: React.FC = () => {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   };
+
+  const updateMetrics = useCallback((newMetrics: Partial<SystemMetrics>) => {
+    setMetrics(prev => ({ ...prev, ...newMetrics }));
+  }, []);
+
+  const addAlert = useCallback((alert: Omit<AlertData, 'id' | 'timestamp'>) => {
+    const newAlert: AlertData = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      resolved: false,
+      ...alert
+    };
+    setAlerts(prev => [newAlert, ...prev].slice(0, 100)); // Keep last 100 alerts
+  }, []);
+
+  const addLog = useCallback((log: Omit<LogEntry, 'id' | 'timestamp'>) => {
+    const newLog: LogEntry = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      ...log
+    };
+    setLogs(prev => [newLog, ...prev].slice(0, 1000)); // Keep last 1000 logs
+  }, []);
 
   if (loading) {
     return (

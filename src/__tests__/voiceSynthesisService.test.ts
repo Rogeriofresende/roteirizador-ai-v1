@@ -17,14 +17,30 @@ Object.defineProperty(global, 'speechSynthesis', {
   writable: true
 });
 
-// jest.MockedFunction SpeechSynthesisUtterance
-global.SpeechSynthesisUtterance = jest.fn().mockImplementation((text) => ({
-  text,
+// Mock SpeechSynthesisUtterance
+const mockUtterance = {
+  text: '',
+  lang: 'en-US',
   voice: null,
   volume: 1,
   rate: 1,
-  pitch: 1
-}));
+  pitch: 1,
+  onboundary: null,
+  onend: null,
+  onerror: null,
+  onmark: null,
+  onpause: null,
+  onresume: null,
+  onstart: null,
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+  dispatchEvent: jest.fn()
+};
+
+global.SpeechSynthesisUtterance = jest.fn().mockImplementation((text) => ({
+  ...mockUtterance,
+  text: text || ''
+})) as any;
 
 describe('🎤 VoiceSynthesisService - Testes Críticos', () => {
   beforeEach(() => {

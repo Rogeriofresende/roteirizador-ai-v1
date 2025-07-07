@@ -3,18 +3,24 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { MemoryRouter } from 'react-router-dom';
 import GeneratorPage from '../pages/GeneratorPage';
-import { useAuth } from '../contexts/AuthContext';
 
-// jest.MockedFunction das dependências
+// Mock das dependências
 jest.mock('../contexts/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 
 jest.mock('../services/geminiService', () => ({
-  generateScript: jest.fn(),
+  geminiService: {
+    generateScript: jest.fn(),
+    isConfigured: jest.fn(() => true),
+    setAPIKey: jest.fn()
+  }
 }));
 
-const mockUseAuth = useAuth as jest.MockedFunction<typeof 
+// Import após o mock
+import { useAuth } from '../contexts/AuthContext';
+
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('GeneratorPage', () => {
   const renderWithRouter = (component: React.ReactElement) => {
@@ -28,9 +34,15 @@ describe('GeneratorPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // jest.MockedFunction padrão do usuário autenticado
+    // Mock padrão do usuário autenticado
     mockUseAuth.mockReturnValue({
       currentUser: { uid: 'test-uid', email: 'test@example.com' },
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
+      logout: jest.fn(),
+      updateUserProfile: jest.fn()
     });
   });
 
@@ -81,6 +93,12 @@ describe('GeneratorPage', () => {
   it('não mostra botão salvar quando não logado', () => {
     mockUseAuth.mockReturnValue({
       currentUser: null,
+      loading: false,
+      signInWithGoogle: jest.fn(),
+      signInWithEmail: jest.fn(),
+      signUpWithEmail: jest.fn(),
+      logout: jest.fn(),
+      updateUserProfile: jest.fn()
     });
 
     renderWithRouter(<GeneratorPage />);

@@ -40,6 +40,7 @@ const GeneratorPage: React.FC = () => {
   const [script, setScript] = useState<string>('');
   const [isConfigured, setIsConfigured] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // STEP 2: Advanced Editor Integration
   const { currentUser } = useAuth();
@@ -188,43 +189,10 @@ const GeneratorPage: React.FC = () => {
         sessionStats: getSessionStats()
       });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao gerar roteiro:', error);
-      
-      // V5.1: Record failed pattern for learning
-      v51Intelligence.recordPattern(
-        'session_' + Date.now(),
-        ['click:generate_script', 'error:generation_failed'],
-        'error',
-        { 
-          errorType: error.message.substring(0, 100),
-          platform: formData.platform
-        }
-      );
-      
-      // V5.1: Enhanced error tracking
-      trackAction('error', 'generation_failed', { 
-        error: error.message,
-        formData 
-      });
-      
-      analyticsService.trackError('Script Generation Failed', {
-        error: error.message,
-        platform: formData.platform,
-        subject: formData.subject,
-        sessionStats: getSessionStats()
-      });
-
-      let userMessage = 'Erro ao gerar roteiro. ';
-      if (error.message.includes('API key')) {
-        userMessage += 'Verifique sua API key do Gemini.';
-      } else if (error.message.includes('quota')) {
-        userMessage += 'Limite de uso atingido. Tente novamente mais tarde.';
-      } else {
-        userMessage += 'Tente novamente em alguns minutos.';
-      }
-      
-      alert(userMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setError(`Falha ao gerar roteiro: ${errorMessage}`);
     } finally {
       stopLoading();
     }
@@ -325,7 +293,7 @@ const GeneratorPage: React.FC = () => {
     });
   }, [showTemplateLibrary, featuredTemplates.length, trackAction]);
 
-  const handleUseTemplate = useCallback(async (template: any) => {
+  const handleUseTemplate = useCallback(async (template: Event) => {
     if (!currentUser) return;
 
     try {

@@ -9,7 +9,7 @@ export interface UserBehaviorPattern {
   context: string;
   timestamp: Date;
   sessionId: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface PredictiveInsight {
@@ -28,7 +28,7 @@ export interface PredictiveInsight {
 export interface UserSegment {
   id: string;
   name: string;
-  criteria: Record<string, any>;
+  criteria: Record<string, unknown>;
   userCount: number;
   avgSessionDuration: number;
   topActions: string[];
@@ -57,7 +57,7 @@ class AIAnalyticsService {
       
       this.initialized = true;
       logger.info('AI Analytics Service initialized successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize AI Analytics Service', { error });
       throw error;
     }
@@ -116,7 +116,7 @@ class AIAnalyticsService {
       });
 
       return relevantInsights.slice(0, 10); // Top 10 insights
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to generate insights', { error, userId });
       return [];
     }
@@ -176,7 +176,7 @@ class AIAnalyticsService {
         confidence,
         reasoning: `Based on ${frequency} similar patterns in ${nextActions.length} previous sessions`
       };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to predict next action', { error, userId, currentContext });
       return null;
     }
@@ -226,7 +226,7 @@ class AIAnalyticsService {
 
       this.insights.push(...recommendations);
       return recommendations;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to generate performance recommendations', { error });
       return [];
     }
@@ -287,7 +287,7 @@ class AIAnalyticsService {
         const parsed = JSON.parse(storedData);
         this.behaviorBuffer = parsed.slice(-100); // Keep last 100 behaviors
         logger.debug('Historical data loaded', { behaviors: this.behaviorBuffer.length });
-      } catch (error) {
+      } catch (error: unknown) {
         logger.warn('Failed to parse historical data', { error });
       }
     }
@@ -397,7 +397,7 @@ class AIAnalyticsService {
     nextAction?: string;
     frequency: number;
   }> {
-    const patterns: Record<string, any> = {};
+    const patterns: Record<string, unknown> = {};
     
     for (let i = 0; i < behaviors.length - 1; i++) {
       const current = behaviors[i];
@@ -512,7 +512,7 @@ class AIAnalyticsService {
     try {
       const metrics = await performanceService.getMetrics();
       return await this.getPerformanceRecommendations();
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to analyze performance patterns', { error });
       return [];
     }
@@ -532,7 +532,7 @@ class AIAnalyticsService {
         behaviors: recentBehaviors.length,
         insights: recentInsights.length 
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn('Failed to save to localStorage', { error });
     }
   }

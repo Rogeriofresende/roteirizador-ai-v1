@@ -23,7 +23,7 @@ const TestComponent = ({ shouldThrow = false, dataSize = 10 }: { shouldThrow?: b
       <p>Data items: {data.length}</p>
       {data.slice(0, 5).map(item => (
         <div key={item.id} data-testid={`item-${item.id}`}>
-          {item.name}
+          {item.title}
         </div>
       ))}
     </div>

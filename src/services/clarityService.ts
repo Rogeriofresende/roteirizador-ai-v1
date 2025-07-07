@@ -15,7 +15,7 @@ interface ClarityConfig {
 
 interface ClarityEvent {
   event: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
 }
 
 class ClarityService {
@@ -59,7 +59,7 @@ class ClarityService {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize Microsoft Clarity after retries', { 
         error, 
         attempts: this.initializationAttempts,
@@ -76,7 +76,7 @@ class ClarityService {
       try {
         await this.loadClarityScript();
         return; // Success, exit retry loop
-      } catch (error) {
+      } catch (error: unknown) {
         logger.warn(`Clarity initialization attempt ${this.initializationAttempts} failed`, { 
           error,
           willRetry: this.initializationAttempts < this.maxRetries 
@@ -162,7 +162,7 @@ class ClarityService {
           attempt: this.initializationAttempts,
           src: script.src
         });
-      } catch (error) {
+      } catch (error: unknown) {
         clearTimeout(timeoutId);
         logger.error('Failed to inject Clarity script', { error });
         resolve(); // Don't break the app
@@ -191,7 +191,7 @@ class ClarityService {
             resolve();
             return;
           }
-        } catch (error) {
+        } catch (error: unknown) {
           logger.debug('Clarity check failed', { error, attempts });
         }
         
@@ -214,7 +214,7 @@ class ClarityService {
   }
 
   // Event tracking methods with enhanced error handling
-  trackEvent(event: string, properties?: Record<string, any>): void {
+  trackEvent(event: string, properties?: Record<string, unknown>): void {
     if (!this.isInitialized || !this.config.enabled) {
       logger.debug('Clarity event not tracked - service not initialized', { event });
       return;
@@ -231,7 +231,7 @@ class ClarityService {
           clarityType: typeof window.clarity
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to track Clarity event', { 
         event, 
         error: error.message,
@@ -244,20 +244,20 @@ class ClarityService {
     this.trackEvent('page_view', { page });
   }
 
-  trackUserAction(action: string, context?: Record<string, any>): void {
+  trackUserAction(action: string, context?: Record<string, unknown>): void {
     this.trackEvent('user_action', { action, ...context });
   }
 
-  trackError(error: string, context?: Record<string, any>): void {
+  trackError(error: string, context?: Record<string, unknown>): void {
     this.trackEvent('error', { error, ...context });
   }
 
-  trackConversionFunnel(step: string, data?: Record<string, any>): void {
+  trackConversionFunnel(step: string, data?: Record<string, unknown>): void {
     this.trackEvent('conversion_funnel', { step, ...data });
   }
 
   // User identification with enhanced error handling
-  identify(userId: string, traits?: Record<string, any>): void {
+  identify(userId: string, traits?: Record<string, unknown>): void {
     if (!this.isInitialized || !this.config.enabled) {
       logger.debug('Clarity identify not called - service not initialized');
       return;
@@ -274,7 +274,7 @@ class ClarityService {
           clarityType: typeof window.clarity
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to identify user in Clarity', { 
         userId, 
         error: error.message,
@@ -317,7 +317,7 @@ class ClarityService {
 declare global {
   interface Window {
     clarity?: {
-      (method: string, ...args: any[]): void;
+      (method: string, ...args: unknown[]): void;
       consent?: boolean;
       [key: string]: any;
     };

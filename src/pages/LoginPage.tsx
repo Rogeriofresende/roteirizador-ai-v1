@@ -25,11 +25,13 @@ const LoginPage: React.FC = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/');
-    } catch (err: any) {
-      setError('Falha ao fazer login. Verifique seu e-mail e senha.');
-      console.error(err);
+    } catch (err: unknown) {
+      console.error('Erro no login:', err);
+      const error = err as Error;
+      setError(`Erro: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -39,11 +41,30 @@ const LoginPage: React.FC = () => {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       navigate('/');
-    } catch (err: any) {
-      setError('Falha ao fazer login com o Google.');
-      console.error(err);
+    } catch (err: unknown) {
+      console.error('Erro no Google Sign-In:', err);
+      const error = err as Error;
+      setError(`Erro: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      console.error('Erro no login:', err);
+      const error = err as Error;
+      setError(`Erro: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

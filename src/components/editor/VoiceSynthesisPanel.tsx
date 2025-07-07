@@ -501,7 +501,7 @@ export const VoiceSynthesisPanel: React.FC<VoiceSynthesisPanelProps> = ({
                           <label className="block text-sm font-medium mb-2">Ênfase</label>
                           <Select
                             value={settings.emphasis}
-                            onValueChange={(value: any) => setSettings({...settings, emphasis: value})}
+                            onValueChange={(value: Event) => setSettings({...settings, emphasis: value})}
                           >
                             <option value="none">Nenhuma</option>
                             <option value="moderate">Moderada</option>

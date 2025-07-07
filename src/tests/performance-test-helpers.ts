@@ -167,11 +167,14 @@ export const generateTestData = {
   }),
   
   largeDataset: (size: number = 100) => {
+    const platforms = ['Platform A', 'Platform B', 'Platform C'];
     return Array.from({ length: size }, (_, _index) => ({
-      id: index,
-      name: `Item ${index}`,
-      value: Math.random() * 100,
-      timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString()
+      id: _index,
+      title: `Test Project ${_index + 1}`,
+      content: `Content for project ${_index + 1}`,
+      platform: platforms[_index % platforms.length],
+      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+      tags: [`tag${_index}`, `category${_index % 3}`]
     }));
   }
 };

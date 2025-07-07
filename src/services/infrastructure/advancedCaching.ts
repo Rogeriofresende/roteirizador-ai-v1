@@ -243,7 +243,7 @@ export class AdvancedCacheManager {
     return { ...this.metrics };
   }
   
-  getStatistics(): Record<string, any> {
+  getStatistics(): Record<string, unknown> {
     const entries = Array.from(this.cache.values());
     const now = Date.now();
     
@@ -287,7 +287,7 @@ export class APIResponseCache extends AdvancedCacheManager {
   
   async cacheAPIResponse(
     endpoint: string,
-    params: Record<string, any>,
+    params: Record<string, unknown>,
     response: any,
     customTTL?: number
   ): Promise<void> {
@@ -299,7 +299,7 @@ export class APIResponseCache extends AdvancedCacheManager {
   
   async getAPIResponse<T>(
     endpoint: string,
-    params: Record<string, any>
+    params: Record<string, unknown>
   ): Promise<T | null> {
     const key = this.generateAPIKey(endpoint, params);
     return await this.get<T>(key);
@@ -310,13 +310,13 @@ export class APIResponseCache extends AdvancedCacheManager {
     return this.invalidateByPattern(pattern);
   }
   
-  private generateAPIKey(endpoint: string, params: Record<string, any>): string {
+  private generateAPIKey(endpoint: string, params: Record<string, unknown>): string {
     const sortedParams = Object.keys(params)
       .sort()
       .reduce((result, key) => {
         result[key] = params[key];
         return result;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
     
     return `${endpoint}:${JSON.stringify(sortedParams)}`;
   }

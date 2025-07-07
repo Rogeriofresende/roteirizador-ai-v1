@@ -18,8 +18,8 @@ declare global {
       toHaveAttribute(attr: string, value?: string): R;
       toHaveClass(...classNames: string[]): R;
       toHaveFocus(): R;
-      toHaveFormValues(values: Record<string, any>): R;
-      toHaveStyle(css: string | Record<string, any>): R;
+      toHaveFormValues(values: Record<string, unknown>): R;
+      toHaveStyle(css: string | Record<string, unknown>): R;
       toHaveTextContent(text: string | RegExp, options?: { normalizeWhitespace: boolean }): R;
       toHaveValue(value: string | string[] | number): R;
       toHaveDisplayValue(value: string | RegExp | (string | RegExp)[]): R;

@@ -18,7 +18,7 @@ interface UserPattern {
   lastSeen: number;
   confidence: number;
   outcome: 'success' | 'abandon' | 'error';
-  context: Record<string, any>;
+  context: Record<string, unknown>;
 }
 
 interface OptimizationSuggestion {
@@ -75,7 +75,7 @@ class V51IntelligenceService {
         storedPatterns: this.patterns.size,
         isLearning: this.isLearning
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize V51Intelligence service', { error });
     }
   }
@@ -85,7 +85,7 @@ class V51IntelligenceService {
     sessionId: string,
     actions: string[],
     outcome: UserPattern['outcome'],
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ): void {
     if (!this.isLearning || actions.length < 2) return;
 
@@ -337,7 +337,7 @@ class V51IntelligenceService {
     try {
       const patternsData = Array.from(this.patterns.entries()).slice(0, 100); // Store only top 100
       localStorage.setItem('v51_patterns', JSON.stringify(patternsData));
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn('Failed to store patterns', { error });
     }
   }
@@ -351,7 +351,7 @@ class V51IntelligenceService {
         this.patterns = new Map(patternsData);
         logger.info('Patterns loaded from storage', { count: this.patterns.size });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn('Failed to load stored patterns', { error });
     }
   }

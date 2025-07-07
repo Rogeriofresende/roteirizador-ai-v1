@@ -78,7 +78,7 @@ const React = {
 };
 
 describe('🔔 Toast System - Testes Críticos', () => {
-  let mockOnClose: any;
+  let mockOnClose: Event;
 
   beforeEach(() => {
     mockOnClose = jest.fn();

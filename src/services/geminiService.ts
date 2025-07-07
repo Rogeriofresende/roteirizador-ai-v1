@@ -40,7 +40,7 @@ export class GeminiService {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
       console.log('✅ Gemini AI inicializado com sucesso');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Erro ao inicializar Gemini:', error);
       analyticsService.trackError('Gemini Initialization Failed', { 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -112,46 +112,10 @@ export class GeminiService {
       
       return text;
 
-    } catch (error: any) {
-      const generationTime = Date.now() - startTime;
-      
-      console.error('❌ ERRO DETALHADO ao gerar roteiro:');
-      console.error('- Mensagem:', error.message);
-      console.error('- Tipo:', error.constructor.name);
-      console.error('- Stack:', error.stack);
-      console.error('- Objeto completo:', error);
-      
-      // Track erro da geração
-      analyticsService.trackScriptGeneration({
-        platform: params.platform,
-        subject: params.subject,
-        duration: params.duration,
-        tone: params.tone,
-        audience: params.audience,
-        success: false,
-        generation_time: generationTime,
-        error_message: error.message
-      });
-      
-      // Mensagens de erro mais específicas
-      if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key')) {
-        throw new Error('API key inválida. Verifique sua chave do Google AI Studio.');
-      }
-      if (error.message?.includes('QUOTA_EXCEEDED')) {
-        throw new Error('Limite de uso da API atingido. Tente novamente mais tarde.');
-      }
-      if (error.message?.includes('SAFETY')) {
-        throw new Error('Conteúdo bloqueado por políticas de segurança. Tente um assunto diferente.');
-      }
-      if (error.message?.includes('PERMISSION_DENIED')) {
-        throw new Error('Permissão negada. Verifique se sua API key tem as permissões necessárias.');
-      }
-      if (error.message?.includes('RESOURCE_EXHAUSTED')) {
-        throw new Error('Recursos esgotados na API. Tente novamente em alguns minutos.');
-      }
-      
-      // Erro genérico com mais detalhes
-      throw new Error(`Erro ao gerar roteiro: ${error.message || 'Erro desconhecido'}. Verifique o console para mais detalhes.`);
+    } catch (error: unknown) {
+      console.error('Erro ao gerar roteiro:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao gerar roteiro';
+      throw new Error(errorMessage);
     }
   }
 
@@ -196,25 +160,10 @@ TEXTO REFINADO:
       });
       
       return refinedText;
-    } catch (error: any) {
-      const processingTime = Date.now() - startTime;
-      
+    } catch (error: unknown) {
       console.error('Erro ao refinar texto:', error);
-      
-      // Track erro no refinamento
-      analyticsService.trackFeatureUsage('text_refinement', {
-        original_length: selectedText.length,
-        processing_time: processingTime,
-        success: false,
-        error_message: error.message
-      });
-      
-      analyticsService.trackError('Text Refinement Failed', {
-        error: error.message,
-        text_length: selectedText.length
-      });
-      
-      throw new Error(`Erro ao refinar texto: ${error.message || 'Erro desconhecido'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao refinar texto';
+      throw new Error(errorMessage);
     }
   }
 
@@ -337,10 +286,11 @@ Gere um roteiro completo, criativo e pronto para produção:
       });
       
       return this.isConfigured();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao configurar API key:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao configurar API key';
       analyticsService.trackError('API Key Configuration Failed', {
-        error: error.message
+        error: errorMessage
       });
       return false;
     }
@@ -374,12 +324,12 @@ Gere um roteiro completo, criativo e pronto para produção:
       });
       
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Teste de conexão falhou:', error);
       
       analyticsService.trackUserAction('connection_test', {
         success: false,
-        error_message: error.message
+        error_message: error instanceof Error ? error.message : 'Erro desconhecido ao testar conexão'
       });
       
       return false;

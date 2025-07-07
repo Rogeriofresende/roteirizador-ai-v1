@@ -366,7 +366,7 @@ class PerformanceBudgetsService {
       }, 'PERFORMANCE_BUDGETS');
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to import performance budgets', {
         error: error instanceof Error ? error.message : 'Unknown',
       }, 'PERFORMANCE_BUDGETS');

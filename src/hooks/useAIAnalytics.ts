@@ -60,7 +60,7 @@ export const useAIAnalytics = (): AIAnalyticsState & AIAnalyticsActions => {
     try {
       aiAnalyticsService.trackBehavior({
         userId: currentUser.uid,
-        actionType: actionType as any,
+        actionType: actionType as 'navigate' | 'interact' | 'error' | 'convert',
         context,
         metadata: metadata || {}
       });

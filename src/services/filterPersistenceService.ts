@@ -42,7 +42,7 @@ export class FilterPersistenceService {
       this.addToFilterHistory(filters);
       
       logger.debug('Filtros salvos automaticamente', { filters });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao salvar filtros atuais', error);
     }
   }
@@ -70,7 +70,7 @@ export class FilterPersistenceService {
       delete parsed.timestamp;
       
       return parsed as FilterOptions;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao carregar filtros salvos', error);
       return null;
     }
@@ -107,7 +107,7 @@ export class FilterPersistenceService {
       history = history.slice(0, 20);
 
       localStorage.setItem(STORAGE_KEYS.FILTER_HISTORY, JSON.stringify(history));
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao adicionar ao histórico de filtros', error);
     }
   }
@@ -127,7 +127,7 @@ export class FilterPersistenceService {
         timestamp: item.timestamp,
         description: this.generateFilterDescription(item.filters)
       }));
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao obter histórico de filtros', error);
       return [];
     }
@@ -161,7 +161,7 @@ export class FilterPersistenceService {
       
       logger.info('Preset de filtro salvo', { presetId, name });
       return presetId;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao salvar preset de filtro', error);
       throw new Error('Falha ao salvar preset de filtro');
     }
@@ -186,7 +186,7 @@ export class FilterPersistenceService {
         createdAt: doc.data().createdAt?.toDate() || new Date(),
         updatedAt: doc.data().updatedAt?.toDate() || new Date()
       })) as SavedFilter[];
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao carregar presets de filtro', error);
       return [];
     }
@@ -208,7 +208,7 @@ export class FilterPersistenceService {
       await setDoc(doc(db, 'filter_presets', presetId), updateData, { merge: true });
       
       logger.info('Preset de filtro atualizado', { presetId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao atualizar preset de filtro', error);
       throw new Error('Falha ao atualizar preset de filtro');
     }
@@ -222,7 +222,7 @@ export class FilterPersistenceService {
       await deleteDoc(doc(db, 'filter_presets', presetId));
       
       logger.info('Preset de filtro removido', { presetId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao remover preset de filtro', error);
       throw new Error('Falha ao remover preset de filtro');
     }
@@ -243,7 +243,7 @@ export class FilterPersistenceService {
       }, { merge: true });
       
       logger.debug('Uso do preset incrementado', { presetId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao incrementar uso do preset', error);
     }
   }
@@ -261,7 +261,7 @@ export class FilterPersistenceService {
       }
       
       return 0;
-    } catch (error) {
+    } catch (error: unknown) {
       return 0;
     }
   }
@@ -323,7 +323,7 @@ export class FilterPersistenceService {
       }
 
       logger.info('Presets padrão criados', { userId, count: defaultPresets.length });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao criar presets padrão', error);
     }
   }
@@ -340,7 +340,7 @@ export class FilterPersistenceService {
     try {
       localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(preferences));
       logger.debug('Preferências de filtro salvas', preferences);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao salvar preferências de filtro', error);
     }
   }
@@ -359,7 +359,7 @@ export class FilterPersistenceService {
       if (saved) {
         return JSON.parse(saved);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao carregar preferências de filtro', error);
     }
 
@@ -381,7 +381,7 @@ export class FilterPersistenceService {
       localStorage.removeItem(STORAGE_KEYS.FILTER_HISTORY);
       
       logger.info('Todos os filtros salvos foram limpos');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Erro ao limpar filtros salvos', error);
     }
   }

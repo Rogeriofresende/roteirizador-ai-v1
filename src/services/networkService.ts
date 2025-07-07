@@ -12,45 +12,45 @@ import { createErrorMessage } from './userMessages';
 // TYPES & INTERFACES
 // =============================================================================
 
-export interface NetworkRequestConfig {
-  url: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+interface NetworkRequestConfig {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   headers?: Record<string, string>;
-  body?: any;
   timeout?: number;
   retries?: number;
-  retryDelay?: number;
   cache?: boolean;
-  offline?: boolean;
+  body?: unknown;
 }
 
-export interface NetworkResponse<T = any> {
+interface NetworkResponse<T = unknown> {
   data: T;
   status: number;
   statusText: string;
   headers: Record<string, string>;
   config: NetworkRequestConfig;
-  cached?: boolean;
-  retryCount?: number;
 }
 
-export interface NetworkError extends Error {
-  config?: NetworkRequestConfig;
+interface NetworkMetrics {
+  startTime: number;
+  endTime: number;
+  duration: number;
+  size: number;
+  cached: boolean;
+  retries: number;
+  response?: unknown;
+}
+
+interface NetworkError extends Error {
+  code: string;
   status?: number;
-  statusText?: string;
-  response?: any;
-  retryCount?: number;
-  isNetworkError?: boolean;
-  isTimeoutError?: boolean;
-  isOfflineError?: boolean;
+  response?: unknown;
+  config: NetworkRequestConfig;
+  isRetryable: boolean;
 }
 
-export interface RequestCache {
-  [key: string]: {
-    data: any;
+interface CacheEntry {
+  data: unknown;
     timestamp: number;
-    expires: number;
-  };
+  expiry: number;
 }
 
 export interface NetworkStats {
@@ -71,7 +71,7 @@ export interface NetworkStats {
 // =============================================================================
 
 class NetworkService {
-  private cache: RequestCache = {};
+  private cache: Map<string, CacheEntry> = new Map();
   private requestStats = {
     total: 0,
     successful: 0,
@@ -100,7 +100,7 @@ class NetworkService {
   /**
    * Make a network request with comprehensive error handling
    */
-  async request<T = any>(requestConfig: NetworkRequestConfig): Promise<NetworkResponse<T>> {
+  async request<T = unknown>(requestConfig: NetworkRequestConfig): Promise<NetworkResponse<T>> {
     const startTime = Date.now();
     const config = this.normalizeConfig(requestConfig);
     
@@ -151,7 +151,7 @@ class NetworkService {
 
       return response;
 
-    } catch (error) {
+    } catch (error: unknown) {
       this.requestStats.failed++;
       
       const networkError = this.normalizeError(error, config);
@@ -181,15 +181,15 @@ class NetworkService {
   /**
    * Convenience methods for different HTTP methods
    */
-  async get<T = any>(url: string, config?: Partial<NetworkRequestConfig>): Promise<NetworkResponse<T>> {
+  async get<T = unknown>(url: string, config?: Partial<NetworkRequestConfig>): Promise<NetworkResponse<T>> {
     return this.request<T>({ ...config, url, method: 'GET' });
   }
 
-  async post<T = any>(url: string, data?: any, config?: Partial<NetworkRequestConfig>): Promise<NetworkResponse<T>> {
+  async post<T = unknown>(url: string, data?: unknown, config?: Partial<NetworkRequestConfig>): Promise<NetworkResponse<T>> {
     return this.request<T>({ ...config, url, method: 'POST', body: data });
   }
 
-  async put<T = any>(url: string, data?: any, config?: Partial<NetworkRequestConfig>): Promise<NetworkResponse<T>> {
+  async put<T = unknown>(url: string, data?: unknown, config?: Partial<NetworkRequestConfig>): Promise<NetworkResponse<T>> {
     return this.request<T>({ ...config, url, method: 'PUT', body: data });
   }
 
@@ -206,7 +206,7 @@ class NetworkService {
         try {
           const response = await this.request<T>(requestConfig);
           resolve(response);
-        } catch (error) {
+        } catch (error: unknown) {
           reject(error);
         }
       };
@@ -342,7 +342,7 @@ class NetworkService {
 
         return { ...response, retryCount };
 
-      } catch (error) {
+      } catch (error: unknown) {
         lastError = this.normalizeError(error, config);
         lastError.retryCount = retryCount;
 
@@ -402,7 +402,7 @@ class NetworkService {
         config,
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
 
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -447,7 +447,7 @@ class NetworkService {
     return error;
   }
 
-  private normalizeError(error: any, config: NetworkRequestConfig): NetworkError {
+  private normalizeError(error: unknown, config: NetworkRequestConfig): NetworkError {
     if (error.isNetworkError !== undefined) {
       return error;
     }

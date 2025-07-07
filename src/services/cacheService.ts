@@ -71,7 +71,7 @@ class MemoryCache {
       
       logger.debug('Memory cache set', { key, size: entry.size }, 'CACHE');
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Memory cache set failed', { key, error }, 'CACHE');
       return false;
     }
@@ -153,7 +153,7 @@ class LocalStorageCache {
       
       logger.debug('LocalStorage cache set', { key, size: serialized.length }, 'CACHE');
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('LocalStorage cache set failed', { key, error }, 'CACHE');
       return false;
     }
@@ -178,7 +178,7 @@ class LocalStorageCache {
       this.set(key, entry); // Update with new stats
 
       return entry;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('LocalStorage cache get failed', { key, error }, 'CACHE');
       return null;
     }
@@ -257,7 +257,7 @@ class IndexedDBCache {
           }
         };
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('IndexedDB initialization failed', { error }, 'CACHE');
       return false;
     }
@@ -276,7 +276,7 @@ class IndexedDBCache {
         request.onsuccess = () => resolve(true);
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('IndexedDB cache set failed', { key, error }, 'CACHE');
       return false;
     }
@@ -316,7 +316,7 @@ class IndexedDBCache {
         
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('IndexedDB cache get failed', { key, error }, 'CACHE');
       return null;
     }
@@ -335,7 +335,7 @@ class IndexedDBCache {
         request.onsuccess = () => resolve(true);
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('IndexedDB cache delete failed', { key, error }, 'CACHE');
       return false;
     }
@@ -384,7 +384,7 @@ export class AdvancedCacheService {
       }, 'CACHE');
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Cache service initialization failed', { error }, 'CACHE');
       return false;
     }
@@ -425,7 +425,7 @@ export class AdvancedCacheService {
             success = (await this.indexedDBCache.set(key, entry)) || success;
             break;
         }
-      } catch (error) {
+      } catch (error: unknown) {
         logger.warn(`Cache strategy ${strategy} failed`, { key, error }, 'CACHE');
       }
     }
@@ -630,7 +630,7 @@ export function Cached(config: Partial<CacheConfig> = {}) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const cacheKey = `${target.constructor.name}_${propertyKey}_${JSON.stringify(args)}`;
       
       return cacheService.getOrSet(

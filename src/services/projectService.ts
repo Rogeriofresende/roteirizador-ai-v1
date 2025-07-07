@@ -61,7 +61,7 @@ export class ProjectService {
       }
 
       return docRef.id;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar projeto:', error);
       throw new Error('Falha ao criar projeto');
     }
@@ -123,7 +123,7 @@ export class ProjectService {
           await TagService.incrementTagUsage(addedTags);
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar projeto:', error);
       throw new Error('Falha ao atualizar projeto');
     }
@@ -150,7 +150,7 @@ export class ProjectService {
         id: snapshot.id,
         ...snapshot.data()
       } as EnhancedProject;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter projeto:', error);
       return null;
     }
@@ -168,7 +168,7 @@ export class ProjectService {
       }
 
       await deleteDoc(doc(db, 'scripts', projectId));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir projeto:', error);
       throw new Error('Falha ao excluir projeto');
     }
@@ -208,7 +208,7 @@ export class ProjectService {
       }
 
       return docRef.id;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao duplicar projeto:', error);
       throw new Error('Falha ao duplicar projeto');
     }
@@ -232,7 +232,7 @@ export class ProjectService {
       });
 
       return newFavoriteStatus;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao alterar favorito:', error);
       throw new Error('Falha ao alterar status de favorito');
     }
@@ -250,7 +250,7 @@ export class ProjectService {
         folderId: folderId || null,
         updatedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao mover projeto:', error);
       throw new Error('Falha ao mover projeto para pasta');
     }
@@ -268,7 +268,7 @@ export class ProjectService {
         status,
         updatedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar status:', error);
       throw new Error('Falha ao atualizar status do projeto');
     }
@@ -294,7 +294,7 @@ export class ProjectService {
       });
 
       return shareLink;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao gerar link de compartilhamento:', error);
       throw new Error('Falha ao gerar link de compartilhamento');
     }
@@ -311,7 +311,7 @@ export class ProjectService {
         shareExpiresAt: null,
         updatedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao revogar compartilhamento:', error);
       throw new Error('Falha ao revogar compartilhamento');
     }
@@ -356,7 +356,7 @@ export class ProjectService {
       });
 
       await batch.commit();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na migração:', error);
       throw new Error('Falha na migração de projetos');
     }
@@ -409,7 +409,7 @@ export class ProjectService {
         .filter(p => p.relevanceScore > 0)
         .sort((a, b) => b.relevanceScore - a.relevanceScore)
         .slice(0, limit);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao buscar projetos relacionados:', error);
       return [];
     }
@@ -432,7 +432,7 @@ export class ProjectService {
       };
 
       return JSON.stringify(exportData, null, 2);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao exportar projeto:', error);
       throw new Error('Falha ao exportar projeto');
     }
@@ -495,7 +495,7 @@ export class ProjectService {
         : 0;
 
       return stats;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter estatísticas:', error);
       return {
         total: 0,
@@ -554,7 +554,7 @@ export class ProjectService {
 
       await Promise.all(deletePromises);
       return oldProjects.length;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na limpeza de projetos:', error);
       return 0;
     }

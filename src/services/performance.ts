@@ -17,7 +17,7 @@ export interface PerformanceMetric {
   unit: 'ms' | 'bytes' | 'count' | 'percent' | 'score';
   timestamp: number;
   category: 'loading' | 'interactivity' | 'visual_stability' | 'custom' | 'network' | 'memory';
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface WebVitalsMetrics {
@@ -86,7 +86,7 @@ class PerformanceService {
     value: number,
     unit: PerformanceMetric['unit'] = 'ms',
     category: PerformanceMetric['category'] = 'custom',
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): void {
     const metric: PerformanceMetric = {
       name,
@@ -113,7 +113,7 @@ class PerformanceService {
   measureFunction<T>(
     name: string,
     fn: () => T | Promise<T>,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): T | Promise<T> {
     const start = performance.now();
     
@@ -287,7 +287,7 @@ class PerformanceService {
         });
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize Web Vitals observer', {
         error: error instanceof Error ? error.message : 'Unknown',
       }, 'PERFORMANCE');
@@ -300,7 +300,7 @@ class PerformanceService {
         callback(list.getEntries());
       });
       observer.observe({ type, buffered: true });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn(`Failed to observe ${type}`, {
         error: error instanceof Error ? error.message : 'Unknown',
       }, 'PERFORMANCE');
@@ -387,10 +387,10 @@ class PerformanceService {
 export const performanceService = new PerformanceService();
 
 // Helper functions
-export const measureFunction = <T>(name: string, fn: () => T | Promise<T>, context?: Record<string, any>) =>
+export const measureFunction = <T>(name: string, fn: () => T | Promise<T>, context?: Record<string, unknown>) =>
   performanceService.measureFunction(name, fn, context);
 
-export const recordMetric = (name: string, value: number, unit?: PerformanceMetric['unit'], category?: PerformanceMetric['category'], context?: Record<string, any>) =>
+export const recordMetric = (name: string, value: number, unit?: PerformanceMetric['unit'], category?: PerformanceMetric['category'], context?: Record<string, unknown>) =>
   performanceService.recordMetric(name, value, unit, category, context);
 
 export default performanceService; 

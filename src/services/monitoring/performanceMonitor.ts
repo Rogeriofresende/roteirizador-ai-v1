@@ -5,7 +5,7 @@ export interface PerformanceMetric {
   name: string;
   value: number;
   timestamp: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PerformanceThreshold {
@@ -113,12 +113,12 @@ export class ProductionPerformanceMonitor {
       });
       
       observer.observe({ type, buffered: true });
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn(`Failed to observe ${type}:`, error);
     }
   }
   
-  recordMetric(name: string, value: number, metadata?: Record<string, any>) {
+  recordMetric(name: string, value: number, metadata?: Record<string, unknown>) {
     const metric: PerformanceMetric = {
       name,
       value,
@@ -170,7 +170,7 @@ export class ProductionPerformanceMonitor {
             ...alertMessage
           })
         });
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to send performance alert:', error);
       }
     }
@@ -247,8 +247,8 @@ export class ProductionPerformanceMonitor {
     return relevantMetrics.reduce((sum, metric) => sum + metric.value, 0) / relevantMetrics.length;
   }
   
-  getPerformanceReport(): Record<string, any> {
-    const report: Record<string, any> = {};
+  getPerformanceReport(): Record<string, unknown> {
+    const report: Record<string, unknown> = {};
     
     this.thresholds.forEach((threshold, metricName) => {
       const average = this.getAverageMetric(metricName);

@@ -63,7 +63,7 @@ export class SearchService {
         projects: paginatedProjects,
         totalCount: projects.length
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao buscar projetos:', error);
       throw new Error('Falha ao buscar projetos');
     }
@@ -138,7 +138,7 @@ export class SearchService {
       );
 
       return filtered.slice(0, limit);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na busca rápida:', error);
       return [];
     }
@@ -182,7 +182,7 @@ export class SearchService {
         tags: tags.sort(),
         folders
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter sugestões de filtros:', error);
       return {
         platforms: [],
@@ -231,7 +231,7 @@ export class SearchService {
         .slice(0, limit);
 
       return relatedProjects;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao buscar projetos relacionados:', error);
       return [];
     }
@@ -294,7 +294,7 @@ export class SearchService {
         averageWordsPerProject,
         mostUsedTags
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter estatísticas de busca:', error);
       return {
         totalProjects: 0,

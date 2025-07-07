@@ -26,8 +26,13 @@ class TallyService {
 
   constructor() {
     this.config = {
-      enabled: config.tally.enabled,
-      formIds: config.tally.formIds
+      enabled: !!(config.tally.feedbackFormId || config.tally.npsFormId || config.tally.featuresFormId || config.tally.bugsFormId),
+      formIds: {
+        feedback: config.tally.feedbackFormId,
+        nps: config.tally.npsFormId,
+        features: config.tally.featuresFormId,
+        bugs: config.tally.bugsFormId
+      }
     };
   }
 
@@ -52,7 +57,7 @@ class TallyService {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize Tally.so', { error });
       return false;
     }
@@ -115,7 +120,7 @@ class TallyService {
       }
       
       return false;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to open Tally form', { formType, formId, error });
       return false;
     }

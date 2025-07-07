@@ -93,7 +93,7 @@ export class EnhancedProjectService {
 
       logger.info('Project created successfully', { projectId: docRef.id });
       return project;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to create project', { error, userId });
       throw new Error(`Failed to create project: ${error.message}`);
     }
@@ -121,7 +121,7 @@ export class EnhancedProjectService {
 
       await updateDoc(doc(this.db, this.collection, projectId), updateData);
       logger.info('Project updated successfully', { projectId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to update project', { error, projectId });
       throw new Error(`Failed to update project: ${error.message}`);
     }
@@ -135,7 +135,7 @@ export class EnhancedProjectService {
       logger.info('Deleting project', { projectId });
       await deleteDoc(doc(this.db, this.collection, projectId));
       logger.info('Project deleted successfully', { projectId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to delete project', { error, projectId });
       throw new Error(`Failed to delete project: ${error.message}`);
     }
@@ -156,7 +156,7 @@ export class EnhancedProjectService {
         id: docSnap.id,
         ...docSnap.data()
       } as EnhancedProject;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get project', { error, projectId });
       throw new Error(`Failed to get project: ${error.message}`);
     }
@@ -223,7 +223,7 @@ export class EnhancedProjectService {
       });
 
       return projects;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get projects by filters', { error, userId, filters });
       throw new Error(`Failed to get projects: ${error.message}`);
     }
@@ -267,7 +267,7 @@ export class EnhancedProjectService {
       });
 
       return results;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to search projects', { error, userId, searchQuery });
       throw new Error(`Failed to search projects: ${error.message}`);
     }
@@ -333,7 +333,7 @@ export class EnhancedProjectService {
 
       logger.info('Dashboard stats calculated', { userId, stats });
       return stats;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get dashboard stats', { error, userId });
       throw new Error(`Failed to get dashboard stats: ${error.message}`);
     }
@@ -358,7 +358,7 @@ export class EnhancedProjectService {
 
       await Promise.all(updatePromises);
       logger.info('Bulk update completed', { count: projectIds.length });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to bulk update projects', { error, projectIds });
       throw new Error(`Failed to bulk update projects: ${error.message}`);
     }
@@ -372,7 +372,7 @@ export class EnhancedProjectService {
       await Promise.all(deletePromises);
 
       logger.info('Bulk delete completed', { count: projectIds.length });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to bulk delete projects', { error, projectIds });
       throw new Error(`Failed to bulk delete projects: ${error.message}`);
     }

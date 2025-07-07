@@ -182,7 +182,7 @@ export class VoiceSynthesisService {
         return await this.synthesizeWithPremiumProvider(synthesis);
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na síntese de voz:', error);
       throw new Error(`Falha na síntese: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
@@ -365,7 +365,7 @@ export class VoiceSynthesisService {
 
       const snapshot = await getDocs(synthesesQuery);
       return snapshot.docs.map(doc => doc.data() as VoiceSynthesis);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter sínteses do usuário:', error);
       return [];
     }
@@ -381,7 +381,7 @@ export class VoiceSynthesisService {
 
       const snapshot = await getDocs(synthesesQuery);
       return snapshot.docs.map(doc => doc.data() as VoiceSynthesis);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter sínteses do projeto:', error);
       return [];
     }
@@ -458,7 +458,7 @@ export class VoiceSynthesisService {
     try {
       const synthesisRef = doc(db, 'voice_syntheses', synthesis.id);
       await setDoc(synthesisRef, synthesis);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar síntese:', error);
       throw error;
     }
@@ -468,7 +468,7 @@ export class VoiceSynthesisService {
     try {
       const synthesisRef = doc(db, 'voice_syntheses', synthesisId);
       await updateDoc(synthesisRef, updates);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar síntese:', error);
     }
   }
@@ -477,7 +477,7 @@ export class VoiceSynthesisService {
     try {
       const synthesisDoc = await getDoc(doc(db, 'voice_syntheses', synthesisId));
       return synthesisDoc.exists() ? synthesisDoc.data() as VoiceSynthesis : null;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter síntese:', error);
       return null;
     }
@@ -496,7 +496,7 @@ export class VoiceSynthesisService {
         ...preferences,
         updatedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar preferências de voz:', error);
     }
   }
@@ -505,7 +505,7 @@ export class VoiceSynthesisService {
     try {
       const preferencesDoc = await getDoc(doc(db, 'voice_preferences', userId));
       return preferencesDoc.exists() ? preferencesDoc.data() : null;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter preferências de voz:', error);
       return null;
     }
@@ -522,7 +522,7 @@ export class VoiceSynthesisService {
         duration,
         timestamp: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao rastrear uso de voz:', error);
     }
   }
@@ -560,7 +560,7 @@ export class VoiceSynthesisService {
         remaining: Math.max(0, limit - used),
         resetDate
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao verificar quota:', error);
       return { used: 0, limit: 100, remaining: 100, resetDate: new Date() };
     }

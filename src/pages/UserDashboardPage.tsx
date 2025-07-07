@@ -492,13 +492,14 @@ const UserDashboardPage: React.FC = () => {
     sortOrder: 'desc'
   });
 
-  // Lazy loaded services state
-  const [services, setServices] = useState<{
-    ProjectService?: any;
-    SearchService?: any;
-    TagService?: any;
-    analyticsService?: any;
-  }>({});
+  interface DynamicServices {
+    ProjectService?: typeof import('../services/projectService').ProjectService;
+    SearchService?: typeof import('../services/searchService').SearchService;
+    TagService?: typeof import('../services/tagService').TagService;
+    analyticsService?: typeof import('../services/analyticsService').AnalyticsService;
+  }
+
+  const [services, setServices] = useState<DynamicServices>({});
 
   // Load services dynamically
   useEffect(() => {
@@ -554,7 +555,7 @@ const UserDashboardPage: React.FC = () => {
       
       // Migrar projetos antigos automaticamente
       const migratedProjects = await Promise.all(
-        userProjects.map((project: any) => services.ProjectService.migrateOldProject(project))
+        userProjects.map((project: EnhancedProject) => services.ProjectService!.migrateOldProject(project))
       );
 
       setProjects(migratedProjects);

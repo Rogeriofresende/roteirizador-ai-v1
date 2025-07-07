@@ -109,7 +109,7 @@ class ConnectionPoolManager {
           });
           
           resolve(result);
-        } catch (error) {
+        } catch (error: unknown) {
           this.activeQueries--;
           this.processQueue();
           
@@ -217,7 +217,7 @@ class QueryOptimizer {
         this.updateQueryStats(queryKey, duration);
         
         return result;
-      } catch (error) {
+      } catch (error: unknown) {
         lastError = error as Error;
         
         if (attempt < optimization.retryConfig.maxRetries) {
@@ -248,7 +248,7 @@ class QueryOptimizer {
 // =============================================================================
 
 class BatchOperationManager {
-  private pendingOperations: Array<BatchOperation & { resolve?: () => void; reject?: (error: any) => void }> = [];
+  private pendingOperations: Array<BatchOperation & { resolve?: () => void; reject?: (error: unknown) => void }> = [];
   private batchTimeout: NodeJS.Timeout | null = null;
   private maxBatchSize = 500; // Firestore limit
   private batchTimeoutMs = 1000; // 1 second
@@ -310,7 +310,7 @@ class BatchOperationManager {
         duration: `${duration.toFixed(2)}ms`
       }, 'DATABASE');
 
-    } catch (error) {
+    } catch (error: unknown) {
       const duration = performance.now() - startTime;
       performanceService.recordMetric('batch_operation_error', duration, 'ms', 'database', {
         operationCount: operations.length,
@@ -378,7 +378,7 @@ export class DatabaseOptimizationService {
       }, 'DATABASE');
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn('Failed to enable offline persistence', { error }, 'DATABASE');
       return false; // Not critical, continue without persistence
     }
@@ -406,7 +406,7 @@ export class DatabaseOptimizationService {
    */
   async getCollectionOptimized<T>(
     collectionName: string,
-    queryConstraints: any[] = [],
+    queryConstraints: unknown[] = [],
     optimization: Partial<QueryOptimization> = {}
   ): Promise<T[]> {
     const queryKey = `collection_${collectionName}_${JSON.stringify(queryConstraints)}`;
@@ -491,7 +491,7 @@ export class DatabaseOptimizationService {
       performanceService.recordMetric('transaction_success', duration, 'ms', 'database');
       
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       const duration = performance.now() - startTime;
       performanceService.recordMetric('transaction_error', duration, 'ms', 'database', {
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -541,7 +541,7 @@ export class DatabaseOptimizationService {
         queryCount: preloadQueries.length,
         duration: `${duration.toFixed(2)}ms`
       }, 'DATABASE');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Critical data preload failed', { error }, 'DATABASE');
     }
   }
@@ -588,7 +588,7 @@ export class DatabaseOptimizationService {
  * Query builder with optimization hints
  */
 export class OptimizedQueryBuilder {
-  private queryConstraints: any[] = [];
+  private queryConstraints: unknown[] = [];
   private optimization: Partial<QueryOptimization> = {};
 
   where(field: string, operator: any, value: any): this {
@@ -621,7 +621,7 @@ export class OptimizedQueryBuilder {
     return this;
   }
 
-  build(): { constraints: any[]; optimization: Partial<QueryOptimization> } {
+  build(): { constraints: unknown[]; optimization: Partial<QueryOptimization> } {
     return {
       constraints: this.queryConstraints,
       optimization: this.optimization
@@ -640,7 +640,7 @@ export function DatabaseOptimized(optimization: Partial<QueryOptimization> = {})
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const queryKey = `${target.constructor.name}_${propertyKey}_${JSON.stringify(args)}`;
       
       return databaseOptimizationService.executeQuery(

@@ -32,7 +32,7 @@ export interface ErrorContext {
   route?: string;
   component?: string;
   action?: string;
-  state?: Record<string, any>;
+  state?: Record<string, unknown>;
   
   // Technical Details
   timestamp?: string;
@@ -556,7 +556,7 @@ class ErrorTrackingService {
       //   body: JSON.stringify(errorsToSend),
       // });
 
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to send errors to external service', {
         error: error instanceof Error ? error.message : 'Unknown',
         queuedBack: errorsToSend.length,

@@ -22,7 +22,8 @@ import {
   push,
   remove,
   serverTimestamp,
-  off
+  off,
+  Database
 } from 'firebase/database';
 import { db } from '../firebaseConfig';
 import type { 
@@ -34,15 +35,15 @@ import type {
 } from '../types';
 
 export class CollaborationService {
-  private static rtdb: any = null; // Firebase Realtime Database
+  private static rtdb: Database | null = null; // Firebase Realtime Database
   private static currentSession: CollaborationSession | null = null;
   private static currentUserId: string | null = null;
   private static listeners: Map<string, () => void> = new Map();
-  private static presenceRef: any = null;
+  private static presenceRef: any | null = null;
 
   // **INICIALIZAÇÃO**
 
-  static async initialize(userId: string, realtimeDatabase: any): Promise<void> {
+  static async initialize(userId: string, realtimeDatabase: Database): Promise<void> {
     this.rtdb = realtimeDatabase;
     this.currentUserId = userId;
     
@@ -118,7 +119,7 @@ export class CollaborationService {
       this.currentSession = session;
       return session;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar sessão de colaboração:', error);
       throw error;
     }
@@ -177,7 +178,7 @@ export class CollaborationService {
       this.currentSession = session;
       return session;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao entrar na sessão:', error);
       throw error;
     }
@@ -213,7 +214,7 @@ export class CollaborationService {
 
       this.currentSession = null;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao sair da sessão:', error);
     }
   }
@@ -232,7 +233,7 @@ export class CollaborationService {
 
       this.currentSession = null;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao encerrar sessão:', error);
     }
   }
@@ -263,7 +264,7 @@ export class CollaborationService {
       const editsRef = ref(this.rtdb, `sessions/${sessionId}/edits`);
       await push(editsRef, edit);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao enviar edição:', error);
     }
   }
@@ -281,14 +282,15 @@ export class CollaborationService {
     const unsubscribe = onValue(editsRef, (snapshot) => {
       const edits = snapshot.val();
       if (edits) {
-        Object.values(edits).forEach((edit: any) => {
+        Object.values(edits).forEach((edit: unknown) => {
+          const realtimeEdit = edit as RealtimeEdit;
           // Só processar edições de outros usuários
-          if (edit.userId !== this.currentUserId && !edit.applied) {
-            callback(edit);
+          if (realtimeEdit.userId !== this.currentUserId && !realtimeEdit.applied) {
+            callback(realtimeEdit);
             
             // Marcar como aplicada
-            const editRef = ref(this.rtdb, `sessions/${sessionId}/edits/${edit.id}`);
-            set(editRef, { ...edit, applied: true });
+            const editRef = ref(this.rtdb, `sessions/${sessionId}/edits/${realtimeEdit.id}`);
+            set(editRef, { ...realtimeEdit, applied: true });
           }
         });
       }
@@ -317,14 +319,14 @@ export class CollaborationService {
         timestamp: serverTimestamp(),
         userId: this.currentUserId
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar cursor:', error);
     }
   }
 
   static subscribeToCursors(
     sessionId: string,
-    callback: (cursors: Record<string, any>) => void
+    callback: (cursors: Record<string, unknown>) => void
   ): () => void {
     if (!this.rtdb) {
       return () => {};
@@ -369,7 +371,7 @@ export class CollaborationService {
       await setDoc(doc(db, 'comments', comment.id), comment);
       return comment;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao adicionar comentário:', error);
       throw error;
     }
@@ -404,7 +406,7 @@ export class CollaborationService {
 
       return reply;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao responder comentário:', error);
       throw error;
     }
@@ -418,7 +420,7 @@ export class CollaborationService {
         resolvedBy: userId,
         updatedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao resolver comentário:', error);
     }
   }
@@ -435,7 +437,7 @@ export class CollaborationService {
       const snapshot = await getDocs(commentsQuery);
       return snapshot.docs.map(doc => doc.data() as Comment);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter comentários:', error);
       return [];
     }
@@ -470,7 +472,7 @@ export class CollaborationService {
         });
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao configurar presença:', error);
     }
   }
@@ -511,7 +513,7 @@ export class CollaborationService {
         cursors: {},
         messages: {}
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar sala em tempo real:', error);
     }
   }
@@ -526,7 +528,7 @@ export class CollaborationService {
         joinedAt: serverTimestamp(),
         status: 'online'
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao entrar na sala em tempo real:', error);
     }
   }
@@ -540,7 +542,7 @@ export class CollaborationService {
 
       const cursorRef = ref(this.rtdb, `sessions/${sessionId}/cursors/${this.currentUserId}`);
       await remove(cursorRef);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao sair da sala em tempo real:', error);
     }
   }
@@ -551,7 +553,7 @@ export class CollaborationService {
     try {
       const roomRef = ref(this.rtdb, `sessions/${sessionId}`);
       await remove(roomRef);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao remover sala em tempo real:', error);
     }
   }
@@ -574,14 +576,14 @@ export class CollaborationService {
         type,
         timestamp: serverTimestamp()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao enviar mensagem:', error);
     }
   }
 
   static subscribeToMessages(
     sessionId: string,
-    callback: (messages: any[]) => void
+    callback: (messages: CollaborationMessage[]) => void
   ): () => void {
     if (!this.rtdb) {
       return () => {};
@@ -592,7 +594,7 @@ export class CollaborationService {
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       const messages = snapshot.val();
       if (messages) {
-        const messagesList = Object.values(messages).sort((a: any, b: any) => 
+        const messagesList = Object.values(messages).sort((a: CollaborationMessage, b: CollaborationMessage) =>
           a.timestamp - b.timestamp
         );
         callback(messagesList);
@@ -628,7 +630,7 @@ export class CollaborationService {
           });
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar role do participante:', error);
     }
   }
@@ -702,7 +704,7 @@ export class CollaborationService {
         messageCount: 0 // Seria contado das mensagens
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter analytics da sessão:', error);
       return {
         duration: 0,
@@ -726,7 +728,7 @@ export class CollaborationService {
       const snapshot = await getDocs(sessionsQuery);
       return snapshot.docs.map(doc => doc.data() as CollaborationSession);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter histórico de colaboração:', error);
       return [];
     }

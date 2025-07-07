@@ -74,7 +74,7 @@ export class TagService {
 
       logger.info('Tag created successfully', { tagId: docRef.id, name: data.name });
       return tag;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to create tag', { error, userId, name: data.name });
       throw new Error(`Failed to create tag: ${error.message}`);
     }
@@ -100,7 +100,7 @@ export class TagService {
 
       await updateDoc(doc(this.db, this.collection, tagId), updateData);
       logger.info('Tag updated successfully', { tagId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to update tag', { error, tagId });
       throw new Error(`Failed to update tag: ${error.message}`);
     }
@@ -121,7 +121,7 @@ export class TagService {
 
       await deleteDoc(doc(this.db, this.collection, tagId));
       logger.info('Tag deleted successfully', { tagId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to delete tag', { error, tagId });
       throw new Error(`Failed to delete tag: ${error.message}`);
     }
@@ -142,7 +142,7 @@ export class TagService {
         id: docSnap.id,
         ...docSnap.data()
       } as Tag;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get tag', { error, tagId });
       throw new Error(`Failed to get tag: ${error.message}`);
     }
@@ -170,7 +170,7 @@ export class TagService {
 
       logger.info('User tags retrieved', { userId, count: tags.length });
       return tags;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get user tags', { error, userId });
       throw new Error(`Failed to get user tags: ${error.message}`);
     }
@@ -198,7 +198,7 @@ export class TagService {
         id: doc.id,
         ...doc.data()
       } as Tag;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get tag by name', { error, userId, name });
       throw new Error(`Failed to get tag by name: ${error.message}`);
     }
@@ -221,7 +221,7 @@ export class TagService {
       });
 
       logger.debug('Tag usage incremented', { tagId });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to increment tag usage', { error, tagId });
       throw new Error(`Failed to increment tag usage: ${error.message}`);
     }
@@ -238,7 +238,7 @@ export class TagService {
       await Promise.all(promises);
 
       logger.info('Bulk tag usage incremented', { count: tagIds.length });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to bulk increment tag usage', { error, tagIds });
       throw new Error(`Failed to bulk increment tag usage: ${error.message}`);
     }
@@ -266,7 +266,7 @@ export class TagService {
 
       logger.info('Tag usage stats calculated', { userId, statsCount: stats.length });
       return stats;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get tag usage stats', { error, userId });
       throw new Error(`Failed to get tag usage stats: ${error.message}`);
     }
@@ -300,7 +300,7 @@ export class TagService {
       });
 
       return sortedSuggestions;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get suggested tags', { error, userId });
       return []; // Return empty array on error
     }
@@ -330,7 +330,7 @@ export class TagService {
             isSystem: true
           });
           createdTags.push(tag);
-        } catch (error) {
+        } catch (error: unknown) {
           // Skip if tag already exists
           logger.debug('Skipping existing default tag', { name: tagData.name });
         }
@@ -338,7 +338,7 @@ export class TagService {
 
       logger.info('Default tags created', { userId, count: createdTags.length });
       return createdTags;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to create default tags', { error, userId });
       throw new Error(`Failed to create default tags: ${error.message}`);
     }
@@ -366,7 +366,7 @@ export class TagService {
       });
 
       return results;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to search tags', { error, userId, searchQuery });
       throw new Error(`Failed to search tags: ${error.message}`);
     }
@@ -393,7 +393,7 @@ export class TagService {
 
       logger.info('Popular tags retrieved', { count: tags.length });
       return tags;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to get popular tags', { error });
       throw new Error(`Failed to get popular tags: ${error.message}`);
     }

@@ -90,7 +90,7 @@ export class HealthCheckService {
   private static readonly RESPONSE_TIME_THRESHOLD = 2000; // 2 segundos
   private static isMonitoring = false;
   private static monitoringInterval: NodeJS.Timeout | null = null;
-  private static alertsCache: any[] = []; // Cache para alertas
+  private static alertsCache: unknown[] = []; // Cache para alertas
   private static healthCache: any = null; // Cache para health data quando Firebase não disponível
 
   // **VERIFICAÇÃO DE FIREBASE**
@@ -113,7 +113,7 @@ export class HealthCheckService {
     this.monitoringInterval = setInterval(async () => {
       try {
         await this.performHealthCheck();
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Erro no health check automático:', error);
       }
     }, this.HEALTH_CHECK_INTERVAL);
@@ -190,7 +190,7 @@ export class HealthCheckService {
       console.log('✅ DEBUG: performHealthCheck() concluído com sucesso');
       return healthData;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ DEBUG: Erro no performHealthCheck():', error);
       
       const errorHealthData: SystemHealth = {
@@ -257,7 +257,7 @@ export class HealthCheckService {
         uptime: 99.9,
         errorCount: 0
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ DEBUG: Erro no Firebase health check:', error);
       return {
         status: 'outage',
@@ -291,7 +291,7 @@ export class HealthCheckService {
         errorCount: isConfigured ? 0 : 1,
         message: isConfigured ? 'Gemini API configurado' : 'Gemini API não configurado'
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ DEBUG: Erro no Gemini health check:', error);
       return {
         status: 'outage',
@@ -325,7 +325,7 @@ export class HealthCheckService {
         errorCount: checks.filter(check => !check).length,
         message: allPassed ? undefined : 'Some PWA features not working'
       };
-    } catch (error) {
+    } catch (error: unknown) {
           return {
         status: 'outage',
         responseTime: Date.now() - startTime,
@@ -381,7 +381,7 @@ export class HealthCheckService {
         errorCount: 0,
         message: user ? 'Usuário autenticado' : 'Authentication disponível'
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ DEBUG: Erro no Authentication health check:', error);
       return {
         status: 'outage',
@@ -439,7 +439,7 @@ export class HealthCheckService {
         activeUsers,
         totalProjects
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ DEBUG: Erro ao obter métricas:', error);
       return {
         errorRate: 1,
@@ -528,7 +528,7 @@ export class HealthCheckService {
         this.healthCache = healthData;
         console.log('✅ DEBUG: Dados salvos em cache local');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ DEBUG: Erro ao salvar dados de saúde:', error);
       // Fallback para cache local mesmo se Firebase falhar
       this.healthCache = healthData;
@@ -547,7 +547,7 @@ export class HealthCheckService {
       if (oldRecords.size > 1000) {
         // Implementar limpeza
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na limpeza de dados antigos:', error);
     }
   }
@@ -579,7 +579,7 @@ export class HealthCheckService {
         console.log('❌ Permissão para notificações negada');
         return false;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao solicitar permissão para notificações:', error);
       return false;
     }
@@ -604,7 +604,7 @@ export class HealthCheckService {
             icon: '/icons/icon-192x192.png',
             tag: 'health-critical'
           });
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('Erro ao mostrar notificação:', error);
         }
       }
@@ -670,7 +670,7 @@ export class HealthCheckService {
       } else {
         return this.healthCache || await this.performHealthCheck();
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter saúde atual:', error);
       return this.healthCache;
     }
@@ -687,7 +687,7 @@ export class HealthCheckService {
       ));
 
       return healthSnapshot.docs.map(doc => doc.data() as SystemHealth);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter histórico de saúde:', error);
       return [];
     }
@@ -700,7 +700,7 @@ export class HealthCheckService {
 
       const healthyChecks = history.filter(h => h.status === 'healthy').length;
       return (healthyChecks / history.length) * 100;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao calcular uptime:', error);
       return 0;
     }
@@ -717,7 +717,7 @@ export class HealthCheckService {
       ));
 
       return metricsSnapshot.docs.map(doc => doc.data() as PerformanceMetrics);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter métricas de performance:', error);
       return [];
     }
@@ -736,7 +736,7 @@ export class HealthCheckService {
       });
 
       return maintenanceId;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao agendar janela de manutenção:', error);
       throw error;
     }
@@ -754,7 +754,7 @@ export class HealthCheckService {
       ));
 
       return maintenanceSnapshot.docs.map(doc => doc.data() as MaintenanceWindow);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter manutenções programadas:', error);
       return [];
     }
@@ -790,7 +790,7 @@ export class HealthCheckService {
           uptime: newHealth.metrics.uptime
         };
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro em getHealth():', error);
       return {
         overall: 'down',
@@ -802,7 +802,7 @@ export class HealthCheckService {
     }
   }
 
-  static getAlerts(): any[] {
+  static getAlerts(): unknown[] {
     return this.alertsCache;
   }
 
@@ -817,8 +817,8 @@ export class HealthCheckService {
     return Math.round((operationalCount / services.length) * 100);
   }
 
-  private static transformServicesToChecks(services: SystemHealth['services']): Record<string, any> {
-    const checks: Record<string, any> = {};
+  private static transformServicesToChecks(services: SystemHealth['services']): Record<string, unknown> {
+    const checks: Record<string, unknown> = {};
     
     Object.entries(services).forEach(([serviceName, service]) => {
       checks[serviceName] = {

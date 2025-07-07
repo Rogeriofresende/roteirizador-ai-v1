@@ -43,7 +43,7 @@ export class ComponentProfiler {
     this.renderTimings.set(componentName, performance.now());
   }
 
-  endProfiling(componentName: string, props?: any): void {
+  endProfiling(componentName: string, props?: unknown): void {
     const startTime = this.renderTimings.get(componentName);
     if (!startTime) return;
 
@@ -107,7 +107,7 @@ export class ComponentProfiler {
 /**
  * Component render tracking hook
  */
-export const useRenderTracking = (componentName: string, props?: any) => {
+export const useRenderTracking = (componentName: string, props?: unknown) => {
   const profiler = useRef(new ComponentProfiler());
 
   useEffect(() => {

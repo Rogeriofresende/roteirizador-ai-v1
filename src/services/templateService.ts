@@ -93,7 +93,7 @@ export class TemplateService {
 
       return templates;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter templates:', error);
       return [];
     }
@@ -112,7 +112,7 @@ export class TemplateService {
         id: templateDoc.id
       } as ScriptTemplate;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter template:', error);
       return null;
     }
@@ -134,7 +134,7 @@ export class TemplateService {
         id: doc.id
       } as ScriptTemplate));
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter templates em destaque:', error);
       return [];
     }
@@ -159,7 +159,7 @@ export class TemplateService {
         id: doc.id
       } as ScriptTemplate));
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter templates populares:', error);
       return [];
     }
@@ -189,7 +189,7 @@ export class TemplateService {
 
       return newTemplate;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar template:', error);
       throw error;
     }
@@ -208,7 +208,7 @@ export class TemplateService {
       // Invalidar cache
       this.invalidateCache();
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar template:', error);
       throw error;
     }
@@ -227,7 +227,7 @@ export class TemplateService {
       // Invalidar cache
       this.invalidateCache();
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao deletar template:', error);
       throw error;
     }
@@ -238,7 +238,7 @@ export class TemplateService {
   static async useTemplate(
     templateId: string,
     userId: string,
-    placeholderValues: Record<string, any>
+    placeholderValues: Record<string, unknown>
   ): Promise<Script> {
     try {
       const template = await this.getTemplateById(templateId);
@@ -275,7 +275,7 @@ export class TemplateService {
 
       return script as Script;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao usar template:', error);
       throw error;
     }
@@ -283,7 +283,7 @@ export class TemplateService {
 
   private static processTemplate(
     template: ScriptTemplate,
-    placeholderValues: Record<string, any>
+    placeholderValues: Record<string, unknown>
   ): string {
     let content = '';
 
@@ -297,7 +297,7 @@ export class TemplateService {
     return content.trim();
   }
 
-  private static replacePlaceholders(text: string, values: Record<string, any>): string {
+  private static replacePlaceholders(text: string, values: Record<string, unknown>): string {
     let result = text;
 
     // Substituir placeholders no formato {{placeholder}}
@@ -346,7 +346,7 @@ export class TemplateService {
       // Atualizar média do template
       await this.updateTemplateRating(templateId);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao avaliar template:', error);
       throw error;
     }
@@ -372,7 +372,7 @@ export class TemplateService {
         rating: Math.round(averageRating * 100) / 100
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar avaliação do template:', error);
     }
   }
@@ -473,7 +473,7 @@ export class TemplateService {
         }
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar templates padrão:', error);
     }
   }
@@ -705,7 +705,7 @@ export class TemplateService {
         usage: increment(1),
         popularity: increment(1)
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao incrementar uso do template:', error);
     }
   }
@@ -718,7 +718,7 @@ export class TemplateService {
         userId,
         usedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao rastrear uso do template:', error);
     }
   }
@@ -776,7 +776,7 @@ export class TemplateService {
         recentUsage
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter analytics do template:', error);
       return {
         totalUsage: 0,
@@ -885,7 +885,7 @@ export class TemplateService {
 
       return await this.createTemplate(duplicatedTemplate);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao duplicar template:', error);
       throw error;
     }
@@ -912,7 +912,7 @@ export class TemplateService {
 
       return JSON.stringify(exportData, null, 2);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao exportar template:', error);
       throw error;
     }
@@ -942,7 +942,7 @@ export class TemplateService {
 
       return await this.createTemplate(parsedTemplate);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao importar template:', error);
       throw error;
     }

@@ -139,7 +139,7 @@ class DesignQualityService {
       this.isInitialized = true;
       logger.info('Design quality service initialized successfully');
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize design quality service', { error });
       return false;
     }

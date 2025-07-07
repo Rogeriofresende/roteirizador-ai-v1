@@ -1,13 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { initializeManifest } from '../utils/pwa-manifest';
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 interface PWAState {
-  isInstallable: boolean;
-  isInstalled: boolean;
-  isOffline: boolean;
-  hasUpdate: boolean;
   isSupported: boolean;
-  installPromptEvent: any;
+  isInstalled: boolean;
+  canInstall: boolean;
+  showPrompt: boolean;
+  installPrompt: BeforeInstallPromptEvent | null;
 }
 
 interface PWAActions {
@@ -19,12 +27,11 @@ interface PWAActions {
 
 export const usePWA = (): PWAState & PWAActions => {
   const [state, setState] = useState<PWAState>({
-    isInstallable: false,
+    isSupported: false,
     isInstalled: false,
-    isOffline: !navigator.onLine,
-    hasUpdate: false,
-    isSupported: 'serviceWorker' in navigator,
-    installPromptEvent: null
+    canInstall: false,
+    showPrompt: false,
+    installPrompt: null
   });
   
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -46,23 +53,24 @@ export const usePWA = (): PWAState & PWAActions => {
     console.log('PWA Hook: Is installed?', isStandalone);
     
     // Event Handlers
-    const handleBeforeInstallPrompt = (e: Event) => {
+    const handleBeforeInstallPrompt = useCallback((e: BeforeInstallPromptEvent) => {
       console.log('PWA Hook: Install prompt available');
       e.preventDefault();
       setDeferredPrompt(e);
       setState(prev => ({ 
         ...prev, 
-        isInstallable: true,
-        installPromptEvent: e
+        canInstall: true, 
+        installPrompt: e 
       }));
-    };
+    }, []);
     
-    const handleAppInstalled = () => {
+    const handleAppInstalled = useCallback((_e: Event) => {
       console.log('PWA Hook: App installed successfully');
       setState(prev => ({ 
         ...prev, 
         isInstalled: true, 
-        isInstallable: false 
+        canInstall: false, 
+        installPrompt: null 
       }));
       setDeferredPrompt(null);
       
@@ -73,7 +81,7 @@ export const usePWA = (): PWAState & PWAActions => {
           event_label: 'App Installed'
         });
       }
-    };
+    }, []);
     
     const handleOnline = () => {
       console.log('PWA Hook: Connection restored');
@@ -197,7 +205,7 @@ export const usePWA = (): PWAState & PWAActions => {
       return false;
     } finally {
       setDeferredPrompt(null);
-      setState(prev => ({ ...prev, isInstallable: false }));
+      setState(prev => ({ ...prev, canInstall: false }));
     }
   };
   
@@ -264,45 +272,35 @@ export const usePWA = (): PWAState & PWAActions => {
   };
   
   // Salvar roteiro no cache local (futuro)
-  const cacheScript = async (script: any): Promise<boolean> => {
+  const cacheScript = useCallback(async (script: string): Promise<boolean> => {
     try {
-      if (!canCacheScripts()) return false;
-      
-      const cache = await caches.open('roteirar-scripts-v1');
-      const response = new Response(JSON.stringify(script), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      await cache.put(`/script/${script.id}`, response);
-      console.log('PWA Hook: Script cached:', script.id);
-      return true;
-    } catch (error: unknown) {
-      console.error('PWA Hook: Failed to cache script:', error);
+      if ('caches' in window) {
+        const cache = await caches.open('script-cache-v1');
+        const response = new Response(script, {
+          headers: { 'Content-Type': 'text/plain' }
+        });
+        await cache.put('current-script', response);
+        return true;
+      }
+      return false;
+    } catch {
       return false;
     }
-  };
+  }, []);
   
   // Recuperar roteiros do cache (futuro)
-  const getCachedScripts = async (): Promise<any[]> => {
+  const getCachedScripts = useCallback(async (): Promise<string[]> => {
     try {
-      if (!canCacheScripts()) return [];
-      
-      const cache = await caches.open('roteirar-scripts-v1');
-      const keys = await cache.keys();
-      
-      const scripts = await Promise.all(
-        keys.map(async (key) => {
-          const response = await cache.match(key);
-          return response ? await response.json() : null;
-        })
-      );
-      
-      return scripts.filter(Boolean);
-    } catch (error: unknown) {
-      console.error('PWA Hook: Failed to get cached scripts:', error);
+      if ('caches' in window) {
+        const cache = await caches.open('script-cache-v1');
+        const keys = await cache.keys();
+        return keys.map(req => req.url);
+      }
+      return [];
+    } catch {
       return [];
     }
-  };
+  }, []);
   
   return {
     ...state,

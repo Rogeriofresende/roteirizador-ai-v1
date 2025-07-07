@@ -19,7 +19,7 @@ export interface UserMessage {
   actions?: UserMessageAction[];
   autoClose?: boolean;
   duration?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UserMessageAction {
@@ -355,7 +355,7 @@ class UserMessageService {
     error: Error | string,
     category: ErrorCategory,
     severity: ErrorSeverity,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): UserMessage {
     const errorMessage = typeof error === 'string' ? error : error.message;
     const template = this.findTemplate(category, errorMessage, context);
@@ -392,7 +392,7 @@ class UserMessageService {
    */
   createSuccessMessage(
     key: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): UserMessage {
     const template = successTemplates[key] || {
       title: 'Operação realizada com sucesso',
@@ -456,7 +456,7 @@ class UserMessageService {
   /**
    * Get message for API error status
    */
-  getApiErrorMessage(status: number, context?: Record<string, any>): UserMessage {
+  getApiErrorMessage(status: number, context?: Record<string, unknown>): UserMessage {
     const statusKey = status.toString();
     const template = errorTemplates.api[statusKey] || errorTemplates.api['500'];
     
@@ -471,7 +471,7 @@ class UserMessageService {
   /**
    * Get message for network error
    */
-  getNetworkErrorMessage(type: string, context?: Record<string, any>): UserMessage {
+  getNetworkErrorMessage(type: string, context?: Record<string, unknown>): UserMessage {
     return this.createErrorMessage(
       `Network error: ${type}`,
       'network',
@@ -483,7 +483,7 @@ class UserMessageService {
   /**
    * Get message for validation errors
    */
-  getValidationErrorMessage(errors: string[], context?: Record<string, any>): UserMessage {
+  getValidationErrorMessage(errors: string[], context?: Record<string, unknown>): UserMessage {
     const errorType = this.categorizeValidationError(errors);
     
     return this.createErrorMessage(
@@ -505,7 +505,7 @@ class UserMessageService {
   private findTemplate(
     category: ErrorCategory,
     errorMessage: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): MessageTemplate {
     const categoryTemplates = errorTemplates[category];
     
@@ -521,7 +521,7 @@ class UserMessageService {
 
   private matchErrorToTemplate(
     errorMessage: string,
-    context: Record<string, any> = {},
+    context: Record<string, unknown> = {},
     templates: Record<string, MessageTemplate>
   ): string {
     const message = errorMessage.toLowerCase();
@@ -589,7 +589,7 @@ class UserMessageService {
     };
   }
 
-  private personalizeMessage(message: string, context?: Record<string, any>): string {
+  private personalizeMessage(message: string, context?: Record<string, unknown>): string {
     if (!context) return message;
 
     let personalizedMessage = message;
@@ -630,10 +630,10 @@ class UserMessageService {
 export const userMessageService = new UserMessageService();
 
 // Helper functions
-export const createErrorMessage = (error: Error | string, category: ErrorCategory, severity: ErrorSeverity, context?: Record<string, any>) =>
+export const createErrorMessage = (error: Error | string, category: ErrorCategory, severity: ErrorSeverity, context?: Record<string, unknown>) =>
   userMessageService.createErrorMessage(error, category, severity, context);
 
-export const createSuccessMessage = (key: string, context?: Record<string, any>) =>
+export const createSuccessMessage = (key: string, context?: Record<string, unknown>) =>
   userMessageService.createSuccessMessage(key, context);
 
 export const createWarningMessage = (title: string, message: string, actions?: UserMessageAction[]) =>

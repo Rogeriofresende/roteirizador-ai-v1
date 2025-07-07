@@ -141,7 +141,7 @@ class BundleOptimizationService {
         recommendations: analysis.recommendations.length,
       }, 'BUNDLE_OPTIMIZER');
 
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Bundle analysis failed', {
         error: error instanceof Error ? error.message : 'Unknown',
       }, 'BUNDLE_OPTIMIZER');

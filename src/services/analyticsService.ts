@@ -11,11 +11,9 @@ import { createLogger } from '../utils/logger';
 
 const logger = createLogger('AnalyticsService');
 
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
-  }
+interface Window {
+  gtag?: (...args: unknown[]) => void;
+  dataLayer?: unknown[];
 }
 
 interface UserProperties {
@@ -32,7 +30,7 @@ interface BusinessEvent {
   event_category: string;
   event_label?: string;
   value?: number;
-  custom_parameters?: Record<string, any>;
+  custom_parameters?: Record<string, unknown>;
 }
 
 interface ConversionFunnel {
@@ -52,7 +50,7 @@ interface AnalyticsConfig {
 interface AnalyticsEvent {
   userId: string;
   event: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   timestamp: Timestamp;
   sessionId: string;
   userAgent?: string;
@@ -152,7 +150,7 @@ class AnalyticsService {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize Analytics', { error });
       return false;
     }
@@ -169,7 +167,7 @@ class AnalyticsService {
         script.onload = () => {
           // Initialize gtag
           window.dataLayer = window.dataLayer || [];
-          window.gtag = function(...args: any[]) {
+          window.gtag = function(...args: unknown[]) {
             window.dataLayer!.push(args);
           };
           
@@ -190,7 +188,7 @@ class AnalyticsService {
         };
 
         document.head.appendChild(script);
-      } catch (error) {
+      } catch (error: unknown) {
         reject(error);
       }
     });
@@ -201,7 +199,7 @@ class AnalyticsService {
   }
 
   // Event tracking methods
-  trackEvent(event: string, parameters?: Record<string, any>): void {
+  trackEvent(event: string, parameters?: Record<string, unknown>): void {
     if (!this.initialized || !config.analytics.enabled) {
       logger.debug('Analytics event not tracked - service not initialized', { event });
       return;
@@ -217,7 +215,7 @@ class AnalyticsService {
       if (clarityService.isEnabled()) {
         clarityService.trackEvent(event, parameters);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to track analytics event', { event, error });
     }
   }
@@ -226,15 +224,15 @@ class AnalyticsService {
     this.trackEvent('page_view', { page_title: document.title, page_location: page });
   }
 
-  trackUserAction(action: string, context?: Record<string, any>): void {
+  trackUserAction(action: string, context?: Record<string, unknown>): void {
     this.trackEvent('user_action', { action, ...context });
   }
 
-  trackConversionFunnel(step: string, data?: Record<string, any>): void {
+  trackConversionFunnel(step: string, data?: Record<string, unknown>): void {
     this.trackEvent('conversion_funnel', { funnel_step: step, ...data });
   }
 
-  trackError(error: string, context?: Record<string, any>): void {
+  trackError(error: string, context?: Record<string, unknown>): void {
     this.trackEvent('error', { error_message: error, ...context });
   }
 
@@ -247,7 +245,7 @@ class AnalyticsService {
     };
   }
 
-  getDebugInfo(): Record<string, any> {
+  getDebugInfo(): Record<string, unknown> {
     return {
       analytics: this.getStatus(),
       clarity: clarityService.getStatus(),
@@ -333,7 +331,7 @@ class AnalyticsService {
           success: data.success,
           generationTime: data.generation_time
         });
-      } catch (error) {
+      } catch (error: unknown) {
         if (this.config.debug_mode) {
           console.warn('Erro ao integrar script generation com Clarity:', error);
         }
@@ -341,7 +339,7 @@ class AnalyticsService {
     }
   }
 
-  public trackFeatureUsage(feature: string, context: Record<string, any> = {}) {
+  public trackFeatureUsage(feature: string, context: Record<string, unknown> = {}) {
     this.trackEvent('feature_used', 'engagement', {
       feature_name: feature,
       ...context
@@ -386,7 +384,7 @@ class AnalyticsService {
       localStorage.setItem(key, JSON.stringify(updated));
       
       this.conversionFunnelData = []; // Clear after saving
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('Erro ao salvar dados de conversão:', error);
     }
   }
@@ -415,7 +413,7 @@ class AnalyticsService {
         // Se web-vitals não estiver disponível, usar métricas básicas
         this.trackBasicPerformanceMetrics();
       });
-    } catch (error) {
+    } catch (error: unknown) {
       this.trackBasicPerformanceMetrics();
     }
   }
@@ -470,7 +468,7 @@ class AnalyticsService {
       await setDoc(doc(db, 'sessions', sessionId), sessionData);
       await this.updateUserLastActive(userId);
       return sessionId;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao iniciar sessão:', error);
       throw error;
     }
@@ -490,7 +488,7 @@ class AnalyticsService {
 
       this.currentSessionId = null;
       this.sessionStartTime = null;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao finalizar sessão:', error);
     }
   }
@@ -498,7 +496,7 @@ class AnalyticsService {
   static async trackEvent(
     userId: string, 
     event: string, 
-    properties: Record<string, any> = {}
+    properties: Record<string, unknown> = {}
   ): Promise<void> {
     if (!userId) return;
 
@@ -540,7 +538,7 @@ class AnalyticsService {
       // Atualizar analytics do usuário
       await this.updateUserAnalytics(userId, event, properties);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao rastrear evento:', error);
     }
   }
@@ -577,7 +575,7 @@ class AnalyticsService {
       }
 
       return userAnalyticsDoc.data() as UserAnalytics;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter analytics do usuário:', error);
       return null;
     }
@@ -586,7 +584,7 @@ class AnalyticsService {
   static async updateUserAnalytics(
     userId: string, 
     event: string, 
-    properties: Record<string, any> = {}
+    properties: Record<string, unknown> = {}
   ): Promise<void> {
     try {
       const userAnalyticsRef = doc(db, 'user_analytics', userId);
@@ -633,7 +631,7 @@ class AnalyticsService {
       }
 
       await updateDoc(userAnalyticsRef, updateData);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar analytics do usuário:', error);
     }
   }
@@ -767,7 +765,7 @@ class AnalyticsService {
         engagement
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter métricas do dashboard:', error);
       throw error;
     }
@@ -815,7 +813,7 @@ class AnalyticsService {
         .map(([date, count]) => ({ date, count }))
         .sort((a, b) => a.date.localeCompare(b.date));
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao gerar relatório de projetos:', error);
       return [];
     }
@@ -877,7 +875,7 @@ class AnalyticsService {
           .sort((a, b) => b.count - a.count)
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao gerar relatório de atividade do usuário:', error);
       return { dailyActivity: [], topEvents: [], platformUsage: [] };
     }
@@ -891,7 +889,7 @@ class AnalyticsService {
       await updateDoc(userAnalyticsRef, {
         lastActive: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       // Se o documento não existir, criar um novo
       await this.getUserAnalytics(userId);
     }
@@ -903,32 +901,34 @@ class AnalyticsService {
     return this.trackEvent(userId, 'page_view', { page });
   }
 
-  static trackProjectCreated(userId: string, projectData: any): Promise<void> {
+  static async trackProjectCreated(userId: string, projectData: any): Promise<void> {
     return this.trackEvent(userId, 'project_created', {
       platform: projectData.formData?.platform,
-      wordCount: projectData.content?.length || 0,
-      duration: projectData.formData?.duration
+      duration: projectData.formData?.duration,
+      hasTemplate: !!projectData.metadata?.fromTemplate
     });
   }
 
-  static trackProjectEdited(userId: string, projectData: any): Promise<void> {
+  static async trackProjectEdited(userId: string, projectData: any): Promise<void> {
     return this.trackEvent(userId, 'project_edited', {
-      platform: projectData.formData?.platform,
-      wordCount: projectData.content?.length || 0
+      projectId: projectData.id,
+      wordCount: projectData.content.length,
+      platform: projectData.formData.platform
     });
   }
 
-  static trackSearch(userId: string, searchTerm: string, resultCount: number): Promise<void> {
+  static async trackSearch(userId: string, searchTerm: string, resultCount: number): Promise<void> {
     return this.trackEvent(userId, 'search_performed', {
       searchTerm,
       resultCount
     });
   }
 
-  static trackProjectAction(userId: string, action: string, projectData: any): Promise<void> {
+  static async trackProjectAction(userId: string, action: string, projectData: any): Promise<void> {
     return this.trackEvent(userId, `project_${action}`, {
-      platform: projectData.formData?.platform,
-      projectId: projectData.id
+      projectId: projectData.id,
+      platform: projectData.formData.platform,
+      tags: projectData.tags
     });
   }
 }

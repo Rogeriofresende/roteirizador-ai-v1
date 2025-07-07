@@ -75,7 +75,7 @@ export class VersioningService {
 
       return version;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar versão:', error);
       throw new Error(`Falha ao criar versão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
@@ -96,7 +96,7 @@ export class VersioningService {
       const versionsSnapshot = await getDocs(versionsQuery);
       return versionsSnapshot.docs.map(doc => doc.data() as ScriptVersion);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter versões:', error);
       return [];
     }
@@ -106,7 +106,7 @@ export class VersioningService {
     try {
       const versionDoc = await getDoc(doc(db, 'script_versions', versionId));
       return versionDoc.exists() ? versionDoc.data() as ScriptVersion : null;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter versão:', error);
       return null;
     }
@@ -125,7 +125,7 @@ export class VersioningService {
       if (snapshot.empty) return null;
 
       return snapshot.docs[0].data() as ScriptVersion;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter versão atual:', error);
       return null;
     }
@@ -148,7 +148,7 @@ export class VersioningService {
       );
 
       return restoredVersion;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao restaurar versão:', error);
       throw error;
     }
@@ -195,7 +195,7 @@ export class VersioningService {
 
       return comparison;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao comparar versões:', error);
       throw error;
     }
@@ -212,7 +212,7 @@ export class VersioningService {
 
       const snapshot = await getDocs(comparisonsQuery);
       return snapshot.docs.map(doc => doc.data() as ComparisonData);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter comparações:', error);
       return [];
     }
@@ -434,7 +434,7 @@ export class VersioningService {
       });
 
       return changes;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao detectar mudanças:', error);
       return [];
     }
@@ -446,7 +446,7 @@ export class VersioningService {
     try {
       const versions = await this.getProjectVersions(projectId, 1);
       return versions.length > 0 ? versions[0].versionNumber + 1 : 1;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao obter próximo número de versão:', error);
       return 1;
     }
@@ -478,7 +478,7 @@ export class VersioningService {
         )
       );
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na limpeza de versões antigas:', error);
     }
   }
@@ -493,7 +493,7 @@ export class VersioningService {
         currentVersionId: versionId,
         updatedAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar versão atual do projeto:', error);
     }
   }
@@ -528,7 +528,7 @@ export class VersioningService {
           lastContent = currentContent;
           lastSave = now;
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Erro no auto-save:', error);
       }
     }, this.AUTO_SAVE_INTERVAL);
@@ -574,7 +574,7 @@ export class VersioningService {
       });
 
       return newVersion;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao aplicar melhoria de IA:', error);
       throw error;
     }
@@ -602,7 +602,7 @@ export class VersioningService {
         versions,
         comparisons
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao exportar histórico:', error);
       throw error;
     }
@@ -622,7 +622,7 @@ export class VersioningService {
       await setDoc(backupRef, backup);
 
       return backupRef.id;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro ao criar backup:', error);
       throw error;
     }
