@@ -5,8 +5,12 @@
  * Cria prompts específicos baseados nos erros detectados
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class PromptGenerator {
   constructor() {
@@ -428,13 +432,11 @@ Gerado em: ${prompt.generated}
 }
 
 // Execução se chamado diretamente
-if (require.main === module) {
-  const generator = new PromptGenerator();
-  
-  generator.generatePrompts().catch(error => {
-    console.error('❌ Erro na geração de prompts:', error.message);
-    process.exit(1);
-  });
-}
+const generator = new PromptGenerator();
 
-module.exports = PromptGenerator; 
+generator.generatePrompts().catch(error => {
+  console.error('❌ Erro na geração de prompts:', error.message);
+  process.exit(1);
+});
+
+export default PromptGenerator; 

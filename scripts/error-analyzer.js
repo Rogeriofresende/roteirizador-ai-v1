@@ -5,8 +5,12 @@
  * Analisa erros detectados e gera insights para correção
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class ErrorAnalyzer {
   constructor() {
@@ -270,12 +274,8 @@ class ErrorAnalyzer {
 }
 
 // Execução se chamado diretamente
-if (require.main === module) {
-  const analyzer = new ErrorAnalyzer();
-  analyzer.analyze().catch(error => {
-    console.error('❌ Erro na análise:', error.message);
-    process.exit(1);
-  });
-}
-
-module.exports = ErrorAnalyzer; 
+const analyzer = new ErrorAnalyzer();
+analyzer.analyze().catch(error => {
+  console.error('❌ Erro na análise:', error.message);
+  process.exit(1);
+}); 

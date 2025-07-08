@@ -1,168 +1,236 @@
-# 📖 GUIA DE EXECUÇÃO - SISTEMA DE AUTOCORREÇÃO V6.2
+# 🤖 GUIA DE EXECUÇÃO - SISTEMA DE AUTOCORREÇÃO V6.2
 
 ## 🎯 VISÃO GERAL
 
-Sistema criado com **3 prompts sequenciais** que transformam seu projeto em um **sistema autônomo** que **detecta e corrige erros automaticamente**.
+O Sistema de Autocorreção V6.2 é uma solução completa e autônoma para detectar, analisar e gerar prompts de correção automaticamente para o Roteirar IA.
+
+### **Componentes Principais**
+1. **Error Monitor** - Detecta erros em tempo real
+2. **Error Analyzer** - Analisa e classifica erros por prioridade
+3. **Prompt Generator** - Gera prompts específicos para cada tipo de erro
+4. **Auto-Fix Orchestrator** - Coordena todo o processo automaticamente
 
 ---
 
-## 📋 PROMPTS CRIADOS
+## 🚀 EXECUÇÃO RÁPIDA
 
-### **🚨 PROMPT 1: CORREÇÃO CRÍTICA ATUAL**
-**Arquivo**: `PROMPT_CURSOR_CORRECAO_ERROS_ATUAIS.md`
-- **Objetivo**: Corrigir erros atuais que quebram o sistema
-- **Tempo**: 45 minutos
-- **Foco**: ReferenceError, environment variables, AIAnalyticsService
-- **Status**: ✅ Pronto para execução
-
-### **📊 PROMPT 2: SISTEMA DE MONITORAMENTO**  
-**Arquivo**: `PROMPT_CURSOR_SISTEMA_MONITORAMENTO.md`
-- **Objetivo**: Implementar monitoramento automático 24/7
-- **Tempo**: 30 minutos
-- **Cria**: Scripts de monitor, analyzer, dashboard
-- **Status**: ✅ Pronto para execução
-
-### **🤖 PROMPT 3: GERADOR AUTOMÁTICO**
-**Arquivo**: `PROMPT_CURSOR_AUTO_PROMPT_GENERATOR.md`
-- **Objetivo**: Sistema que gera prompts de correção automaticamente
-- **Tempo**: 30 minutos
-- **Cria**: Generator, orchestrator, templates
-- **Status**: ✅ Pronto para execução
-
----
-
-## 🚀 COMO EXECUTAR
-
-### **ETAPA 1: Corrigir Erros Atuais**
+### **Comando Principal**
 ```bash
-# 1. Copie todo o conteúdo do arquivo:
-cat PROMPT_CURSOR_CORRECAO_ERROS_ATUAIS.md
-
-# 2. Cole no Cursor IA
-# 3. Execute e aguarde conclusão (~45min)
-# 4. Valide que sistema carrega sem erros críticos
+npm run auto-fix
 ```
+Este comando executa o ciclo completo de autocorreção.
 
-### **ETAPA 2: Implementar Monitoramento**
+### **Comandos Individuais**
 ```bash
-# 1. Após ETAPA 1 concluída, copie:
-cat PROMPT_CURSOR_SISTEMA_MONITORAMENTO.md
+# Apenas monitorar erros
+npm run monitor:start
 
-# 2. Cole no Cursor IA
-# 3. Execute e aguarde conclusão (~30min)
-# 4. Teste: npm run monitor:start
-```
+# Apenas analisar erros
+npm run monitor:analyze
 
-### **ETAPA 3: Ativar Autocorreção**
-```bash
-# 1. Após ETAPA 2 concluída, copie:
-cat PROMPT_CURSOR_AUTO_PROMPT_GENERATOR.md
-
-# 2. Cole no Cursor IA
-# 3. Execute e aguarde conclusão (~30min)
-# 4. Teste: npm run auto-fix
-```
-
----
-
-## 🎯 RESULTADO FINAL
-
-Após executar os 3 prompts, você terá:
-
-### **🛡️ Sistema Protegido**
-- ✅ Erros atuais corrigidos
-- ✅ Sistema funcionando 100%
-- ✅ Build estável sem warnings
-
-### **📊 Monitoramento Ativo**
-- ✅ Detecta novos erros automaticamente
-- ✅ Classifica por prioridade
-- ✅ Dashboard visual de status
-- ✅ Relatórios detalhados
-
-### **🤖 Autocorreção Inteligente**
-- ✅ Gera prompts específicos para cada erro
-- ✅ Orquestra processo completo de correção
-- ✅ Valida que correções funcionaram
-- ✅ Ciclo completo automático
-
----
-
-## 💡 COMANDOS ÚTEIS
-
-### **Monitoramento Manual**:
-```bash
-npm run monitor:start        # Inicia monitoramento
-npm run monitor:analyze      # Analisa erros detectados
-npm run monitor:status       # Mostra status atual
-```
-
-### **Autocorreção Manual**:
-```bash
-npm run auto-fix            # Executa ciclo completo de correção
-npm run auto-fix:generate   # Gera apenas prompts
-npm run auto-fix:status     # Status do último auto-fix
-```
-
-### **Health Check**:
-```bash
-npm run system:health       # Verifica saúde geral do sistema
-```
-
----
-
-## 🔄 FLUXO OPERACIONAL
-
-### **Modo Automático** (Recomendado):
-1. **Sistema roda normalmente**
-2. **Monitor detecta** problema automaticamente
-3. **Analyzer classifica** e prioriza
-4. **Generator cria** prompt específico
-5. **Você executa** prompt no Cursor
-6. **Sistema valida** que correção funcionou
-7. **Repete** até sistema limpo
-
-### **Modo Manual** (Quando necessário):
-```bash
-# 1. Detectar problemas
-npm run system:health
-
-# 2. Se houver erros, gerar correções
+# Apenas gerar prompts
 npm run auto-fix:generate
 
-# 3. Executar prompts gerados com IA
-# (arquivos em PROMPTS_AUTO_GENERATED/)
+# Verificar status
+npm run auto-fix:status
+```
 
-# 4. Validar correções
+---
+
+## 📋 FLUXO DE FUNCIONAMENTO
+
+```mermaid
+graph TD
+    A[npm run auto-fix] --> B[Detectar Erros]
+    B --> C[Analisar Erros]
+    C --> D{Existem Erros?}
+    D -->|Sim| E[Gerar Prompts]
+    D -->|Não| I[Sistema Limpo]
+    E --> F[Executar Correções]
+    F --> G[Validar]
+    G --> H{Validação OK?}
+    H -->|Sim| I[Sistema Limpo]
+    H -->|Não| B[Detectar Erros]
+```
+
+---
+
+## 🔧 CONFIGURAÇÃO
+
+### **Diretórios Criados**
+- `logs/` - Armazena análises e relatórios
+- `PROMPTS_AUTO_GENERATED/` - Prompts gerados automaticamente
+- `TEMPLATES/` - Templates personalizáveis
+
+### **Arquivos de Log**
+- `logs/errors-detected.json` - Erros detectados
+- `logs/error-analysis.json` - Análise detalhada
+- `logs/auto-fix-report.json` - Relatório final
+
+---
+
+## 📊 TIPOS DE ERRO E PRIORIDADES
+
+### **CRITICAL** (🔴 Urgente)
+- Sistema não funciona
+- Build quebrado
+- React errors críticos
+- Tempo estimado: 30-45 minutos
+
+### **HIGH** (🟠 Alta)
+- Funcionalidades principais afetadas
+- Variáveis de ambiente faltando
+- Services com erro
+- Tempo estimado: 20-30 minutos
+
+### **MEDIUM** (🟡 Média)
+- Warnings importantes
+- Performance issues
+- Code quality
+- Tempo estimado: 15-20 minutos
+
+### **LOW** (🟢 Baixa)
+- Linting issues
+- Optimizações
+- Melhorias gerais
+- Tempo estimado: 10-15 minutos
+
+---
+
+## 🎯 EXEMPLOS DE USO
+
+### **1. Correção Completa Automática**
+```bash
+# Executa ciclo completo até sistema ficar limpo
+npm run auto-fix
+```
+
+### **2. Análise e Geração Manual**
+```bash
+# Passo 1: Detectar erros
+npm run monitor:start
+
+# Passo 2: Analisar
+npm run monitor:analyze
+
+# Passo 3: Gerar prompts
+npm run auto-fix:generate
+
+# Passo 4: Aplicar correções manualmente
+# Copiar conteúdo dos prompts em PROMPTS_AUTO_GENERATED/
+```
+
+### **3. Verificação de Status**
+```bash
+# Ver quantos erros existem
+npm run monitor:status
+
+# Ver status do auto-fix
+npm run auto-fix:status
+
+# Health check completo
 npm run system:health
 ```
 
 ---
 
-## 🎉 BENEFÍCIOS
+## 💡 PROMPTS GERADOS
 
-### **Para Você**:
-- ⚡ **Nunca mais sistema quebrado** por muito tempo
-- 🚀 **Foca em features**, não em debug
-- 🛡️ **Sistema se mantém sozinho**
-- 📊 **Visibilidade total** de problemas
+### **Estrutura do Prompt**
+```markdown
+# 🚨 CORREÇÃO [PRIORIDADE] AUTOMÁTICA
 
-### **Para o Projeto**:
-- 🏗️ **Arquitetura robusta** com autocorreção
-- 📈 **Qualidade sempre melhorando**
-- 🔄 **Processo escalável** para qualquer feature
-- 💡 **Aprendizado contínuo** de padrões
+## Erros Detectados
+[Lista detalhada de erros com stack traces]
+
+## Soluções Recomendadas
+[Soluções específicas para cada erro]
+
+## Validação Obrigatória
+[Checklist de validação]
+
+## Tempo Estimado
+[Tempo baseado em quantidade e complexidade]
+```
+
+### **Como Usar os Prompts**
+1. Navegue até `PROMPTS_AUTO_GENERATED/`
+2. Abra o prompt de maior prioridade
+3. Copie o conteúdo
+4. Execute com IA do Cursor
+5. Valide as correções
 
 ---
 
-## 🎯 PRÓXIMOS PASSOS
+## 🔍 TROUBLESHOOTING
 
-1. **Execute os 3 prompts** sequencialmente
-2. **Teste o sistema** com `npm run auto-fix`
-3. **Configure monitoramento** para rodar periodicamente
-4. **Adicione novos padrões** conforme necessário
-5. **Aproveite sistema autônomo**! 🚀
+### **Erro: "Nenhum erro detectado"**
+- Verifique se o build está rodando: `npm run build`
+- Execute o preview: `npm run preview`
+- Acesse http://localhost:4173 e verifique console
+
+### **Erro: "Máximo de iterações atingido"**
+- Alguns erros precisam correção manual
+- Verifique prompts em `PROMPTS_AUTO_GENERATED/`
+- Execute correções manualmente
+
+### **Erro: "jq: command not found"**
+- macOS: `brew install jq`
+- Linux: `sudo apt-get install jq`
+- Windows: Use WSL ou Git Bash
 
 ---
 
-**🏆 RESULTADO**: Sistema V6.2 Ultimate que **nunca para de funcionar** e se **mantém sozinho**!
+## ✅ MELHORES PRÁTICAS
+
+1. **Execute regularmente**
+   ```bash
+   # Adicione ao seu workflow diário
+   npm run auto-fix
+   ```
+
+2. **Revise prompts antes de aplicar**
+   - Sempre leia o prompt gerado
+   - Entenda as mudanças propostas
+   - Teste após aplicar
+
+3. **Mantenha templates atualizados**
+   - Customize templates em `TEMPLATES/`
+   - Adicione soluções específicas do projeto
+
+4. **Monitore relatórios**
+   - Verifique `logs/auto-fix-report.json`
+   - Acompanhe métricas de correção
+
+---
+
+## 🚀 RESULTADO ESPERADO
+
+Após executar `npm run auto-fix`:
+- ✅ Zero erros críticos
+- ✅ Build funcionando
+- ✅ Aplicação estável
+- ✅ Console limpo
+- ✅ Prompts documentados para correções manuais
+
+---
+
+## 📈 EVOLUÇÃO DO SISTEMA
+
+### **Versão Atual (V6.2)**
+- Detecção automática de erros
+- Classificação por prioridade
+- Geração inteligente de prompts
+- Templates customizáveis
+- Relatórios detalhados
+
+### **Próximas Melhorias**
+- Integração com CI/CD
+- Correção automática via API
+- Machine Learning para soluções
+- Dashboard visual
+- Histórico de correções
+
+---
+
+**🎉 Sistema de Autocorreção V6.2 - Mantenha seu código sempre limpo!**

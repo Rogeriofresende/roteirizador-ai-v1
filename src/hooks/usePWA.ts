@@ -43,6 +43,43 @@ export const usePWA = () => {
   
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   
+  // Mover registerServiceWorker para antes do useEffect
+  const registerServiceWorker = async () => {
+    try {
+      console.log('PWA Hook: Registering service worker...');
+      
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      });
+      
+      console.log('PWA Hook: Service worker registered:', registration);
+      
+      // Verificar por updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nova versão disponível
+              console.log('PWA Hook: New version available');
+              window.dispatchEvent(new CustomEvent('sw-update-available'));
+            }
+          });
+        }
+      });
+      
+      // Verificar update na ativação
+      if (registration.waiting) {
+        window.dispatchEvent(new CustomEvent('sw-update-available'));
+      }
+      
+      return registration;
+    } catch (error: unknown) {
+      console.error('PWA Hook: Service worker registration failed:', error);
+      return null;
+    }
+  };
+  
   useEffect(() => {
     console.log('PWA Hook: Initializing...');
     
@@ -150,42 +187,6 @@ export const usePWA = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
-  
-  const registerServiceWorker = async () => {
-    try {
-      console.log('PWA Hook: Registering service worker...');
-      
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      });
-      
-      console.log('PWA Hook: Service worker registered:', registration);
-      
-      // Verificar por updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Nova versão disponível
-              console.log('PWA Hook: New version available');
-              window.dispatchEvent(new CustomEvent('sw-update-available'));
-            }
-          });
-        }
-      });
-      
-      // Verificar update na ativação
-      if (registration.waiting) {
-        window.dispatchEvent(new CustomEvent('sw-update-available'));
-      }
-      
-      return registration;
-    } catch (error: unknown) {
-      console.error('PWA Hook: Service worker registration failed:', error);
-      return null;
-    }
-  };
   
   const install = async (): Promise<boolean> => {
     if (!deferredPrompt) {

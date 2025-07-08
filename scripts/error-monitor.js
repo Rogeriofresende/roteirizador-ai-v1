@@ -5,9 +5,13 @@
  * Detecta e captura erros em tempo real
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class ErrorMonitor {
   constructor() {
@@ -162,17 +166,13 @@ class ErrorMonitor {
 }
 
 // Execução se chamado diretamente
-if (require.main === module) {
-  const monitor = new ErrorMonitor();
-  
-  // Captura sinais para parar gracefully
-  process.on('SIGINT', () => {
-    console.log('\n⏹️  Parando Error Monitor...');
-    monitor.stopMonitoring();
-    process.exit(0);
-  });
-  
-  monitor.startMonitoring();
-}
+const monitor = new ErrorMonitor();
 
-module.exports = ErrorMonitor; 
+// Captura sinais para parar gracefully
+process.on('SIGINT', () => {
+  console.log('\n⏹️  Parando Error Monitor...');
+  monitor.stopMonitoring();
+  process.exit(0);
+});
+
+monitor.startMonitoring(); 

@@ -127,3 +127,7 @@ Thumbs.db
 # Performance optimization exclusions
 roteiropro-deploy.zip
 .vercel
+
+# Auto-fix system
+PROMPTS_AUTO_GENERATED/
+logs/auto-fix-report.json

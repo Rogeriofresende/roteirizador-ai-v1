@@ -5,9 +5,13 @@
  * Coordena todo o processo de detecção → análise → correção → validação
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class AutoFixOrchestrator {
   constructor() {
@@ -248,21 +252,19 @@ class AutoFixOrchestrator {
 }
 
 // Execução se chamado diretamente
-if (require.main === module) {
-  const orchestrator = new AutoFixOrchestrator();
-  
-  // Captura sinais para relatório de interrupção
-  process.on('SIGINT', () => {
-    console.log('\n⏹️  Processo interrompido pelo usuário');
-    orchestrator.generateFinalReport().then(() => {
-      process.exit(0);
-    });
-  });
-  
-  orchestrator.runAutoFix().catch(error => {
-    console.error('❌ Erro crítico:', error.message);
-    process.exit(1);
-  });
-}
+const orchestrator = new AutoFixOrchestrator();
 
-module.exports = AutoFixOrchestrator; 
+// Captura sinais para relatório de interrupção
+process.on('SIGINT', () => {
+  console.log('\n⏹️  Processo interrompido pelo usuário');
+  orchestrator.generateFinalReport().then(() => {
+    process.exit(0);
+  });
+});
+
+orchestrator.runAutoFix().catch(error => {
+  console.error('❌ Erro crítico:', error.message);
+  process.exit(1);
+});
+
+export default AutoFixOrchestrator; 
