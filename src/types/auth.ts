@@ -56,6 +56,9 @@ export interface ExtendedUser {
     analyticsOptIn: boolean;
   };
   
+  // Subscription
+  subscription?: 'free' | 'pro' | 'enterprise';
+  
   // Status
   isActive: boolean;
   isBlocked: boolean;

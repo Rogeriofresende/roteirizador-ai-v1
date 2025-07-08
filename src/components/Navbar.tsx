@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { Button } from "./ui/Button";
-import { LogOut, Menu, X, Home, FileText, User, UserPlus, MessageCircle } from 'lucide-react';
+import { LogOut, Menu, X, Home, FileText, User, UserPlus, MessageCircle, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { SystemDashboard } from './SystemDashboard';
@@ -16,7 +16,7 @@ import { isPWAInstalled } from '../utils/pwaUtils';
 const logger = createLogger('Navbar');
 
 const Navbar: React.FC = () => {
-  const { currentUser, isFirebaseEnabled } = useAuth();
+  const { currentUser, isFirebaseEnabled, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -147,6 +147,12 @@ const Navbar: React.FC = () => {
                   <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
                   <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
+                  {/* V6.2: Admin Dashboard Access */}
+                  {isAdmin && (
+                    <NavLink to="/admin" icon={<Shield size={16} className="text-primary" />}>
+                      Admin
+                    </NavLink>
+                  )}
                   <Button variant="destructive" size="sm" onClick={handleLogout} className="flex items-center gap-2">
                     <LogOut size={16} />
                     <span>Sair</span>
@@ -236,6 +242,12 @@ const Navbar: React.FC = () => {
                     <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
                     <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
                     <NavLink to="/dashboard" icon={<User size={18} />}>Dashboard</NavLink>
+                    {/* V6.2: Admin Dashboard Access Mobile */}
+                    {isAdmin && (
+                      <NavLink to="/admin" icon={<Shield size={18} className="text-primary" />}>
+                        Admin Dashboard
+                      </NavLink>
+                    )}
                     <Button 
                       variant="destructive" 
                       size="sm" 

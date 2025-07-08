@@ -88,6 +88,15 @@ const SimpleUserDashboard = React.lazy(() =>
   )
 );
 
+const AdminDashboard = React.lazy(() => 
+  performanceService.measureFunction('load_AdminDashboard', () => 
+    import('./pages/AdminDashboard').then(module => {
+      logger.debug('AdminDashboard lazy loaded', {}, 'CODE_SPLITTING');
+      return module;
+    })
+  )
+);
+
 // =============================================================================
 // PRELOADING STRATEGY
 // =============================================================================
@@ -346,6 +355,15 @@ const App: React.FC = () => {
                     element={
                       <ProtectedRoute>
                         <SimpleUserDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* V6.2: Admin Dashboard com Intelligence */}
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <ProtectedRoute>
+                        <AdminDashboard />
                       </ProtectedRoute>
                     } 
                   />

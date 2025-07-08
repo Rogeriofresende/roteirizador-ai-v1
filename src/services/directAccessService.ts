@@ -151,15 +151,12 @@ export class DirectAccessService {
   ];
 
   /**
-   * Inicializa o serviço de acesso direto
+   * Inicializa o serviço de acesso direto (sem usuário específico)
    */
-  static async initialize(userId: string): Promise<void> {
+  static initialize(): void {
     try {
       // Carregar ações padrão
       this.loadDefaultActions();
-
-      // Carregar padrões de acesso do usuário
-      await this.loadUserPatterns(userId);
 
       // Configurar atalhos de teclado
       this.setupKeyboardShortcuts();
@@ -167,13 +164,37 @@ export class DirectAccessService {
       // Construir índice de busca
       this.buildSearchIndex();
 
-      // Inicializar paleta de comandos
-      this.initializeCommandPalette(userId);
+      // Inicializar paleta de comandos básica
+      this.initializeCommandPalette('default');
 
-      logger.info('Direct Access inicializado', { userId });
+      logger.info('Direct Access inicializado (modo básico)');
 
     } catch (error) {
       logger.error('Erro ao inicializar Direct Access', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Inicializa o serviço de acesso direto para um usuário específico
+   */
+  static async initializeForUser(userId: string): Promise<void> {
+    try {
+      // Se ainda não foi inicializado, fazer inicialização básica primeiro
+      if (this.quickActions.size === 0) {
+        this.initialize();
+      }
+
+      // Carregar padrões de acesso do usuário
+      await this.loadUserPatterns(userId);
+
+      // Re-inicializar paleta de comandos com dados do usuário
+      this.initializeCommandPalette(userId);
+
+      logger.info('Direct Access personalizado para usuário', { userId });
+
+    } catch (error) {
+      logger.error('Erro ao inicializar Direct Access para usuário', error);
       throw error;
     }
   }

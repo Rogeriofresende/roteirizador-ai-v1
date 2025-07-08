@@ -39,7 +39,30 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+    
+    // V6.2: Enhanced micro-interactions
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      // Haptic feedback for mobile
+      if ('vibrate' in navigator && !props.disabled) {
+        navigator.vibrate(10);
+      }
+      
+      // Call original onClick
+      props.onClick?.(e);
+    };
+    
+    return (
+      <Comp 
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          "relative overflow-hidden transition-all duration-200",
+          !props.disabled && "active:scale-[0.97] hover:scale-[1.02]"
+        )} 
+        ref={ref} 
+        {...props}
+        onClick={handleClick}
+      />
+    )
   },
 )
 Button.displayName = "Button"

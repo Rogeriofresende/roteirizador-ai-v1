@@ -404,4 +404,5 @@ const AdminDocumentation: React.FC = () => {
   );
 };
 
-export default AdminDocumentation; 
+export default AdminDocumentation;
+export { AdminDocumentation }; 
