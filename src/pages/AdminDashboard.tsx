@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { IntelligenceDashboard } from '../components/admin/IntelligenceDashboard';
 import { MonitoringDashboard } from '../components/admin/MonitoringDashboard';
 import { AdminDocumentation } from '../components/admin/AdminDocumentation';
+import { ErrorDashboard } from '../components/admin/ErrorDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -20,7 +21,8 @@ import {
   Settings,
   ChevronLeft,
   Users,
-  Zap
+  Zap,
+  AlertCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -69,7 +71,7 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3">
+          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-4">
             <TabsTrigger value="intelligence" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
               <span className="hidden sm:inline">Intelligence</span>
@@ -77,6 +79,10 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="monitoring" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Monitoramento</span>
+            </TabsTrigger>
+            <TabsTrigger value="errors" className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Erros</span>
             </TabsTrigger>
             <TabsTrigger value="documentation" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -100,6 +106,13 @@ const AdminDashboard: React.FC = () => {
           <TabsContent value="monitoring" className="space-y-6">
             <Card className="p-6">
               <MonitoringDashboard />
+            </Card>
+          </TabsContent>
+
+          {/* Error Dashboard Tab */}
+          <TabsContent value="errors" className="space-y-6">
+            <Card className="p-6">
+              <ErrorDashboard />
             </Card>
           </TabsContent>
 

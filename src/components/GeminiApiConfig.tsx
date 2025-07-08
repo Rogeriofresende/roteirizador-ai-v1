@@ -48,16 +48,7 @@ export const GeminiApiConfig: React.FC = () => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [configSteps, setConfigSteps] = useState<ConfigurationStep[]>([]);
 
-  // Define all helper functions first to avoid hoisting issues
-  const updateConfigSteps = (stepIds: string[], status: ConfigurationStep['status']) => {
-    setConfigSteps(prev => 
-      prev.map(step => 
-        stepIds.includes(step.id) ? { ...step, status } : step
-      )
-    );
-  };
-
-  // Define all callback functions after helper functions
+  // Define all callback functions with proper dependencies
   const initializeConfigSteps = useCallback(() => {
     const steps: ConfigurationStep[] = [
       {
@@ -87,6 +78,14 @@ export const GeminiApiConfig: React.FC = () => {
     ];
 
     setConfigSteps(steps);
+  }, []);
+  
+  const updateConfigSteps = useCallback((stepIds: string[], status: ConfigurationStep['status']) => {
+    setConfigSteps(prev => 
+      prev.map(step => 
+        stepIds.includes(step.id) ? { ...step, status } : step
+      )
+    );
   }, []);
 
   const trackComponentMount = useCallback(() => {
@@ -141,7 +140,7 @@ export const GeminiApiConfig: React.FC = () => {
     } finally {
       setIsTestingConnection(false);
     }
-  }, []);
+  }, [updateConfigSteps]);
 
   const initializeStatus = useCallback(async () => {
     const isConfigured = geminiService.isConfigured();

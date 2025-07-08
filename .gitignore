@@ -14,6 +14,26 @@ test-results/
 playwright-report/
 *.log
 
+# Testing & Performance Reports
+/cypress/downloads/
+/cypress/screenshots/
+/cypress/videos/
+performance-report.html
+performance-report.json
+jest-test-results.json
+performance-metrics.json
+test-summary.json
+smoke-tests-report*.json
+coverage-report-*.json
+
+# Error monitoring logs
+logs/errors-detected.json
+logs/error-analysis.json
+
+# Backups
+/backups/
+backup*.tar.gz
+
 # Production
 /build
 /dist

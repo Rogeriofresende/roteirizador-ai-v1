@@ -138,7 +138,8 @@ export const config: EnvironmentConfig = {
   version: import.meta.env.VITE_APP_VERSION || '2.1.3',
   baseUrl: import.meta.env.VITE_APP_BASE_URL || 'http://localhost:5174',
   
-  geminiApiKey: import.meta.env.VITE_GOOGLE_GEMINI_API_KEY,
+  geminiApiKey: import.meta.env.VITE_GOOGLE_GEMINI_API_KEY || 
+    (isProduction() ? 'AIzaSyBRZJQv8YjGrkuWUitTFNVU0c46rk5G5EZI' : undefined),
   
   firebase: {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

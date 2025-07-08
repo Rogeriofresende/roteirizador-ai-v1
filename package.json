@@ -44,7 +44,14 @@
     "learning:apply": "node scripts/learning-recovery-cli.js apply",
     "learning:pending": "node scripts/extended-learning-recovery-cli.js analyze",
     "learning:status": "node scripts/extended-learning-recovery-cli.js status",
-    "learning:roadmap": "node scripts/extended-learning-recovery-cli.js plan"
+    "learning:roadmap": "node scripts/extended-learning-recovery-cli.js plan",
+    "monitor:start": "node scripts/error-monitor.js",
+    "monitor:analyze": "node scripts/error-analyzer.js",
+    "monitor:status": "cat logs/error-analysis.json | jq '.totalErrors' 2>/dev/null || echo '0'",
+    "auto-fix": "node scripts/auto-fix-orchestrator.js",
+    "auto-fix:generate": "node scripts/prompt-generator.js",
+    "auto-fix:status": "cat logs/auto-fix-report.json | jq '.status' 2>/dev/null || echo 'Not executed'",
+    "system:health": "npm run build && npm run monitor:analyze"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
