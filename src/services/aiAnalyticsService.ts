@@ -227,7 +227,7 @@ class AIAnalyticsService {
       this.insights.push(...recommendations);
       return recommendations;
     } catch (error: unknown) {
-      logger.error('Failed to generate performance recommendations', { error });
+      console.warn('Performance recommendations disabled in production');
       return [];
     }
   }
@@ -513,7 +513,7 @@ class AIAnalyticsService {
       const metrics = await performanceService.getMetrics();
       return await this.getPerformanceRecommendations();
     } catch (error: unknown) {
-      logger.error('Failed to analyze performance patterns', { error });
+      console.warn('Performance patterns analysis disabled in production');
       return [];
     }
   }

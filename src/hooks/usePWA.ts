@@ -16,6 +16,8 @@ interface PWAState {
   canInstall: boolean;
   showPrompt: boolean;
   installPrompt: BeforeInstallPromptEvent | null;
+  isOffline: boolean;
+  hasUpdate: boolean;
 }
 
 interface PWAActions {
@@ -23,18 +25,23 @@ interface PWAActions {
   update: () => Promise<void>;
   showInstallPrompt: () => void;
   dismissUpdate: () => void;
+  installApp: () => Promise<boolean>;
+  dismissPrompt: () => void;
+  showInstallPrompt: boolean;
 }
 
-export const usePWA = (): PWAState & PWAActions => {
+export const usePWA = () => {
   const [state, setState] = useState<PWAState>({
-    isSupported: false,
+    isSupported: 'serviceWorker' in navigator && 'PushManager' in window,
     isInstalled: false,
     canInstall: false,
     showPrompt: false,
-    installPrompt: null
+    installPrompt: null,
+    isOffline: !navigator.onLine,
+    hasUpdate: false
   });
   
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   
   useEffect(() => {
     console.log('PWA Hook: Initializing...');
@@ -130,7 +137,7 @@ export const usePWA = (): PWAState & PWAActions => {
     initializeManifest();
     
     // Register service worker se suportado
-    if (state.isSupported) {
+    if ('serviceWorker' in navigator) {
       registerServiceWorker();
     }
     

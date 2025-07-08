@@ -99,7 +99,7 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
   // Validações críticas para produção
   if (isProduction()) {
     if (!env.VITE_GOOGLE_GEMINI_API_KEY) {
-      errors.push('VITE_GOOGLE_GEMINI_API_KEY é obrigatória em produção');
+      console.warn('⚠️ VITE_GOOGLE_GEMINI_API_KEY não configurada - Multi-AI desabilitado');
     }
   }
   

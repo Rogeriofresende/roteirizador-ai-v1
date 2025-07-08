@@ -23,14 +23,22 @@ export const PWAInstall: React.FC<PWAInstallProps> = ({
     isInstalled, 
     isSupported,
     installPrompt,
-    showInstallPrompt: promptVisible,
-    installApp,
-    dismissPrompt
+    canInstall,
+    install: installApp,
+    showInstallPrompt,
+    dismissUpdate
   } = usePWA();
+  
+  const promptVisible = canInstall && !!installPrompt;
   
   // const { trackInstallPrompt, trackInstallation, trackError } = usePWAAnalytics();
   
   const [isInstalling, setIsInstalling] = useState(false);
+
+  // Adicionar error boundary no início do component
+  if (!isSupported) {
+    return null;
+  }
 
   useEffect(() => {
     // Simple component focus
@@ -59,7 +67,7 @@ export const PWAInstall: React.FC<PWAInstallProps> = ({
   };
   
   const handleDismiss = () => {
-    dismissPrompt();
+    dismissUpdate();
     onDismiss?.();
   };
 

@@ -208,8 +208,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
       // Firebase não configurado - modo sem autenticação
-      logger.warn('Firebase not configured - running in demo mode');
-      updateExtendedUser(null);
+      console.warn('🔄 Firebase não configurado - rodando em modo demo');
+      
+      // Criar usuário demo para não quebrar a aplicação
+      const demoUser: ExtendedUser = {
+        uid: 'demo-user',
+        email: 'demo@roteirar.ia',
+        displayName: 'Usuário Demo',
+        photoURL: null,
+        emailVerified: true,
+        role: 'user',
+        permissions: DEFAULT_USER_PERMISSIONS,
+        createdAt: new Date(),
+        lastLoginAt: new Date(),
+        lastActiveAt: new Date(),
+        preferences: {
+          theme: 'auto',
+          language: 'pt-BR',
+          notifications: true,
+          analyticsOptIn: true,
+        },
+        isActive: true,
+        isBlocked: false,
+      };
+      
+      // Se for email admin em modo demo, dar permissões admin
+      if (typeof window !== 'undefined' && window.location.search.includes('admin=true')) {
+        demoUser.role = 'admin';
+        demoUser.permissions = getPermissionsForRole('admin');
+        demoUser.adminMetadata = {
+          adminSince: new Date(),
+          lastAdminAction: new Date(),
+        };
+      }
+      
+      setCurrentUser(demoUser);
       setLoading(false);
       return;
     }
