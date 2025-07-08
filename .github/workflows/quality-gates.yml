@@ -1,0 +1,138 @@
+name: Quality Gates CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: 📦 Install dependencies
+      run: npm ci
+    
+    - name: 🔍 Run Infrastructure Validation
+      run: node scripts/infrastructure-validator.js
+      continue-on-error: true
+    
+    - name: 🏗️ Build project
+      run: npm run build
+    
+    - name: 📊 Run Performance Monitor
+      run: node scripts/advanced-performance-monitor.js
+    
+    - name: 🚪 Run Quality Gates
+      run: bash scripts/quality-gates-v6.sh
+    
+    - name: 📘 TypeScript Check
+      run: npx tsc --noEmit
+    
+    - name: 🔍 ESLint Check
+      run: npm run lint
+      continue-on-error: true
+    
+    - name: 🧪 Run Tests
+      run: npm test -- --watchAll=false --coverage
+      continue-on-error: true
+    
+    - name: 📊 Upload Coverage Reports
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '20.x'
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: 📁 Upload Performance Metrics
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-metrics-${{ matrix.node-version }}
+        path: |
+          performance-metrics-v6.json
+          quality-gates-report.json
+          infrastructure-validation-report.json
+    
+    - name: 💬 Comment PR with Quality Report
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Read quality report
+          let report = '## 📊 Quality Gates Report\n\n';
+          
+          try {
+            const qualityReport = JSON.parse(fs.readFileSync('quality-gates-report.json', 'utf8'));
+            
+            report += `### Summary\n`;
+            report += `- ✅ Passed: ${qualityReport.summary.passed}\n`;
+            report += `- ❌ Failed: ${qualityReport.summary.failed}\n`;
+            report += `- ⚠️ Warnings: ${qualityReport.summary.warnings}\n\n`;
+            
+            report += `### Metrics\n`;
+            report += `- 🏗️ Build Time: ${qualityReport.gates.build.buildTime}\n`;
+            report += `- 📦 Bundle Size: ${qualityReport.gates.build.gzipSize} (gzipped)\n`;
+            report += `- 🧪 Tests: ${qualityReport.gates.tests.passed}/${qualityReport.gates.tests.total} passed\n`;
+            report += `- 🔍 ESLint: ${qualityReport.gates.eslint.errors} errors, ${qualityReport.gates.eslint.warnings} warnings\n`;
+            
+          } catch (error) {
+            report += '❌ Failed to generate quality report\n';
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          });
+
+  deploy-preview:
+    needs: quality-gates
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: 📦 Install dependencies
+      run: npm ci
+    
+    - name: 🏗️ Build for preview
+      run: npm run build
+      env:
+        VITE_PREVIEW_MODE: true
+    
+    - name: 🚀 Deploy to Vercel Preview
+      uses: amondnet/vercel-action@v20
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        zeit-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./dist 

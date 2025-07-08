@@ -74,6 +74,21 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'firebase',
+      '@google/generative-ai',
+      'framer-motion',
+      'lucide-react',
+      'date-fns',
+      'axios',
+      'recharts'
+    ],
+    exclude: ['@vite/client', '@vite/env']
+  },
   server: {
     port: 5174,
     strictPort: true,

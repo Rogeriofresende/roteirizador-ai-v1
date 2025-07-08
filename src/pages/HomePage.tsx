@@ -1,8 +1,65 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
+import { 
+  ArrowRight, 
+  PlayCircle, 
+  Star, 
+  Sparkles, 
+  Target, 
+  TrendingUp, 
+  Check, 
+  Globe 
+} from 'lucide-react';
+import { geminiService } from '../services/geminiService';
 
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  
+  // V5.1: Redirecionamento inteligente baseado em configuração
+  useEffect(() => {
+    const checkConfigAndRedirect = async () => {
+      try {
+        const isConfigured = geminiService.isConfigured();
+        
+        if (isConfigured) {
+          setIsRedirecting(true);
+          // Pequeno delay para mostrar feedback visual
+          setTimeout(() => {
+            navigate('/');
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Error checking API configuration:', error);
+      }
+    };
+    
+    checkConfigAndRedirect();
+  }, [navigate]);
+  
+  // V5.1: Tela de redirecionamento
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="text-center p-8">
+          <div className="w-16 h-16 mx-auto mb-4 relative">
+            <div className="w-full h-full border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            API Detectada! 🎉
+          </h2>
+          <p className="text-gray-600">
+            Redirecionando para o gerador de roteiros...
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Hero Section */}

@@ -319,11 +319,16 @@ const App: React.FC = () => {
                     path="/" 
                     element={<GeneratorPage />} 
                   />
-                  {/* V5.1: Marketing/About moved to secondary route */}
+                  {/* V5.1: Marketing/About moved to secondary routes */}
+                  <Route 
+                    path="/home" 
+                    element={<HomePage />} 
+                  />
                   <Route 
                     path="/about" 
                     element={<HomePage />} 
                   />
+                  {/* V5.1: Keep generator route for backward compatibility */}
                   <Route 
                     path="/generator" 
                     element={<GeneratorPage />} 

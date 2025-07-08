@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-07-08T00:31:07.233Z",
+  "environment": {
+    "nodeVersion": "v20.18.2",
+    "nodeCompatible": true
+  },
+  "dependencies": {
+    "react": {
+      "installed": true,
+      "version": "^18.3.1"
+    },
+    "react-dom": {
+      "installed": true,
+      "version": "^18.3.1"
+    },
+    "react-router-dom": {
+      "installed": true,
+      "version": "^6.26.2"
+    },
+    "firebase": {
+      "installed": true,
+      "version": "^10.13.2"
+    },
+    "@radix-ui/react-alert-dialog": {
+      "installed": true,
+      "version": "^1.1.14"
+    },
+    "@radix-ui/react-dialog": {
+      "installed": true,
+      "version": "^1.1.14"
+    },
+    "@radix-ui/react-select": {
+      "installed": true,
+      "version": "^2.2.5"
+    },
+    "@radix-ui/react-tabs": {
+      "installed": true,
+      "version": "^1.1.12"
+    },
+    "framer-motion": {
+      "installed": true,
+      "version": "^11.11.17"
+    },
+    "@google/generative-ai": {
+      "installed": true,
+      "version": "^0.21.0"
+    },
+    "axios": {
+      "installed": false,
+      "required": "*"
+    },
+    "date-fns": {
+      "installed": true,
+      "version": "^4.1.0"
+    },
+    "lucide-react": {
+      "installed": true,
+      "version": "^0.523.0"
+    },
+    "recharts": {
+      "installed": false,
+      "required": "*"
+    },
+    "vite": {
+      "installed": true,
+      "version": "^5.4.10"
+    },
+    "typescript": {
+      "installed": true,
+      "version": "~5.6.2"
+    },
+    "@types/react": {
+      "installed": true,
+      "version": "^18.3.12"
+    }
+  },
+  "apiKeys": {
+    "firebase": false,
+    "gemini": true
+  },
+  "performance": {
+    "recentBuild": true,
+    "viteOptimized": false
+  },
+  "compatibility": {
+    "strictMode": false,
+    "moduleResolution": false
+  },
+  "readiness": {
+    "predictiveUX": false,
+    "multiAI": false,
+    "voiceSynthesis": false,
+    "smartLoading": false,
+    "microInteractions": true
+  }
+}

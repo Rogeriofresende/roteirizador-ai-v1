@@ -1,102 +1,74 @@
+// Test Setup Configuration V6.2
 import '@testing-library/jest-dom';
-import '@testing-library/jest-dom/jest-globals';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
 
-// Enhanced error handling for tests
-const originalError = console.error;
-beforeAll(() => {
-  console.error = (...args) => {
-    // Suppress specific React warnings in tests that are expected
-    if (
-      typeof args[0] === 'string' &&
-      (args[0].includes('Warning: ReactDOM.render is deprecated') ||
-       args[0].includes('Warning: componentWillReceiveProps'))
-    ) {
-      return;
-    }
-    originalError.call(console, ...args);
-  };
+// Cleanup after each test
+afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
 });
 
-afterAll(() => {
-  console.error = originalError;
+// Mock environment variables
+process.env.VITE_FIREBASE_API_KEY = 'test-api-key';
+process.env.VITE_FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+process.env.VITE_FIREBASE_PROJECT_ID = 'test-project';
+process.env.VITE_GEMINI_API_KEY = 'test-gemini-key';
+
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+    })),
 });
 
-// Global test utilities
-global.testUtils = {
-  // Async helper for testing loading states
-  waitForLoadingToFinish: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  },
-  
-  // Mock localStorage with quota simulation
-  mockLocalStorageWithQuota: (maxItems = 5) => {
-    let itemCount = 0;
-    return {
-      getItem: jest.fn((key) => {
-        return localStorage.getItem(key);
-      }),
-      setItem: jest.fn((key, value) => {
-        if (itemCount >= maxItems) {
-          throw new Error('QuotaExceededError');
-        }
-        itemCount++;
-        return localStorage.setItem(key, value);
-      }),
-      removeItem: jest.fn((key) => {
-        itemCount = Math.max(0, itemCount - 1);
-        return localStorage.removeItem(key);
-      }),
-      clear: jest.fn(() => {
-        itemCount = 0;
-        return localStorage.clear();
-      })
-    };
-  },
-  
-  // Performance testing helper
-  measureRenderTime: async (renderFn) => {
-    const start = performance.now();
-    await renderFn();
-    const end = performance.now();
-    return end - start;
-  }
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+}));
+
+// Mock Web Speech API
+global.speechSynthesis = {
+    speak: vi.fn(),
+    cancel: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
+    getVoices: vi.fn(() => []),
+    pending: false,
+    speaking: false,
+    paused: false,
 };
 
-// Enhanced cleanup
-afterEach(() => {
-  // Clear all mocks
-  jest.clearAllMocks();
-  
-  // Reset DOM
-  document.body.innerHTML = '';
-  
-  // Clear localStorage
-  localStorage.clear();
-  
-  // Reset any global state
-  if (global.testCleanup) {
-    global.testCleanup.forEach(cleanup => cleanup());
-    global.testCleanup = [];
-  }
-});
+// Mock Vibration API
+navigator.vibrate = vi.fn();
 
-// Type declarations for global utilities
-declare global {
-  var testUtils: {
-    waitForLoadingToFinish: () => Promise<void>;
-    mockLocalStorageWithQuota: (maxItems?: number) => any;
-    measureRenderTime: (renderFn: () => Promise<void>) => Promise<number>;
-  };
-  var testCleanup: (() => void)[];
-}
+// Mock Performance API
+global.performance.mark = vi.fn();
+global.performance.measure = vi.fn();
 
-// Extend Jest matchers type
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toBeInTheDocument(): R;
-      toHaveClass(className: string): R;
-      toBeDisabled(): R;
-    }
-  }
-} 
+// Import global mocks
+vi.mock('@/services/predictiveAnalytics', () => 
+    import('./mocks/predictiveUX.mock')
+);
+
+vi.mock('@/services/multiAIService', () => 
+    import('./mocks/multiAI.mock')
+);
+
+vi.mock('@/services/voiceService', () => 
+    import('./mocks/voiceSynthesis.mock')
+);
+
+vi.mock('@/services/loadingService', () => 
+    import('./mocks/smartLoading.mock')
+);

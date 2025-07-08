@@ -41,6 +41,9 @@ const GeneratorPage: React.FC = () => {
   const [isConfigured, setIsConfigured] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // V5.1: Multi-AI Selection State
+  const [selectedAI, setSelectedAI] = useState<'gemini' | 'chatgpt'>('gemini');
 
   // STEP 2: Advanced Editor Integration
   const { currentUser } = useAuth();
@@ -144,6 +147,7 @@ const GeneratorPage: React.FC = () => {
     // V5.1: Track generation pattern and predict next actions
     trackAction('click', 'generate_script', { 
       formData,
+      selectedAI,
       prediction: getMostLikelyNext(),
       sessionStats: getSessionStats()
     });
@@ -155,18 +159,30 @@ const GeneratorPage: React.FC = () => {
       // V5.1: Enhanced analytics with prediction context
       analyticsService.trackConversionFunnel('generation_started', {
         ...formData,
+        selectedAI,
         predictiveContext: getMostLikelyNext(),
         sessionStats: getSessionStats()
       });
       
-      const generatedScript = await geminiService.generateScript({
-        subject: formData.subject,
-        platform: formData.platform,
-        duration: formData.duration,
-        tone: formData.tone,
-        audience: formData.audience,
-        objective: formData.objective
-      });
+      // V5.1: Multi-AI Support - Route to selected AI service
+      // TODO (IA B): Integrate ChatGPT service when available
+      const generatedScript = selectedAI === 'gemini'
+        ? await geminiService.generateScript({
+            subject: formData.subject,
+            platform: formData.platform,
+            duration: formData.duration,
+            tone: formData.tone,
+            audience: formData.audience,
+            objective: formData.objective
+          })
+        : await geminiService.generateScript({ // Fallback to Gemini until ChatGPT is ready
+            subject: formData.subject,
+            platform: formData.platform,
+            duration: formData.duration,
+            tone: formData.tone,
+            audience: formData.audience,
+            objective: formData.objective
+          });
       
       setScript(generatedScript);
       
@@ -365,6 +381,71 @@ const GeneratorPage: React.FC = () => {
             <div className="relative z-10 w-full grid lg:grid-cols-2 gap-8 max-w-7xl animate-appear opacity-0 delay-300">
               {/* V5.1 Enhanced Form Section */}
               <div className="space-y-6">
+                {/* V5.1: Multi-AI Selector */}
+                <PredictiveCard 
+                  className="p-4"
+                  data-track-id="ai_selector_card"
+                >
+                  <h3 className="text-lg font-semibold mb-4 text-foreground">
+                    Escolha sua IA
+                  </h3>
+                  <div className="flex gap-3 p-3 bg-muted/30 rounded-lg">
+                    <PredictiveButton
+                      variant={selectedAI === 'gemini' ? 'default' : 'outline'}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 transition-all",
+                        selectedAI === 'gemini' && "shadow-md scale-[1.02]"
+                      )}
+                      onClick={() => {
+                        setSelectedAI('gemini');
+                        trackAction('click', 'ai_selector_gemini', { 
+                          previousAI: selectedAI,
+                          newAI: 'gemini' 
+                        });
+                      }}
+                      data-track-id="select_gemini"
+                    >
+                      <span className="text-xl">🧠</span>
+                      <span className="font-medium">Gemini AI</span>
+                      {selectedAI === 'gemini' && (
+                        <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                          Ativo
+                        </span>
+                      )}
+                    </PredictiveButton>
+                    
+                    <PredictiveButton
+                      variant={selectedAI === 'chatgpt' ? 'default' : 'outline'}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 transition-all",
+                        selectedAI === 'chatgpt' && "shadow-md scale-[1.02]"
+                      )}
+                      onClick={() => {
+                        setSelectedAI('chatgpt');
+                        trackAction('click', 'ai_selector_chatgpt', { 
+                          previousAI: selectedAI,
+                          newAI: 'chatgpt' 
+                        });
+                      }}
+                      data-track-id="select_chatgpt"
+                    >
+                      <span className="text-xl">🤖</span>
+                      <span className="font-medium">ChatGPT</span>
+                      {selectedAI === 'chatgpt' && (
+                        <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                          Ativo
+                        </span>
+                      )}
+                    </PredictiveButton>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    {selectedAI === 'gemini' 
+                      ? '⚡ Gemini: Rápido e criativo, ideal para conteúdo viral'
+                      : '💡 ChatGPT: Detalhado e eloquente, perfeito para roteiros complexos'
+                    }
+                  </p>
+                </PredictiveCard>
+
                 <PredictiveCard 
                   className="p-6"
                   data-track-id="form_card"
@@ -553,23 +634,49 @@ const GeneratorPage: React.FC = () => {
                           />
                         )}
                         
-                        <div className="flex justify-end space-x-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          {/* V5.1: Enhanced Voice Synthesis Button */}
                           <PredictiveButton
                             onClick={handleOpenVoicePanel}
-                            variant="outline"
+                            variant="default"
+                            className={cn(
+                              "flex items-center gap-2 flex-1 sm:flex-none",
+                              "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
+                              "text-white shadow-lg hover:shadow-xl transition-all"
+                            )}
                             data-track-id="voice_button"
                             disabled={!script || script.length === 0}
                           >
-                            🎤 Síntese de Voz
+                            <span className="text-xl">🎙️</span>
+                            <span className="font-medium">Gerar Narração</span>
+                            <span className="hidden sm:inline text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                              25+ vozes
+                            </span>
                           </PredictiveButton>
+                          
+                          {/* Copy Button */}
                           <PredictiveButton
                             onClick={handleCopyScript}
                             variant="outline"
+                            className="flex items-center gap-2"
                             data-track-id="copy_button"
                           >
-                            📋 Copiar Roteiro
+                            <span>📋</span>
+                            <span>Copiar Roteiro</span>
                           </PredictiveButton>
                         </div>
+                        
+                        {/* V5.1: Voice Synthesis Hint */}
+                        {script && script.length > 50 && !showVoicePanel && (
+                          <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                            <p className="text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                              <span>💡</span>
+                              <span>
+                                Novo! Transforme seu roteiro em áudio profissional com narração realista
+                              </span>
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
@@ -587,20 +694,23 @@ const GeneratorPage: React.FC = () => {
               </div>
             </div>
 
-            {/* STEP 3: Voice Synthesis Panel - Enterprise Feature */}
-            {currentUser && currentProjectId && script && (
-              <VoiceSynthesisPanel
-                projectId={currentProjectId}
-                userId={currentUser.uid}
-                text={script}
-                isVisible={showVoicePanel}
-                onClose={() => {
-                  setShowVoicePanel(false);
-                  trackAction('click', 'close_voice_panel', {
-                    sessionTime: Date.now()
-                  });
-                }}
-              />
+            {/* V5.1: Voice Synthesis Panel - Now accessible to all users */}
+            {script && showVoicePanel && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <VoiceSynthesisPanel
+                  projectId={currentProjectId || `temp_${Date.now()}`}
+                  userId={currentUser?.uid || 'anonymous'}
+                  text={script}
+                  isVisible={showVoicePanel}
+                  onClose={() => {
+                    setShowVoicePanel(false);
+                    trackAction('click', 'close_voice_panel', {
+                      sessionTime: Date.now(),
+                      wasAuthenticated: !!currentUser
+                    });
+                  }}
+                />
+              </div>
             )}
 
             {/* STEP 4: Advanced Analytics Dashboard - Enterprise Feature */}
