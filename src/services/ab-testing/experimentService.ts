@@ -424,8 +424,8 @@ class ExperimentService {
     };
 
     let totalParticipants = 0;
-    let satisfactionImprovements = [];
-    let costImpacts = [];
+    const satisfactionImprovements = [];
+    const costImpacts = [];
 
     for (const experiment of this.experiments.values()) {
       switch (experiment.status) {

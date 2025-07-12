@@ -503,9 +503,10 @@ class CostManagementService {
       switch (period) {
         case 'daily':
           return recordDate.toDateString() === now.toDateString();
-        case 'weekly':
+        case 'weekly': {
           const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           return recordDate >= weekAgo;
+        }
         case 'monthly':
           return recordDate.getMonth() === now.getMonth() && 
                  recordDate.getFullYear() === now.getFullYear();

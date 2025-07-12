@@ -155,7 +155,7 @@ export function Timeline({
     const start = new Date(selectedDate);
     start.setHours(0, 0, 0, 0);
 
-    let current = new Date(start);
+    const current = new Date(start);
     const end = new Date(start);
     
     switch (selectedView) {

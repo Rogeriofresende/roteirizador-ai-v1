@@ -643,7 +643,7 @@ export class FallbackService {
   }
 
   private recordCircuitBreakerSuccess(serviceName: string): void {
-    let breaker = this.circuitBreakers.get(serviceName);
+    const breaker = this.circuitBreakers.get(serviceName);
     if (!breaker) return;
     
     if (breaker.state === 'half_open') {

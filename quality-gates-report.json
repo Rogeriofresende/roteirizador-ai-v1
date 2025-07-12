@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-07-12T12:52:54Z",
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "warnings": 3,
+    "total": 5
+  },
+  "gates": {
+    "build": {
+      "buildTime": "0,00s",
+      "bundleSize": "3.75KB",
+      "gzipSize": "174.86
+383.44KB"
+    },
+    "typescript": {
+      "errors": 0
+    },
+    "eslint": {
+      "errors": 47,
+      "warnings": 1904
+    },
+    "tests": {
+      "passed": 153,
+      "failed": 0,
+      "total": 153
+    },
+    "security": {
+      "vulnerabilities": 
+    },
+    "quality": {
+      "score": 85
+    }
+  },
+  "status": "FAIL"
+}
