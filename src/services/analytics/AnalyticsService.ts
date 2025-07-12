@@ -528,29 +528,29 @@ export class AnalyticsService extends BaseService {
     const result = await this.query(query);
     
     switch (format) {
-      case 'json':
+      case 'json': {
         return {
           data: JSON.stringify(result, null, 2),
           filename: `analytics_export_${Date.now()}.json`,
           contentType: 'application/json'
         };
-      
-      case 'csv':
+      }
+      case 'csv': {
         const csv = this.convertToCSV(result.data);
         return {
           data: csv,
           filename: `analytics_export_${Date.now()}.csv`,
           contentType: 'text/csv'
         };
-      
-      case 'excel':
+      }
+      case 'excel': {
         // Would implement Excel export
         return {
           data: Buffer.from('Excel export not implemented'),
           filename: `analytics_export_${Date.now()}.xlsx`,
           contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         };
-      
+      }
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
@@ -654,23 +654,27 @@ export class AnalyticsService extends BaseService {
   private async updateRealtimeMetrics(event: AnalyticsEvent): Promise<void> {
     // Update metrics based on event type
     switch (event.category) {
-      case 'idea_generation':
+      case 'idea_generation': {
         this.realtimeMetrics.business.ideasGenerated++;
         break;
-      case 'personalization':
+      }
+      case 'personalization': {
         this.realtimeMetrics.business.personalizationsPerformed++;
         break;
-      case 'user_management':
+      }
+      case 'user_management': {
         if (event.action === 'registration') {
           this.realtimeMetrics.users.new++;
           this.realtimeMetrics.users.total++;
         }
         break;
-      case 'cost_management':
+      }
+      case 'cost_management': {
         if (event.value) {
           this.realtimeMetrics.costs.total += event.value;
         }
         break;
+      }
     }
   }
 
@@ -751,18 +755,22 @@ export class AnalyticsService extends BaseService {
         for (const agg of query.aggregations) {
           const values = groupEvents.map(e => e.value || 0);
           switch (agg.operation) {
-            case 'sum':
+            case 'sum': {
               dataPoint.metrics[agg.alias || `${agg.field}_sum`] = values.reduce((sum, val) => sum + val, 0);
               break;
-            case 'avg':
+            }
+            case 'avg': {
               dataPoint.metrics[agg.alias || `${agg.field}_avg`] = values.reduce((sum, val) => sum + val, 0) / values.length;
               break;
-            case 'max':
+            }
+            case 'max': {
               dataPoint.metrics[agg.alias || `${agg.field}_max`] = Math.max(...values);
               break;
-            case 'min':
+            }
+            case 'min': {
               dataPoint.metrics[agg.alias || `${agg.field}_min`] = Math.min(...values);
               break;
+            }
           }
         }
       }
@@ -923,15 +931,19 @@ export class AnalyticsService extends BaseService {
   private getTimeKey(timestamp: Date, granularity: string): string {
     const date = new Date(timestamp);
     switch (granularity) {
-      case 'hour':
+      case 'hour': {
         return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}`;
-      case 'day':
+      }
+      case 'day': {
         return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-      case 'week':
+      }
+      case 'week': {
         const week = Math.floor(date.getDate() / 7);
         return `${date.getFullYear()}-${date.getMonth()}-${week}`;
-      case 'month':
+      }
+      case 'month': {
         return `${date.getFullYear()}-${date.getMonth()}`;
+      }
       default:
         return date.toISOString();
     }
