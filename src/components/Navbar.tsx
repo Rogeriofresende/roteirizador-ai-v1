@@ -142,6 +142,8 @@ const Navbar: React.FC = () => {
                   <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                   <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
+                  {/* IA Alpha: Optimization Dashboard */}
+                  <NavLink to="/optimization" icon={<span>🚀</span>}>Otimização</NavLink>
                 </>
               ) : currentUser ? (
                 <>
@@ -149,6 +151,8 @@ const Navbar: React.FC = () => {
                   <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                   <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
+                  {/* IA Alpha: Optimization Dashboard */}
+                  <NavLink to="/optimization" icon={<span>🚀</span>}>Otimização</NavLink>
                   {/* V6.2: Admin Dashboard Access */}
                   {isAdmin && (
                     <NavLink to="/admin" icon={<Shield size={16} className="text-primary" />}>
