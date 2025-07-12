@@ -136,6 +136,19 @@ const BancoDeIdeias = React.lazy(() =>
   )
 );
 
+const OptimizationDashboard = React.lazy(() => 
+  performanceService.measureFunction('load_OptimizationDashboard', () => 
+    import('./components/optimization/OptimizationDashboard').then(module => {
+      // 🚀 IA Alpha: Preload optimization-related services
+      import('./services/optimization/IntegratedOptimizationManager');
+      import('./services/performance/BundleOptimizationService');
+      import('./services/analytics/AdvancedAnalyticsService');
+      logger.log('debug', 'OptimizationDashboard lazy loaded with optimization services preloaded', {}, 'CODE_SPLITTING');
+      return module;
+    })
+  )
+);
+
 // =============================================================================
 // PRELOADING STRATEGY
 // =============================================================================
@@ -582,6 +595,15 @@ const App: React.FC = () => {
                     element={
                       <ProtectedRoute>
                         <AdminDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* IA Alpha: Optimization Command Center */}
+                  <Route 
+                    path="/optimization" 
+                    element={
+                      <ProtectedRoute>
+                        <OptimizationDashboard />
                       </ProtectedRoute>
                     } 
                   />

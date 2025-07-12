@@ -575,16 +575,21 @@ export class AlertSystem {
 
   private selectCommunicationChannels(severity: AlertSeverity): CommunicationChannel[] {
     switch (severity) {
-      case 'emergency':
+      case 'emergency': {
         return ['email', 'in_app', 'sms', 'dashboard'];
-      case 'critical':
+      }
+      case 'critical': {
         return ['email', 'in_app', 'dashboard'];
-      case 'error':
+      }
+      case 'error': {
         return ['in_app', 'dashboard'];
-      case 'warning':
+      }
+      case 'warning': {
         return ['dashboard'];
-      case 'info':
+      }
+      case 'info': {
         return ['dashboard'];
+      }
       default:
         return ['dashboard'];
     }
@@ -613,13 +618,26 @@ export class AlertSystem {
 
   private evaluateCondition(condition: AlertCondition, value: number): boolean {
     switch (condition.operator) {
-      case 'gt': return value > condition.threshold;
-      case 'lt': return value < condition.threshold;
-      case 'gte': return value >= condition.threshold;
-      case 'lte': return value <= condition.threshold;
-      case 'eq': return value === condition.threshold;
-      case 'ne': return value !== condition.threshold;
-      default: return false;
+      case 'gt': {
+        return value > condition.threshold;
+      }
+      case 'lt': {
+        return value < condition.threshold;
+      }
+      case 'gte': {
+        return value >= condition.threshold;
+      }
+      case 'lte': {
+        return value <= condition.threshold;
+      }
+      case 'eq': {
+        return value === condition.threshold;
+      }
+      case 'ne': {
+        return value !== condition.threshold;
+      }
+      default:
+        return false;
     }
   }
 
