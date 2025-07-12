@@ -10,7 +10,7 @@ jest.mock('../contexts/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 
-const mockUseAuth = useAuth as jest.MockedFunction<typeof 
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 // jest.MockedFunction do react-router-dom para Navigate
 jest.mock('react-router-dom', async () => {

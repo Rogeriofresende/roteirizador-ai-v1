@@ -1,0 +1,62 @@
+f631a9b8399c7f2a4f4242a287628711
+"use strict";
+
+// Domain Use Cases - Clean Architecture
+// Casos de uso e regras de negócio
+/* istanbul ignore next */
+function cov_2kimm5sjzj() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/usecases/index.ts";
+  var hash = "fe5691e17079bb394efa4622e761cb9c88667513";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/usecases/index.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 4,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 62
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/usecases/index.ts",
+      mappings: ";AAAA,wCAAwC;AACxC,mCAAmC",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/usecases/index.ts"],
+      sourcesContent: ["// Domain Use Cases - Clean Architecture\n// Casos de uso e regras de neg\xF3cio\n\n// TODO: Implementar casos de uso nas pr\xF3ximas fases (Day 3-4)\n// export { GenerateScript } from './GenerateScript';\n// export { ManageTemplates } from './ManageTemplates';\n// export { ProcessVoice } from './ProcessVoice';\n// export { HandleCollaboration } from './HandleCollaboration';\n\n// Arquivo preparado para as pr\xF3ximas fases da arquitetura\nexport {}; "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "fe5691e17079bb394efa4622e761cb9c88667513"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_2kimm5sjzj = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_2kimm5sjzj();
+cov_2kimm5sjzj().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMmtpbW01c2p6aiIsInBhdGgiLCJoYXNoIiwiZ2xvYmFsIiwiRnVuY3Rpb24iLCJnY3YiLCJjb3ZlcmFnZURhdGEiLCJzdGF0ZW1lbnRNYXAiLCJzdGFydCIsImxpbmUiLCJjb2x1bW4iLCJlbmQiLCJmbk1hcCIsImJyYW5jaE1hcCIsInMiLCJmIiwiYiIsImlucHV0U291cmNlTWFwIiwiZmlsZSIsIm1hcHBpbmdzIiwibmFtZXMiLCJzb3VyY2VzIiwic291cmNlc0NvbnRlbnQiLCJ2ZXJzaW9uIiwiX2NvdmVyYWdlU2NoZW1hIiwiY292ZXJhZ2UiLCJhY3R1YWxDb3ZlcmFnZSJdLCJzb3VyY2VzIjpbIi9Vc2Vycy9yb2dlcmlvcmVzZW5kZS9EZXNrdG9wL1JvdGVpcmFyLWlhL3NyYy9kb21haW4vdXNlY2FzZXMvaW5kZXgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gRG9tYWluIFVzZSBDYXNlcyAtIENsZWFuIEFyY2hpdGVjdHVyZVxuLy8gQ2Fzb3MgZGUgdXNvIGUgcmVncmFzIGRlIG5lZ8OzY2lvXG5cbi8vIFRPRE86IEltcGxlbWVudGFyIGNhc29zIGRlIHVzbyBuYXMgcHLDs3hpbWFzIGZhc2VzIChEYXkgMy00KVxuLy8gZXhwb3J0IHsgR2VuZXJhdGVTY3JpcHQgfSBmcm9tICcuL0dlbmVyYXRlU2NyaXB0Jztcbi8vIGV4cG9ydCB7IE1hbmFnZVRlbXBsYXRlcyB9IGZyb20gJy4vTWFuYWdlVGVtcGxhdGVzJztcbi8vIGV4cG9ydCB7IFByb2Nlc3NWb2ljZSB9IGZyb20gJy4vUHJvY2Vzc1ZvaWNlJztcbi8vIGV4cG9ydCB7IEhhbmRsZUNvbGxhYm9yYXRpb24gfSBmcm9tICcuL0hhbmRsZUNvbGxhYm9yYXRpb24nO1xuXG4vLyBBcnF1aXZvIHByZXBhcmFkbyBwYXJhIGFzIHByw7N4aW1hcyBmYXNlcyBkYSBhcnF1aXRldHVyYVxuZXhwb3J0IHt9OyAiXSwibWFwcGluZ3MiOiI7O0FBQUE7QUFDQTtBQUFBO0FBQUEsU0FBQUEsZUFBQTtFQUFBLElBQUFDLElBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsTUFBQSxPQUFBQyxRQUFBO0VBQUEsSUFBQUMsR0FBQTtFQUFBLElBQUFDLFlBQUE7SUFBQUwsSUFBQTtJQUFBTSxZQUFBO01BQUE7UUFBQUMsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7SUFBQTtJQUFBRSxLQUFBO0lBQUFDLFNBQUE7SUFBQUMsQ0FBQTtNQUFBO0lBQUE7SUFBQUMsQ0FBQTtJQUFBQyxDQUFBO0lBQUFDLGNBQUE7TUFBQUMsSUFBQTtNQUFBQyxRQUFBO01BQUFDLEtBQUE7TUFBQUMsT0FBQTtNQUFBQyxjQUFBO01BQUFDLE9BQUE7SUFBQTtJQUFBQyxlQUFBO0lBQUF0QixJQUFBO0VBQUE7RUFBQSxJQUFBdUIsUUFBQSxHQUFBdEIsTUFBQSxDQUFBRSxHQUFBLE1BQUFGLE1BQUEsQ0FBQUUsR0FBQTtFQUFBLEtBQUFvQixRQUFBLENBQUF4QixJQUFBLEtBQUF3QixRQUFBLENBQUF4QixJQUFBLEVBQUFDLElBQUEsS0FBQUEsSUFBQTtJQUFBdUIsUUFBQSxDQUFBeEIsSUFBQSxJQUFBSyxZQUFBO0VBQUE7RUFBQSxJQUFBb0IsY0FBQSxHQUFBRCxRQUFBLENBQUF4QixJQUFBO0VBQUEiLCJpZ25vcmVMaXN0IjpbXX0=

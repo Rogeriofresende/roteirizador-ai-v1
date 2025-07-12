@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-07-09T18:08:48.872Z",
+  "type": "performance-metrics",
+  "evidence": {
+    "loadTime": 2373,
+    "target": 5000,
+    "passed": true,
+    "status": "EXCELLENT",
+    "timestamp": "2025-07-09T18:08:43.543Z"
+  },
+  "metrics": {},
+  "screenshots": []
+}

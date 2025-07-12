@@ -1,0 +1,41 @@
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/ErrorBoundaryV6.tsx
+  43:3  error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/admin/ErrorDashboard.tsx
+   98:23  warning  'setBuildErrors' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  221:14  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/admin/ErrorTestPanel.tsx
+  26:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free          @typescript-eslint/ban-ts-comment
+  38:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free          @typescript-eslint/ban-ts-comment
+  39:11  error    Unexpected constant condition                                                                                                no-constant-condition
+  40:9   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  77:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free          @typescript-eslint/ban-ts-comment
+  53:5   warning  'error' is assigned a value but never used   @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/ui/ErrorBoundary.tsx
+  382:1   error    React Hook "useEffect" cannot be called at the top level. React Hooks must be called in a React function component or a custom React Hook function              react-hooks/rules-of-hooks
+  243:38  warning  'errorInfo' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+  349:29  warning  '_error' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+  171:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/ui/ThirdPartyErrorBoundary.tsx
+/Users/rogerioresende/Desktop/Roteirar-ia/src/hooks/useErrorHandler.ts
+  5:25  warning  'errorInfo' is defined but never used  @typescript-eslint/no-unused-vars
+  168:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/pages/ErrorCaptureTest.tsx
+  7:32  warning  'triggerTestError' is defined but never used  @typescript-eslint/no-unused-vars
+   44:10  warning  'error' is assigned a value but never used                                                                                                                             @typescript-eslint/no-unused-vars
+  326:31  error    React Hook "TemplateService.useTemplate" cannot be called inside a callback. React Hooks must be called in a React function component or a custom React Hook function  react-hooks/rules-of-hooks
+  118:15  warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  139:14  warning  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  265:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+/Users/rogerioresende/Desktop/Roteirar-ia/src/services/errorTrackingService.ts
+  264:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/services/mockErrorCollection.ts
+  153:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  226:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+    9:10  warning  'createErrorMessage' is defined but never used  @typescript-eslint/no-unused-vars
+  333:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  589:16   warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+   10:10  warning  'createErrorMessage' is defined but never used  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/utils/errorCapture.ts
+  252:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  270:16  warning  'storageError' is defined but never used  @typescript-eslint/no-unused-vars
+✖ 651 problems (5 errors, 646 warnings)

@@ -118,9 +118,90 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        // MINIMAL TEST - Only split React core to debug
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom']
+        // 🚀 WEEK 7 PERFORMANCE OPTIMIZATION - AGGRESSIVE CODE SPLITTING
+        manualChunks(id) {
+          // Core vendor libraries (critical path)
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react-core';
+          }
+          
+          // Router and navigation (loaded early)
+          if (id.includes('node_modules/react-router') || id.includes('node_modules/history')) {
+            return 'react-router';
+          }
+          
+          // UI Library chunks (loaded on demand)
+          if (id.includes('node_modules/framer-motion')) {
+            return 'framer-motion';
+          }
+          
+          if (id.includes('node_modules/lucide-react')) {
+            return 'lucide-icons';
+          }
+          
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
+            return 'charts';
+          }
+          
+          // AI and Firebase (heavy dependencies)
+          if (id.includes('node_modules/@google/generative-ai')) {
+            return 'google-ai';
+          }
+          
+          if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
+            return 'firebase';
+          }
+          
+          // Admin Dashboard chunk (lazy loaded)
+          if (id.includes('src/pages/AdminDashboard') || 
+              id.includes('src/components/admin/') ||
+              id.includes('src/services/adminService')) {
+            return 'admin-dashboard';
+          }
+          
+          // Generator Page chunk (lazy loaded - biggest optimization target)
+          if (id.includes('src/pages/GeneratorPage') ||
+              id.includes('src/components/form/ScriptForm') ||
+              id.includes('src/components/editor/') ||
+              id.includes('src/services/geminiService') ||
+              id.includes('src/services/multiAIService')) {
+            return 'script-generator';
+          }
+          
+          // Analytics and monitoring chunk (non-critical)
+          if (id.includes('src/services/analytics') ||
+              id.includes('src/services/clarity') ||
+              id.includes('src/services/tally') ||
+              id.includes('src/services/performance')) {
+            return 'analytics';
+          }
+          
+          // Voice synthesis chunk (advanced feature)
+          if (id.includes('src/services/voiceSynthesis') ||
+              id.includes('src/components/editor/VoiceSynthesis') ||
+              id.includes('elevenlabs') ||
+              id.includes('azure-speech')) {
+            return 'voice-synthesis';
+          }
+          
+          // Collaboration features chunk (enterprise feature)
+          if (id.includes('src/services/collaboration') ||
+              id.includes('src/services/realtime') ||
+              id.includes('websocket')) {
+            return 'collaboration';
+          }
+          
+          // Template system chunk (content management)
+          if (id.includes('src/services/template') ||
+              id.includes('src/services/project') ||
+              id.includes('src/components/dashboard/')) {
+            return 'templates';
+          }
+          
+          // Other vendor libraries (shared utilities)
+          if (id.includes('node_modules/') && !id.includes('node_modules/.vite')) {
+            return 'vendor-utils';
+          }
         }
       }
     },
@@ -129,13 +210,21 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        // 🚀 WEEK 7: Enhanced compression
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2,
       },
       mangle: {
         safari10: true,
+        // 🚀 WEEK 7: Enhanced mangling
+        properties: {
+          regex: /^_/
+        }
       },
     },
     
-    chunkSizeWarningLimit: 1000,
+    // 🚀 WEEK 7: Reduced chunk size warning (more aggressive splitting)
+    chunkSizeWarningLimit: 600, // Down from 1000
   },
   
   test: {

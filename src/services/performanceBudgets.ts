@@ -6,7 +6,7 @@
 import { logger } from '../utils/logger';
 import { config } from '../config/environment';
 import { performanceService } from './performance';
-import { bundleOptimizer } from '../services/bundleOptimizer';
+import { bundleOptimization } from '../services/bundleOptimization';
 import { trackPerformanceIssue } from './errorTrackingService';
 
 // =============================================================================

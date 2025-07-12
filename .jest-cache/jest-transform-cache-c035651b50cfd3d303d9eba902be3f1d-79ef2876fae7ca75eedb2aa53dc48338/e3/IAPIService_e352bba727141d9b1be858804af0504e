@@ -1,0 +1,64 @@
+c9f82b2732427f643dd8824cb694ff52
+"use strict";
+
+/**
+ * API Service Interface
+ * Contract para serviços de API (Gemini, ChatGPT, etc.)
+ */
+/* istanbul ignore next */
+function cov_13hzucjit6() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAPIService.ts";
+  var hash = "a3a108444a48378d4dba0d6ccd72efcf7f797bc0";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAPIService.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 6,
+          column: 0
+        },
+        end: {
+          line: 6,
+          column: 62
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAPIService.ts",
+      mappings: ";AAAA;;;GAGG",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAPIService.ts"],
+      sourcesContent: ["/**\n * API Service Interface\n * Contract para servi\xE7os de API (Gemini, ChatGPT, etc.)\n */\n\nimport { IBaseService } from './IBaseService';\n\nexport interface APIRequest {\n  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';\n  url: string;\n  headers?: Record<string, string>;\n  body?: any;\n  timeout?: number;\n  retries?: number;\n}\n\nexport interface APIResponse<T = any> {\n  data: T;\n  status: number;\n  statusText: string;\n  headers: Record<string, string>;\n  success: boolean;\n}\n\nexport interface APIError {\n  code: string;\n  message: string;\n  status?: number;\n  details?: any;\n  timestamp: Date;\n}\n\nexport interface AIRequest {\n  prompt: string;\n  model?: string;\n  temperature?: number;\n  maxTokens?: number;\n  systemPrompt?: string;\n  context?: any;\n}\n\nexport interface AIResponse {\n  content: string;\n  model: string;\n  usage: {\n    promptTokens: number;\n    completionTokens: number;\n    totalTokens: number;\n  };\n  finishReason: string;\n  metadata?: any;\n}\n\nexport interface IAPIService extends IBaseService {\n  // Generic HTTP operations\n  request<T>(request: APIRequest): Promise<APIResponse<T>>;\n  get<T>(url: string, headers?: Record<string, string>): Promise<APIResponse<T>>;\n  post<T>(url: string, data?: any, headers?: Record<string, string>): Promise<APIResponse<T>>;\n  put<T>(url: string, data?: any, headers?: Record<string, string>): Promise<APIResponse<T>>;\n  delete<T>(url: string, headers?: Record<string, string>): Promise<APIResponse<T>>;\n  \n  // Configuration\n  setBaseURL(url: string): void;\n  setDefaultHeaders(headers: Record<string, string>): void;\n  setAuthToken(token: string): void;\n  \n  // Error handling\n  onError(handler: (error: APIError) => void): void;\n  \n  // Rate limiting and circuit breaker\n  getRateLimitStatus(): Promise<{\n    remaining: number;\n    resetTime: Date;\n    limit: number;\n  }>;\n}\n\nexport interface IAIService extends IAPIService {\n  // AI-specific operations\n  generateText(request: AIRequest): Promise<AIResponse>;\n  generateCode(request: AIRequest & { language?: string }): Promise<AIResponse>;\n  analyze(content: string, analysisType: string): Promise<AIResponse>;\n  \n  // Model management\n  getAvailableModels(): Promise<string[]>;\n  setDefaultModel(model: string): void;\n  \n  // Token management\n  estimateTokens(text: string): number;\n  getTokenUsage(): Promise<{\n    total: number;\n    remaining: number;\n    resetDate: Date;\n  }>;\n}\n\nexport interface APIConfig {\n  baseURL: string;\n  apiKey?: string;\n  timeout: number;\n  retries: number;\n  rateLimit?: {\n    requests: number;\n    window: number; // in milliseconds\n  };\n  circuitBreaker?: {\n    threshold: number;\n    timeout: number;\n  };\n} "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "a3a108444a48378d4dba0d6ccd72efcf7f797bc0"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_13hzucjit6 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_13hzucjit6();
+cov_13hzucjit6().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMTNoenVjaml0NiIsInBhdGgiLCJoYXNoIiwiZ2xvYmFsIiwiRnVuY3Rpb24iLCJnY3YiLCJjb3ZlcmFnZURhdGEiLCJzdGF0ZW1lbnRNYXAiLCJzdGFydCIsImxpbmUiLCJjb2x1bW4iLCJlbmQiLCJmbk1hcCIsImJyYW5jaE1hcCIsInMiLCJmIiwiYiIsImlucHV0U291cmNlTWFwIiwiZmlsZSIsIm1hcHBpbmdzIiwibmFtZXMiLCJzb3VyY2VzIiwic291cmNlc0NvbnRlbnQiLCJ2ZXJzaW9uIiwiX2NvdmVyYWdlU2NoZW1hIiwiY292ZXJhZ2UiLCJhY3R1YWxDb3ZlcmFnZSJdLCJzb3VyY2VzIjpbIi9Vc2Vycy9yb2dlcmlvcmVzZW5kZS9EZXNrdG9wL1JvdGVpcmFyLWlhL3NyYy9zZXJ2aWNlcy9pbnRlcmZhY2VzL0lBUElTZXJ2aWNlLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8qKlxuICogQVBJIFNlcnZpY2UgSW50ZXJmYWNlXG4gKiBDb250cmFjdCBwYXJhIHNlcnZpw6dvcyBkZSBBUEkgKEdlbWluaSwgQ2hhdEdQVCwgZXRjLilcbiAqL1xuXG5pbXBvcnQgeyBJQmFzZVNlcnZpY2UgfSBmcm9tICcuL0lCYXNlU2VydmljZSc7XG5cbmV4cG9ydCBpbnRlcmZhY2UgQVBJUmVxdWVzdCB7XG4gIG1ldGhvZDogJ0dFVCcgfCAnUE9TVCcgfCAnUFVUJyB8ICdERUxFVEUnIHwgJ1BBVENIJztcbiAgdXJsOiBzdHJpbmc7XG4gIGhlYWRlcnM/OiBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+O1xuICBib2R5PzogYW55O1xuICB0aW1lb3V0PzogbnVtYmVyO1xuICByZXRyaWVzPzogbnVtYmVyO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIEFQSVJlc3BvbnNlPFQgPSBhbnk+IHtcbiAgZGF0YTogVDtcbiAgc3RhdHVzOiBudW1iZXI7XG4gIHN0YXR1c1RleHQ6IHN0cmluZztcbiAgaGVhZGVyczogUmVjb3JkPHN0cmluZywgc3RyaW5nPjtcbiAgc3VjY2VzczogYm9vbGVhbjtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBBUElFcnJvciB7XG4gIGNvZGU6IHN0cmluZztcbiAgbWVzc2FnZTogc3RyaW5nO1xuICBzdGF0dXM/OiBudW1iZXI7XG4gIGRldGFpbHM/OiBhbnk7XG4gIHRpbWVzdGFtcDogRGF0ZTtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBBSVJlcXVlc3Qge1xuICBwcm9tcHQ6IHN0cmluZztcbiAgbW9kZWw/OiBzdHJpbmc7XG4gIHRlbXBlcmF0dXJlPzogbnVtYmVyO1xuICBtYXhUb2tlbnM/OiBudW1iZXI7XG4gIHN5c3RlbVByb21wdD86IHN0cmluZztcbiAgY29udGV4dD86IGFueTtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBBSVJlc3BvbnNlIHtcbiAgY29udGVudDogc3RyaW5nO1xuICBtb2RlbDogc3RyaW5nO1xuICB1c2FnZToge1xuICAgIHByb21wdFRva2VuczogbnVtYmVyO1xuICAgIGNvbXBsZXRpb25Ub2tlbnM6IG51bWJlcjtcbiAgICB0b3RhbFRva2VuczogbnVtYmVyO1xuICB9O1xuICBmaW5pc2hSZWFzb246IHN0cmluZztcbiAgbWV0YWRhdGE/OiBhbnk7XG59XG5cbmV4cG9ydCBpbnRlcmZhY2UgSUFQSVNlcnZpY2UgZXh0ZW5kcyBJQmFzZVNlcnZpY2Uge1xuICAvLyBHZW5lcmljIEhUVFAgb3BlcmF0aW9uc1xuICByZXF1ZXN0PFQ+KHJlcXVlc3Q6IEFQSVJlcXVlc3QpOiBQcm9taXNlPEFQSVJlc3BvbnNlPFQ+PjtcbiAgZ2V0PFQ+KHVybDogc3RyaW5nLCBoZWFkZXJzPzogUmVjb3JkPHN0cmluZywgc3RyaW5nPik6IFByb21pc2U8QVBJUmVzcG9uc2U8VD4+O1xuICBwb3N0PFQ+KHVybDogc3RyaW5nLCBkYXRhPzogYW55LCBoZWFkZXJzPzogUmVjb3JkPHN0cmluZywgc3RyaW5nPik6IFByb21pc2U8QVBJUmVzcG9uc2U8VD4+O1xuICBwdXQ8VD4odXJsOiBzdHJpbmcsIGRhdGE/OiBhbnksIGhlYWRlcnM/OiBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+KTogUHJvbWlzZTxBUElSZXNwb25zZTxUPj47XG4gIGRlbGV0ZTxUPih1cmw6IHN0cmluZywgaGVhZGVycz86IFJlY29yZDxzdHJpbmcsIHN0cmluZz4pOiBQcm9taXNlPEFQSVJlc3BvbnNlPFQ+PjtcbiAgXG4gIC8vIENvbmZpZ3VyYXRpb25cbiAgc2V0QmFzZVVSTCh1cmw6IHN0cmluZyk6IHZvaWQ7XG4gIHNldERlZmF1bHRIZWFkZXJzKGhlYWRlcnM6IFJlY29yZDxzdHJpbmcsIHN0cmluZz4pOiB2b2lkO1xuICBzZXRBdXRoVG9rZW4odG9rZW46IHN0cmluZyk6IHZvaWQ7XG4gIFxuICAvLyBFcnJvciBoYW5kbGluZ1xuICBvbkVycm9yKGhhbmRsZXI6IChlcnJvcjogQVBJRXJyb3IpID0+IHZvaWQpOiB2b2lkO1xuICBcbiAgLy8gUmF0ZSBsaW1pdGluZyBhbmQgY2lyY3VpdCBicmVha2VyXG4gIGdldFJhdGVMaW1pdFN0YXR1cygpOiBQcm9taXNlPHtcbiAgICByZW1haW5pbmc6IG51bWJlcjtcbiAgICByZXNldFRpbWU6IERhdGU7XG4gICAgbGltaXQ6IG51bWJlcjtcbiAgfT47XG59XG5cbmV4cG9ydCBpbnRlcmZhY2UgSUFJU2VydmljZSBleHRlbmRzIElBUElTZXJ2aWNlIHtcbiAgLy8gQUktc3BlY2lmaWMgb3BlcmF0aW9uc1xuICBnZW5lcmF0ZVRleHQocmVxdWVzdDogQUlSZXF1ZXN0KTogUHJvbWlzZTxBSVJlc3BvbnNlPjtcbiAgZ2VuZXJhdGVDb2RlKHJlcXVlc3Q6IEFJUmVxdWVzdCAmIHsgbGFuZ3VhZ2U/OiBzdHJpbmcgfSk6IFByb21pc2U8QUlSZXNwb25zZT47XG4gIGFuYWx5emUoY29udGVudDogc3RyaW5nLCBhbmFseXNpc1R5cGU6IHN0cmluZyk6IFByb21pc2U8QUlSZXNwb25zZT47XG4gIFxuICAvLyBNb2RlbCBtYW5hZ2VtZW50XG4gIGdldEF2YWlsYWJsZU1vZGVscygpOiBQcm9taXNlPHN0cmluZ1tdPjtcbiAgc2V0RGVmYXVsdE1vZGVsKG1vZGVsOiBzdHJpbmcpOiB2b2lkO1xuICBcbiAgLy8gVG9rZW4gbWFuYWdlbWVudFxuICBlc3RpbWF0ZVRva2Vucyh0ZXh0OiBzdHJpbmcpOiBudW1iZXI7XG4gIGdldFRva2VuVXNhZ2UoKTogUHJvbWlzZTx7XG4gICAgdG90YWw6IG51bWJlcjtcbiAgICByZW1haW5pbmc6IG51bWJlcjtcbiAgICByZXNldERhdGU6IERhdGU7XG4gIH0+O1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIEFQSUNvbmZpZyB7XG4gIGJhc2VVUkw6IHN0cmluZztcbiAgYXBpS2V5Pzogc3RyaW5nO1xuICB0aW1lb3V0OiBudW1iZXI7XG4gIHJldHJpZXM6IG51bWJlcjtcbiAgcmF0ZUxpbWl0Pzoge1xuICAgIHJlcXVlc3RzOiBudW1iZXI7XG4gICAgd2luZG93OiBudW1iZXI7IC8vIGluIG1pbGxpc2Vjb25kc1xuICB9O1xuICBjaXJjdWl0QnJlYWtlcj86IHtcbiAgICB0aHJlc2hvbGQ6IG51bWJlcjtcbiAgICB0aW1lb3V0OiBudW1iZXI7XG4gIH07XG59ICJdLCJtYXBwaW5ncyI6Ijs7QUFBQTs7OztBQUFBO0FBQUEsU0FBQUEsZUFBQTtFQUFBLElBQUFDLElBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsTUFBQSxPQUFBQyxRQUFBO0VBQUEsSUFBQUMsR0FBQTtFQUFBLElBQUFDLFlBQUE7SUFBQUwsSUFBQTtJQUFBTSxZQUFBO01BQUE7UUFBQUMsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7SUFBQTtJQUFBRSxLQUFBO0lBQUFDLFNBQUE7SUFBQUMsQ0FBQTtNQUFBO0lBQUE7SUFBQUMsQ0FBQTtJQUFBQyxDQUFBO0lBQUFDLGNBQUE7TUFBQUMsSUFBQTtNQUFBQyxRQUFBO01BQUFDLEtBQUE7TUFBQUMsT0FBQTtNQUFBQyxjQUFBO01BQUFDLE9BQUE7SUFBQTtJQUFBQyxlQUFBO0lBQUF0QixJQUFBO0VBQUE7RUFBQSxJQUFBdUIsUUFBQSxHQUFBdEIsTUFBQSxDQUFBRSxHQUFBLE1BQUFGLE1BQUEsQ0FBQUUsR0FBQTtFQUFBLEtBQUFvQixRQUFBLENBQUF4QixJQUFBLEtBQUF3QixRQUFBLENBQUF4QixJQUFBLEVBQUFDLElBQUEsS0FBQUEsSUFBQTtJQUFBdUIsUUFBQSxDQUFBeEIsSUFBQSxJQUFBSyxZQUFBO0VBQUE7RUFBQSxJQUFBb0IsY0FBQSxHQUFBRCxRQUFBLENBQUF4QixJQUFBO0VBQUEiLCJpZ25vcmVMaXN0IjpbXX0=

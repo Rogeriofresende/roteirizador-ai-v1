@@ -62,6 +62,49 @@
 </head>
 <body>
   <div id="root"></div>
+  
+  <!-- Force unregister Service Worker in development -->
+  <script>
+    if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
+      console.log('🚨 DEVELOPMENT MODE: Forcing Service Worker cleanup...');
+      
+      // Clear all caches
+      if ('caches' in window) {
+        caches.keys().then(function(cacheNames) {
+          cacheNames.forEach(function(cacheName) {
+            console.log('Deleting cache:', cacheName);
+            caches.delete(cacheName);
+          });
+        });
+      }
+      
+      // Unregister all service workers
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          console.log('🗑️ Unregistering service worker:', registration.scope);
+          registration.unregister().then(function(boolean) {
+            console.log('✅ Service worker unregistered:', boolean);
+          });
+        }
+      });
+      
+      // Clear storage
+      if ('localStorage' in window) {
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('pwa') || key.includes('cache') || key.includes('sw')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+      
+      // Force reload after cleanup
+      setTimeout(() => {
+        console.log('🔄 Reloading page to complete cleanup...');
+        window.location.reload(true);
+      }, 1000);
+    }
+  </script>
+  
   <script type="module" src="/src/main.tsx"></script>
   
   <!-- Fallback para browsers sem JS -->

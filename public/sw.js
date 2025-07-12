@@ -90,6 +90,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // Skip Vite development assets in development mode
+  if (url.hostname === 'localhost' && (
+    url.pathname.includes('@vite/client') ||
+    url.pathname.includes('@react-refresh') ||
+    url.pathname.includes('node_modules/vite/') ||
+    url.searchParams.has('t') || // Vite timestamp queries
+    url.pathname.includes('.tsx') ||
+    url.pathname.includes('.ts') ||
+    url.pathname.includes('src/')
+  )) {
+    // Let Vite handle these requests directly
+    return;
+  }
+  
   // API calls do próprio app - Network First
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, API_CACHE));

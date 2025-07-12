@@ -29,6 +29,7 @@ coverage-report-*.json
 # Error monitoring logs
 logs/errors-detected.json
 logs/error-analysis.json
+logs/browser-errors.json
 
 # Backups
 /backups/

@@ -164,7 +164,33 @@ export const usePredictiveUX = () => {
       totalPatterns: patterns.size,
       actionsLength: actionHistory.current.length
     });
-  }, []); // Remove state.currentSequence dependency
+  }, []); // ✅ FIXED: Stable dependencies
+
+  // ✅ PERFORMANCE OPTIMIZATION: Throttled pattern analysis to prevent excessive calls
+  const lastAnalysisTime = useRef<number>(0);
+  const ANALYSIS_THROTTLE_MS = 3000; // Only analyze every 3 seconds
+
+  const throttledAnalyzePatterns = useCallback(() => {
+    const now = Date.now();
+    if (now - lastAnalysisTime.current < ANALYSIS_THROTTLE_MS) {
+      return; // Skip if called too recently
+    }
+    lastAnalysisTime.current = now;
+    analyzePatterns();
+  }, [analyzePatterns]);
+
+  // ✅ OPTIMIZED: Auto-analyze patterns with reduced frequency and stable dependencies
+  useEffect(() => {
+    if (!state.isLearning) return;
+
+    const interval = setInterval(() => {
+      if (actionHistory.current.length >= 3) {
+        throttledAnalyzePatterns();
+      }
+    }, 5000); // ✅ INCREASED INTERVAL: Every 5 seconds instead of 2
+
+    return () => clearInterval(interval);
+  }, [state.isLearning, throttledAnalyzePatterns]); // ✅ STABLE: Only essential dependencies
 
   // Get most likely next action
   const getMostLikelyNext = useCallback(() => {
@@ -207,19 +233,6 @@ export const usePredictiveUX = () => {
     return prefetchTargets;
   }, [getPredictionsFor]);
 
-  // Auto-analyze patterns periodically
-  useEffect(() => {
-    if (!state.isLearning) return;
-
-    const interval = setInterval(() => {
-      if (actionHistory.current.length >= 3) {
-        analyzePatterns();
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [state.isLearning, analyzePatterns]);
-
   // Session analytics
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -235,6 +248,10 @@ export const usePredictiveUX = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
+  // ✅ PERFORMANCE OPTIMIZATION: Stable analyzePatterns reference
+  const analyzePatternRef = useRef(analyzePatterns);
+  analyzePatternRef.current = analyzePatterns;
+
   // V5.0 RECOVERY: Implement missing getSmartSuggestions function
   const getSmartSuggestions = useCallback((context: string) => {
     const contextPredictions = state.predictions.filter(p => 
@@ -246,6 +263,30 @@ export const usePredictiveUX = () => {
       .map(p => p.nextAction)
       .slice(0, 3);
   }, [state.predictions]);
+
+  // Control
+  const toggleLearning = useCallback(() => {
+    setState(prev => ({ ...prev, isLearning: !prev.isLearning }));
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    actionHistory.current = [];
+    setState(prev => ({
+      ...prev,
+      currentSequence: [],
+      predictions: [],
+      prefetchQueue: []
+    }));
+  }, []);
+
+  // ✅ PERFORMANCE OPTIMIZATION: Stable analytics function
+  const getSessionStats = useCallback(() => ({
+    totalActions: actionHistory.current.length,
+    uniqueTargets: new Set(actionHistory.current.map(a => a.target)).size,
+    averageTimeBetweenActions: actionHistory.current.length > 1 
+      ? (actionHistory.current[actionHistory.current.length - 1].timestamp - actionHistory.current[0].timestamp) / (actionHistory.current.length - 1)
+      : 0
+  }), []);
 
   return {
     // Core tracking
@@ -270,24 +311,10 @@ export const usePredictiveUX = () => {
     sessionId: sessionId.current,
     
     // Analytics
-    getSessionStats: () => ({
-      totalActions: actionHistory.current.length,
-      uniqueTargets: new Set(actionHistory.current.map(a => a.target)).size,
-      averageTimeBetweenActions: actionHistory.current.length > 1 
-        ? (actionHistory.current[actionHistory.current.length - 1].timestamp - actionHistory.current[0].timestamp) / (actionHistory.current.length - 1)
-        : 0
-    }),
+    getSessionStats,
     
     // Control
-    toggleLearning: () => setState(prev => ({ ...prev, isLearning: !prev.isLearning })),
-    clearHistory: () => {
-      actionHistory.current = [];
-      setState(prev => ({
-        ...prev,
-        currentSequence: [],
-        predictions: [],
-        prefetchQueue: []
-      }));
-    }
+    toggleLearning,
+    clearHistory
   };
 };

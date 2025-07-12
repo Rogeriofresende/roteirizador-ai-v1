@@ -1,0 +1,224 @@
+4081a819dda2ad44acab02593357ea78
+"use strict";
+
+// Domain Services - Clean Architecture
+// Services que implementam lógica de negócio complexa
+/* istanbul ignore next */
+function cov_1s0146374y() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/services/index.ts";
+  var hash = "cb92ee3a04ecd80b521070bfe716703fc74240f2";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/services/index.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 4,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 73
+        }
+      },
+      "2": {
+        start: {
+          line: 7,
+          column: 32
+        },
+        end: {
+          line: 7,
+          column: 68
+        }
+      },
+      "3": {
+        start: {
+          line: 8,
+          column: 0
+        },
+        end: {
+          line: 8,
+          column: 160
+        }
+      },
+      "4": {
+        start: {
+          line: 8,
+          column: 97
+        },
+        end: {
+          line: 8,
+          column: 154
+        }
+      },
+      "5": {
+        start: {
+          line: 10,
+          column: 30
+        },
+        end: {
+          line: 10,
+          column: 64
+        }
+      },
+      "6": {
+        start: {
+          line: 11,
+          column: 0
+        },
+        end: {
+          line: 11,
+          column: 154
+        }
+      },
+      "7": {
+        start: {
+          line: 11,
+          column: 95
+        },
+        end: {
+          line: 11,
+          column: 148
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 8,
+            column: 83
+          },
+          end: {
+            line: 8,
+            column: 84
+          }
+        },
+        loc: {
+          start: {
+            line: 8,
+            column: 95
+          },
+          end: {
+            line: 8,
+            column: 156
+          }
+        },
+        line: 8
+      },
+      "1": {
+        name: "(anonymous_1)",
+        decl: {
+          start: {
+            line: 11,
+            column: 81
+          },
+          end: {
+            line: 11,
+            column: 82
+          }
+        },
+        loc: {
+          start: {
+            line: 11,
+            column: 93
+          },
+          end: {
+            line: 11,
+            column: 150
+          }
+        },
+        line: 11
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/services/index.ts",
+      mappings: ";AAAA,uCAAuC;AACvC,sDAAsD;;;AAEtD,mCAAmC;AACnC,qEAAoE;AAA3D,kIAAA,uBAAuB,OAAA;AAgBhC,iCAAiC;AACjC,iEAAgE;AAAvD,8HAAA,qBAAqB,OAAA",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/services/index.ts"],
+      sourcesContent: ["// Domain Services - Clean Architecture\n// Services que implementam l\xF3gica de neg\xF3cio complexa\n\n// Script Generation Domain Service\nexport { ScriptGenerationService } from './ScriptGenerationService';\nexport type { \n  ScriptGenerationRequest,\n  AIGenerationRequest,\n  GenerationResult,\n  GenerationMetadata,\n  GenerationSuggestion,\n  SuggestionType,\n  QualityCheck,\n  IAIProvider,\n  AIGenerationResult,\n  IQualityAssessmentService,\n  QualityAssessmentResult,\n  EnhancementType\n} from './ScriptGenerationService';\n\n// User Management Domain Service\nexport { UserManagementService } from './UserManagementService';\nexport type { \n  UserRegistrationRequest,\n  UserUpdateRequest,\n  PasswordChangeRequest,\n  UserValidationResult,\n  SecurityAuditResult,\n  SecurityVulnerability,\n  VulnerabilityType,\n  SecurityRecommendation,\n  SessionData,\n  IPasswordHasher,\n  IEmailService,\n  IAuditLogger,\n  UserEvent,\n  SecurityEvent,\n  AdminAction\n} from './UserManagementService'; "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "cb92ee3a04ecd80b521070bfe716703fc74240f2"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1s0146374y = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1s0146374y();
+cov_1s0146374y().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_1s0146374y().s[1]++;
+exports.UserManagementService = exports.ScriptGenerationService = void 0;
+// Script Generation Domain Service
+var ScriptGenerationService_1 =
+/* istanbul ignore next */
+(cov_1s0146374y().s[2]++, require("./ScriptGenerationService"));
+/* istanbul ignore next */
+cov_1s0146374y().s[3]++;
+Object.defineProperty(exports, "ScriptGenerationService", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_1s0146374y().f[0]++;
+    cov_1s0146374y().s[4]++;
+    return ScriptGenerationService_1.ScriptGenerationService;
+  }
+});
+// User Management Domain Service
+var UserManagementService_1 =
+/* istanbul ignore next */
+(cov_1s0146374y().s[5]++, require("./UserManagementService"));
+/* istanbul ignore next */
+cov_1s0146374y().s[6]++;
+Object.defineProperty(exports, "UserManagementService", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_1s0146374y().f[1]++;
+    cov_1s0146374y().s[7]++;
+    return UserManagementService_1.UserManagementService;
+  }
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMXMwMTQ2Mzc0eSIsInBhdGgiLCJoYXNoIiwiZ2xvYmFsIiwiRnVuY3Rpb24iLCJnY3YiLCJjb3ZlcmFnZURhdGEiLCJzdGF0ZW1lbnRNYXAiLCJzdGFydCIsImxpbmUiLCJjb2x1bW4iLCJlbmQiLCJmbk1hcCIsIm5hbWUiLCJkZWNsIiwibG9jIiwiYnJhbmNoTWFwIiwicyIsImYiLCJiIiwiaW5wdXRTb3VyY2VNYXAiLCJmaWxlIiwibWFwcGluZ3MiLCJuYW1lcyIsInNvdXJjZXMiLCJzb3VyY2VzQ29udGVudCIsInZlcnNpb24iLCJfY292ZXJhZ2VTY2hlbWEiLCJjb3ZlcmFnZSIsImFjdHVhbENvdmVyYWdlIiwiU2NyaXB0R2VuZXJhdGlvblNlcnZpY2VfMSIsInJlcXVpcmUiLCJPYmplY3QiLCJkZWZpbmVQcm9wZXJ0eSIsImV4cG9ydHMiLCJlbnVtZXJhYmxlIiwiZ2V0IiwiU2NyaXB0R2VuZXJhdGlvblNlcnZpY2UiLCJVc2VyTWFuYWdlbWVudFNlcnZpY2VfMSIsIlVzZXJNYW5hZ2VtZW50U2VydmljZSJdLCJzb3VyY2VzIjpbIi9Vc2Vycy9yb2dlcmlvcmVzZW5kZS9EZXNrdG9wL1JvdGVpcmFyLWlhL3NyYy9kb21haW4vc2VydmljZXMvaW5kZXgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gRG9tYWluIFNlcnZpY2VzIC0gQ2xlYW4gQXJjaGl0ZWN0dXJlXG4vLyBTZXJ2aWNlcyBxdWUgaW1wbGVtZW50YW0gbMOzZ2ljYSBkZSBuZWfDs2NpbyBjb21wbGV4YVxuXG4vLyBTY3JpcHQgR2VuZXJhdGlvbiBEb21haW4gU2VydmljZVxuZXhwb3J0IHsgU2NyaXB0R2VuZXJhdGlvblNlcnZpY2UgfSBmcm9tICcuL1NjcmlwdEdlbmVyYXRpb25TZXJ2aWNlJztcbmV4cG9ydCB0eXBlIHsgXG4gIFNjcmlwdEdlbmVyYXRpb25SZXF1ZXN0LFxuICBBSUdlbmVyYXRpb25SZXF1ZXN0LFxuICBHZW5lcmF0aW9uUmVzdWx0LFxuICBHZW5lcmF0aW9uTWV0YWRhdGEsXG4gIEdlbmVyYXRpb25TdWdnZXN0aW9uLFxuICBTdWdnZXN0aW9uVHlwZSxcbiAgUXVhbGl0eUNoZWNrLFxuICBJQUlQcm92aWRlcixcbiAgQUlHZW5lcmF0aW9uUmVzdWx0LFxuICBJUXVhbGl0eUFzc2Vzc21lbnRTZXJ2aWNlLFxuICBRdWFsaXR5QXNzZXNzbWVudFJlc3VsdCxcbiAgRW5oYW5jZW1lbnRUeXBlXG59IGZyb20gJy4vU2NyaXB0R2VuZXJhdGlvblNlcnZpY2UnO1xuXG4vLyBVc2VyIE1hbmFnZW1lbnQgRG9tYWluIFNlcnZpY2VcbmV4cG9ydCB7IFVzZXJNYW5hZ2VtZW50U2VydmljZSB9IGZyb20gJy4vVXNlck1hbmFnZW1lbnRTZXJ2aWNlJztcbmV4cG9ydCB0eXBlIHsgXG4gIFVzZXJSZWdpc3RyYXRpb25SZXF1ZXN0LFxuICBVc2VyVXBkYXRlUmVxdWVzdCxcbiAgUGFzc3dvcmRDaGFuZ2VSZXF1ZXN0LFxuICBVc2VyVmFsaWRhdGlvblJlc3VsdCxcbiAgU2VjdXJpdHlBdWRpdFJlc3VsdCxcbiAgU2VjdXJpdHlWdWxuZXJhYmlsaXR5LFxuICBWdWxuZXJhYmlsaXR5VHlwZSxcbiAgU2VjdXJpdHlSZWNvbW1lbmRhdGlvbixcbiAgU2Vzc2lvbkRhdGEsXG4gIElQYXNzd29yZEhhc2hlcixcbiAgSUVtYWlsU2VydmljZSxcbiAgSUF1ZGl0TG9nZ2VyLFxuICBVc2VyRXZlbnQsXG4gIFNlY3VyaXR5RXZlbnQsXG4gIEFkbWluQWN0aW9uXG59IGZyb20gJy4vVXNlck1hbmFnZW1lbnRTZXJ2aWNlJzsgIl0sIm1hcHBpbmdzIjoiOztBQUFBO0FBQ0E7QUFBQTtBQUFBLFNBQUFBLGVBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsSUFBQTtFQUFBLElBQUFDLE1BQUEsT0FBQUMsUUFBQTtFQUFBLElBQUFDLEdBQUE7RUFBQSxJQUFBQyxZQUFBO0lBQUFMLElBQUE7SUFBQU0sWUFBQTtNQUFBO1FBQUFDLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7SUFBQTtJQUFBRSxLQUFBO01BQUE7UUFBQUMsSUFBQTtRQUFBQyxJQUFBO1VBQUFOLEtBQUE7WUFBQUMsSUFBQTtZQUFBQyxNQUFBO1VBQUE7VUFBQUMsR0FBQTtZQUFBRixJQUFBO1lBQUFDLE1BQUE7VUFBQTtRQUFBO1FBQUFLLEdBQUE7VUFBQVAsS0FBQTtZQUFBQyxJQUFBO1lBQUFDLE1BQUE7VUFBQTtVQUFBQyxHQUFBO1lBQUFGLElBQUE7WUFBQUMsTUFBQTtVQUFBO1FBQUE7UUFBQUQsSUFBQTtNQUFBO01BQUE7UUFBQUksSUFBQTtRQUFBQyxJQUFBO1VBQUFOLEtBQUE7WUFBQUMsSUFBQTtZQUFBQyxNQUFBO1VBQUE7VUFBQUMsR0FBQTtZQUFBRixJQUFBO1lBQUFDLE1BQUE7VUFBQTtRQUFBO1FBQUFLLEdBQUE7VUFBQVAsS0FBQTtZQUFBQyxJQUFBO1lBQUFDLE1BQUE7VUFBQTtVQUFBQyxHQUFBO1lBQUFGLElBQUE7WUFBQUMsTUFBQTtVQUFBO1FBQUE7UUFBQUQsSUFBQTtNQUFBO0lBQUE7SUFBQU8sU0FBQTtJQUFBQyxDQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7TUFBQTtJQUFBO0lBQUFDLENBQUE7TUFBQTtNQUFBO0lBQUE7SUFBQUMsQ0FBQTtJQUFBQyxjQUFBO01BQUFDLElBQUE7TUFBQUMsUUFBQTtNQUFBQyxLQUFBO01BQUFDLE9BQUE7TUFBQUMsY0FBQTtNQUFBQyxPQUFBO0lBQUE7SUFBQUMsZUFBQTtJQUFBekIsSUFBQTtFQUFBO0VBQUEsSUFBQTBCLFFBQUEsR0FBQXpCLE1BQUEsQ0FBQUUsR0FBQSxNQUFBRixNQUFBLENBQUFFLEdBQUE7RUFBQSxLQUFBdUIsUUFBQSxDQUFBM0IsSUFBQSxLQUFBMkIsUUFBQSxDQUFBM0IsSUFBQSxFQUFBQyxJQUFBLEtBQUFBLElBQUE7SUFBQTBCLFFBQUEsQ0FBQTNCLElBQUEsSUFBQUssWUFBQTtFQUFBO0VBQUEsSUFBQXVCLGNBQUEsR0FBQUQsUUFBQSxDQUFBM0IsSUFBQTtFQUFBOzs7Ozs7Ozs7Ozs7Ozs7O0FBRUE7QUFDQSxJQUFBNkIseUJBQUE7QUFBQTtBQUFBLENBQUE5QixjQUFBLEdBQUFpQixDQUFBLE9BQUFjLE9BQUE7QUFBb0U7QUFBQS9CLGNBQUEsR0FBQWlCLENBQUE7QUFBM0RlLE1BQUEsQ0FBQUMsY0FBQSxDQUFBQyxPQUFBO0VBQUFDLFVBQUE7RUFBQUMsR0FBQSxXQUFBQSxDQUFBO0lBQUE7SUFBQXBDLGNBQUEsR0FBQWtCLENBQUE7SUFBQWxCLGNBQUEsR0FBQWlCLENBQUE7SUFBQSxPQUFBYSx5QkFBQSxDQUFBTyx1QkFBdUI7RUFBQTtBQUFBO0FBZ0JoQztBQUNBLElBQUFDLHVCQUFBO0FBQUE7QUFBQSxDQUFBdEMsY0FBQSxHQUFBaUIsQ0FBQSxPQUFBYyxPQUFBO0FBQWdFO0FBQUEvQixjQUFBLEdBQUFpQixDQUFBO0FBQXZEZSxNQUFBLENBQUFDLGNBQUEsQ0FBQUMsT0FBQTtFQUFBQyxVQUFBO0VBQUFDLEdBQUEsV0FBQUEsQ0FBQTtJQUFBO0lBQUFwQyxjQUFBLEdBQUFrQixDQUFBO0lBQUFsQixjQUFBLEdBQUFpQixDQUFBO0lBQUEsT0FBQXFCLHVCQUFBLENBQUFDLHFCQUFxQjtFQUFBO0FBQUEiLCJpZ25vcmVMaXN0IjpbXX0=

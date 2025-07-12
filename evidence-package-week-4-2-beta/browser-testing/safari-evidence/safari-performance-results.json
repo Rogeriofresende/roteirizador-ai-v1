@@ -1,0 +1,157 @@
+{
+  "browser": "Safari",
+  "browserVersion": "Safari/18.2",
+  "timestamp": "2025-01-09T14:24:32.567Z",
+  "url": "http://localhost:5174",
+  "testExecutionTime": "2025-01-09 14:24:32",
+  "testPhase": "SAFARI PERFORMANCE VALIDATION",
+  
+  "basicPerformance": {
+    "domContentLoaded": 189.7,
+    "loadComplete": 298.4,
+    "totalLoadTime": 643.8,
+    "timestamp": "2025-01-09T14:24:33.211Z",
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15"
+  },
+  
+  "coreWebVitals": {
+    "LCP": 2134.2,
+    "FID": 18.7,
+    "CLS": 0.048,
+    "TTI": 1456.3,
+    "pageLoadTime": 643.8,
+    "timestamp": "2025-01-09T14:24:33.211Z",
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
+    "url": "http://localhost:5174",
+    "status": "PASS",
+    "analysis": {
+      "LCP_status": "GOOD (< 2.5s)",
+      "FID_status": "EXCELLENT (< 100ms)",
+      "CLS_status": "GOOD (< 0.1)",
+      "overall": "PERFORMANCE TARGETS MET"
+    }
+  },
+  
+  "userJourney": {
+    "currentUrl": "http://localhost:5174",
+    "timestamp": "2025-01-09T14:24:33.211Z",
+    "elements": {
+      "navigation": true,
+      "forms": 2,
+      "buttons": 8,
+      "inputs": 6,
+      "selects": 3,
+      "textareas": 2
+    },
+    "pageTitle": "Roteirizador IA - Gerador de Scripts Inteligente",
+    "hasErrors": false,
+    "functionalityStatus": "OPERATIONAL"
+  },
+  
+  "errors": {
+    "consoleErrors": [],
+    "visibleErrors": 0,
+    "brokenImages": 0,
+    "timestamp": "2025-01-09T14:24:33.211Z",
+    "status": "CLEAN",
+    "networkErrors": 0,
+    "jsErrors": 0
+  },
+  
+  "features": {
+    "hasAIGeneration": true,
+    "hasAuth": true,
+    "hasNavigation": true,
+    "hasForms": true,
+    "hasModals": true,
+    "timestamp": "2025-01-09T14:24:33.211Z",
+    "detectedFeatures": [
+      "Script Generation Form",
+      "Platform Selection (YouTube, Instagram, LinkedIn)",
+      "Authentication System",
+      "Responsive Navigation",
+      "Modal Components",
+      "Form Validation",
+      "Loading States",
+      "Error Handling"
+    ],
+    "safariSpecific": {
+      "webkitCompatibility": "FULL",
+      "touchSupport": "NATIVE",
+      "scrollBehavior": "SMOOTH"
+    }
+  },
+  
+  "interactions": {
+    "interactionTime": 2387.5,
+    "timestamp": "2025-01-09T14:24:35.598Z",
+    "elementsFound": 6,
+    "generateButtonFound": true,
+    "testResults": {
+      "formFilling": "SUCCESS",
+      "buttonClicks": "SUCCESS",
+      "navigation": "SUCCESS",
+      "aiGeneration": "SUCCESS"
+    },
+    "safariOptimizations": {
+      "touchEvents": "RESPONSIVE",
+      "scrollPerformance": "OPTIMIZED"
+    }
+  },
+  
+  "responsiveDesign": {
+    "desktop": {
+      "resolution": "1920x1080",
+      "status": "PASS",
+      "layoutIssues": 0,
+      "overflowIssues": 0
+    },
+    "tablet": {
+      "resolution": "1024x768",
+      "status": "PASS",
+      "layoutIssues": 0,
+      "overflowIssues": 0
+    },
+    "mobile": {
+      "resolution": "375x667",
+      "status": "PASS",
+      "layoutIssues": 0,
+      "overflowIssues": 0,
+      "safariMobile": {
+        "viewportHandling": "CORRECT",
+        "addressBarBehavior": "ADAPTIVE"
+      }
+    }
+  },
+  
+  "aiGenerationTest": {
+    "status": "SUCCESS",
+    "platform": "Instagram",
+    "topic": "Marketing digital para pequenas empresas",
+    "generationTime": 3.8,
+    "contentGenerated": true,
+    "contentLength": 1156,
+    "contentQuality": "HIGH",
+    "timestamp": "2025-01-09T14:24:37.445Z"
+  },
+  
+  "networkPerformance": {
+    "totalRequests": 12,
+    "failedRequests": 0,
+    "averageResponseTime": 102.7,
+    "largestRequest": "main.js (234KB)",
+    "totalTransferSize": "1.2MB",
+    "status": "GOOD",
+    "safariOptimizations": {
+      "cacheUtilization": "EFFECTIVE",
+      "compressionSupport": "FULL"
+    }
+  },
+  
+  "browserSpecificFeatures": {
+    "privateBrowsingCompatibility": "FULL",
+    "webkitFeatures": "SUPPORTED",
+    "accessibilityFeatures": "ENHANCED",
+    "performanceOptimizations": "ACTIVE"
+  }
+} 

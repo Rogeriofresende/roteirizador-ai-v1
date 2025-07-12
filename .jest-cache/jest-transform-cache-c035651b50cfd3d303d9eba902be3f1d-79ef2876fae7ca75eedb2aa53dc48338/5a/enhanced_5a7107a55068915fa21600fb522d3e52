@@ -1,0 +1,60 @@
+6cc1f07ce33c14b5d51e872ae2180a84
+"use strict";
+
+/* istanbul ignore next */
+function cov_1qijsa80hu() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/types/enhanced.ts";
+  var hash = "b07d64c84185a59a69b9807faf7a2c3f686f5edf";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/types/enhanced.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/types/enhanced.ts",
+      mappings: "",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/types/enhanced.ts"],
+      sourcesContent: ["// Enhanced Types for Dashboard Phase 2\nimport { Timestamp } from 'firebase/firestore';\n\nexport type ProjectStatus = 'draft' | 'completed' | 'published';\nexport type PlatformType = 'youtube' | 'instagram' | 'tiktok' | 'facebook' | 'twitter' | 'linkedin';\nexport type FormatType = 'short' | 'reel' | 'story' | 'post' | 'video' | 'carousel';\nexport type SortOption = 'date' | 'title' | 'platform' | 'wordCount' | 'editCount' | 'viewCount';\n\nexport interface EnhancedProject {\n  // Core fields\n  id: string;\n  userId: string;\n  title: string;\n  content: string;\n  formData: ScriptFormData;\n  createdAt: Timestamp;\n  updatedAt: Timestamp;\n  \n  // Organization fields\n  tags: string[];\n  folderId?: string;\n  isFavorite: boolean;\n  status: ProjectStatus;\n  \n  // Metrics fields\n  version: number;\n  wordCount: number;\n  estimatedDuration: number;\n  lastEditedAt?: Timestamp;\n  \n  // Engagement fields\n  viewCount: number;\n  editCount: number;\n  \n  // Sharing fields\n  isShared: boolean;\n  shareLink?: string;\n  sharedAt?: Timestamp;\n  \n  // Metadata fields\n  thumbnailUrl?: string;\n  originalPrompt?: string;\n  aiModelUsed?: string;\n  generationTime?: number;\n}\n\nexport interface ScriptFormData {\n  platform: PlatformType;\n  format: FormatType;\n  topic: string;\n  objective: string;\n  targetAudience: string;\n  tone: string;\n  duration?: number;\n}\n\nexport interface Tag {\n  id: string;\n  userId: string;\n  name: string;\n  color: string;\n  description?: string;\n  usageCount: number;\n  lastUsedAt?: Timestamp;\n  createdAt: Timestamp;\n  updatedAt: Timestamp;\n  isSystem: boolean;\n}\n\nexport interface Folder {\n  id: string;\n  userId: string;\n  name: string;\n  description?: string;\n  color?: string;\n  parentId?: string;\n  path: string;\n  level: number;\n  sortBy: SortOption;\n  sortOrder: 'asc' | 'desc';\n  isDefault: boolean;\n  projectCount: number;\n  createdAt: Timestamp;\n  updatedAt: Timestamp;\n}\n\nexport interface FilterOptions {\n  platforms?: PlatformType[];\n  formats?: FormatType[];\n  status?: ProjectStatus[];\n  tags?: string[];\n  folderId?: string;\n  isFavorite?: boolean;\n  dateRange?: {\n    start: Date;\n    end: Date;\n  };\n  sortBy: SortOption;\n  sortOrder: 'asc' | 'desc';\n  limit?: number;\n  offset?: number;\n}\n\nexport interface DashboardStats {\n  totalProjects: number;\n  projectsThisMonth: number;\n  totalWords: number;\n  averageWordsPerScript: number;\n  mostUsedPlatform: PlatformType;\n  mostUsedFormat: FormatType;\n  productivityTrend: TrendData[];\n  timeSpentWriting: number;\n  completionRate: number;\n}\n\nexport interface TrendData {\n  date: string;\n  projectsCreated: number;\n  wordsWritten: number;\n  timeSpent: number;\n}\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "b07d64c84185a59a69b9807faf7a2c3f686f5edf"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1qijsa80hu = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1qijsa80hu();
+cov_1qijsa80hu().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiL1VzZXJzL3JvZ2VyaW9yZXNlbmRlL0Rlc2t0b3AvUm90ZWlyYXItaWEvc3JjL3R5cGVzL2VuaGFuY2VkLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIEVuaGFuY2VkIFR5cGVzIGZvciBEYXNoYm9hcmQgUGhhc2UgMlxuaW1wb3J0IHsgVGltZXN0YW1wIH0gZnJvbSAnZmlyZWJhc2UvZmlyZXN0b3JlJztcblxuZXhwb3J0IHR5cGUgUHJvamVjdFN0YXR1cyA9ICdkcmFmdCcgfCAnY29tcGxldGVkJyB8ICdwdWJsaXNoZWQnO1xuZXhwb3J0IHR5cGUgUGxhdGZvcm1UeXBlID0gJ3lvdXR1YmUnIHwgJ2luc3RhZ3JhbScgfCAndGlrdG9rJyB8ICdmYWNlYm9vaycgfCAndHdpdHRlcicgfCAnbGlua2VkaW4nO1xuZXhwb3J0IHR5cGUgRm9ybWF0VHlwZSA9ICdzaG9ydCcgfCAncmVlbCcgfCAnc3RvcnknIHwgJ3Bvc3QnIHwgJ3ZpZGVvJyB8ICdjYXJvdXNlbCc7XG5leHBvcnQgdHlwZSBTb3J0T3B0aW9uID0gJ2RhdGUnIHwgJ3RpdGxlJyB8ICdwbGF0Zm9ybScgfCAnd29yZENvdW50JyB8ICdlZGl0Q291bnQnIHwgJ3ZpZXdDb3VudCc7XG5cbmV4cG9ydCBpbnRlcmZhY2UgRW5oYW5jZWRQcm9qZWN0IHtcbiAgLy8gQ29yZSBmaWVsZHNcbiAgaWQ6IHN0cmluZztcbiAgdXNlcklkOiBzdHJpbmc7XG4gIHRpdGxlOiBzdHJpbmc7XG4gIGNvbnRlbnQ6IHN0cmluZztcbiAgZm9ybURhdGE6IFNjcmlwdEZvcm1EYXRhO1xuICBjcmVhdGVkQXQ6IFRpbWVzdGFtcDtcbiAgdXBkYXRlZEF0OiBUaW1lc3RhbXA7XG4gIFxuICAvLyBPcmdhbml6YXRpb24gZmllbGRzXG4gIHRhZ3M6IHN0cmluZ1tdO1xuICBmb2xkZXJJZD86IHN0cmluZztcbiAgaXNGYXZvcml0ZTogYm9vbGVhbjtcbiAgc3RhdHVzOiBQcm9qZWN0U3RhdHVzO1xuICBcbiAgLy8gTWV0cmljcyBmaWVsZHNcbiAgdmVyc2lvbjogbnVtYmVyO1xuICB3b3JkQ291bnQ6IG51bWJlcjtcbiAgZXN0aW1hdGVkRHVyYXRpb246IG51bWJlcjtcbiAgbGFzdEVkaXRlZEF0PzogVGltZXN0YW1wO1xuICBcbiAgLy8gRW5nYWdlbWVudCBmaWVsZHNcbiAgdmlld0NvdW50OiBudW1iZXI7XG4gIGVkaXRDb3VudDogbnVtYmVyO1xuICBcbiAgLy8gU2hhcmluZyBmaWVsZHNcbiAgaXNTaGFyZWQ6IGJvb2xlYW47XG4gIHNoYXJlTGluaz86IHN0cmluZztcbiAgc2hhcmVkQXQ/OiBUaW1lc3RhbXA7XG4gIFxuICAvLyBNZXRhZGF0YSBmaWVsZHNcbiAgdGh1bWJuYWlsVXJsPzogc3RyaW5nO1xuICBvcmlnaW5hbFByb21wdD86IHN0cmluZztcbiAgYWlNb2RlbFVzZWQ/OiBzdHJpbmc7XG4gIGdlbmVyYXRpb25UaW1lPzogbnVtYmVyO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIFNjcmlwdEZvcm1EYXRhIHtcbiAgcGxhdGZvcm06IFBsYXRmb3JtVHlwZTtcbiAgZm9ybWF0OiBGb3JtYXRUeXBlO1xuICB0b3BpYzogc3RyaW5nO1xuICBvYmplY3RpdmU6IHN0cmluZztcbiAgdGFyZ2V0QXVkaWVuY2U6IHN0cmluZztcbiAgdG9uZTogc3RyaW5nO1xuICBkdXJhdGlvbj86IG51bWJlcjtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBUYWcge1xuICBpZDogc3RyaW5nO1xuICB1c2VySWQ6IHN0cmluZztcbiAgbmFtZTogc3RyaW5nO1xuICBjb2xvcjogc3RyaW5nO1xuICBkZXNjcmlwdGlvbj86IHN0cmluZztcbiAgdXNhZ2VDb3VudDogbnVtYmVyO1xuICBsYXN0VXNlZEF0PzogVGltZXN0YW1wO1xuICBjcmVhdGVkQXQ6IFRpbWVzdGFtcDtcbiAgdXBkYXRlZEF0OiBUaW1lc3RhbXA7XG4gIGlzU3lzdGVtOiBib29sZWFuO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIEZvbGRlciB7XG4gIGlkOiBzdHJpbmc7XG4gIHVzZXJJZDogc3RyaW5nO1xuICBuYW1lOiBzdHJpbmc7XG4gIGRlc2NyaXB0aW9uPzogc3RyaW5nO1xuICBjb2xvcj86IHN0cmluZztcbiAgcGFyZW50SWQ/OiBzdHJpbmc7XG4gIHBhdGg6IHN0cmluZztcbiAgbGV2ZWw6IG51bWJlcjtcbiAgc29ydEJ5OiBTb3J0T3B0aW9uO1xuICBzb3J0T3JkZXI6ICdhc2MnIHwgJ2Rlc2MnO1xuICBpc0RlZmF1bHQ6IGJvb2xlYW47XG4gIHByb2plY3RDb3VudDogbnVtYmVyO1xuICBjcmVhdGVkQXQ6IFRpbWVzdGFtcDtcbiAgdXBkYXRlZEF0OiBUaW1lc3RhbXA7XG59XG5cbmV4cG9ydCBpbnRlcmZhY2UgRmlsdGVyT3B0aW9ucyB7XG4gIHBsYXRmb3Jtcz86IFBsYXRmb3JtVHlwZVtdO1xuICBmb3JtYXRzPzogRm9ybWF0VHlwZVtdO1xuICBzdGF0dXM/OiBQcm9qZWN0U3RhdHVzW107XG4gIHRhZ3M/OiBzdHJpbmdbXTtcbiAgZm9sZGVySWQ/OiBzdHJpbmc7XG4gIGlzRmF2b3JpdGU/OiBib29sZWFuO1xuICBkYXRlUmFuZ2U/OiB7XG4gICAgc3RhcnQ6IERhdGU7XG4gICAgZW5kOiBEYXRlO1xuICB9O1xuICBzb3J0Qnk6IFNvcnRPcHRpb247XG4gIHNvcnRPcmRlcjogJ2FzYycgfCAnZGVzYyc7XG4gIGxpbWl0PzogbnVtYmVyO1xuICBvZmZzZXQ/OiBudW1iZXI7XG59XG5cbmV4cG9ydCBpbnRlcmZhY2UgRGFzaGJvYXJkU3RhdHMge1xuICB0b3RhbFByb2plY3RzOiBudW1iZXI7XG4gIHByb2plY3RzVGhpc01vbnRoOiBudW1iZXI7XG4gIHRvdGFsV29yZHM6IG51bWJlcjtcbiAgYXZlcmFnZVdvcmRzUGVyU2NyaXB0OiBudW1iZXI7XG4gIG1vc3RVc2VkUGxhdGZvcm06IFBsYXRmb3JtVHlwZTtcbiAgbW9zdFVzZWRGb3JtYXQ6IEZvcm1hdFR5cGU7XG4gIHByb2R1Y3Rpdml0eVRyZW5kOiBUcmVuZERhdGFbXTtcbiAgdGltZVNwZW50V3JpdGluZzogbnVtYmVyO1xuICBjb21wbGV0aW9uUmF0ZTogbnVtYmVyO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIFRyZW5kRGF0YSB7XG4gIGRhdGU6IHN0cmluZztcbiAgcHJvamVjdHNDcmVhdGVkOiBudW1iZXI7XG4gIHdvcmRzV3JpdHRlbjogbnVtYmVyO1xuICB0aW1lU3BlbnQ6IG51bWJlcjtcbn1cbiJdLCJtYXBwaW5ncyI6IiIsImlnbm9yZUxpc3QiOltdfQ==

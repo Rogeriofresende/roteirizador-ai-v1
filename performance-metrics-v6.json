@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-12T12:51:04.196Z",
+    "buildMetrics": {
+      "buildTime": "5.67s",
+      "bundleSize": "3.75KB",
+      "gzipSize": "1.82KB",
+      "success": true,
+      "distSize": "3.68MB"
+    },
+    "testMetrics": {
+      "passed": 153,
+      "failed": 0,
+      "total": 153,
+      "suites": 14,
+      "coverage": "0.94%"
+    },
+    "lintMetrics": {
+      "errors": 47,
+      "warnings": 1904,
+      "total": 1951
+    },
+    "bundleMetrics": {},
+    "memoryMetrics": {
+      "rss": "36MB",
+      "heapTotal": "5MB",
+      "heapUsed": "5MB",
+      "external": "2MB"
+    },
+    "qualityScore": 85
+  }
+]

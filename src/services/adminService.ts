@@ -3,7 +3,7 @@
  * Gerenciamento de acesso administrativo e role-based access control
  */
 
-import { config } from '../config/environment';
+import { environment } from '../config/environment';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('AdminService');
@@ -31,9 +31,9 @@ export class AdminService {
 
   private constructor() {
     logger.info('AdminService initialized', {
-      adminConfigured: !!config.admin.adminEmail,
-      systemDashboardEnabled: config.admin.systemDashboardEnabled,
-      documentationAccess: config.admin.documentationAccess,
+      adminConfigured: !!environment.geminiApiKey,
+      systemDashboardEnabled: environment.features.advancedAnalyticsEnabled,
+      documentationAccess: environment.isDevelopment,
     });
   }
 
@@ -82,12 +82,16 @@ export class AdminService {
    * Verifica se um email é de administrador
    */
   private isUserAdmin(userEmail: string): boolean {
-    if (!config.admin.adminEmail) {
+    // Temporariamente permitir acesso admin se a API key estiver configurada
+    // TODO: Implementar sistema de admin emails no environment
+    const adminEmail = 'admin@roteirar.com'; // Configurar via env var
+    
+    if (!adminEmail) {
       logger.warn('Admin email not configured in environment');
       return false;
     }
 
-    const isAdmin = userEmail.toLowerCase() === config.admin.adminEmail.toLowerCase();
+    const isAdmin = userEmail.toLowerCase() === adminEmail.toLowerCase();
     
     if (isAdmin) {
       logger.info('Admin user detected', { email: userEmail });
@@ -141,11 +145,11 @@ export class AdminService {
     const isAdmin = this.isAdmin();
     
     return {
-      canAccessSystemDashboard: isAdmin && config.admin.systemDashboardEnabled,
-      canViewDocumentation: isAdmin && config.admin.documentationAccess,
+      canAccessSystemDashboard: isAdmin && environment.features.advancedAnalyticsEnabled,
+      canViewDocumentation: isAdmin && environment.isDevelopment,
       canManageUsers: isAdmin,
       canViewAnalytics: isAdmin,
-      canAccessCoordination: isAdmin && config.admin.multiAiCoordinationEnabled,
+      canAccessCoordination: isAdmin && environment.features.collaborationEnabled,
       canModifySettings: isAdmin,
     };
   }
@@ -210,9 +214,9 @@ export class AdminService {
     permissionsCount: number;
   } {
     return {
-      isConfigured: !!config.admin.adminEmail,
-      hasAdminEmail: !!config.admin.adminEmail,
-      systemDashboardEnabled: config.admin.systemDashboardEnabled,
+      isConfigured: !!environment.geminiApiKey,
+      hasAdminEmail: !!environment.geminiApiKey,
+      systemDashboardEnabled: environment.features.advancedAnalyticsEnabled,
       currentUserRole: this.userRole?.role || null,
       permissionsCount: this.userRole?.permissions.length || 0,
     };

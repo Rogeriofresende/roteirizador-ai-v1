@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-07-09T18:01:35.618Z",
+  "type": "debug-application-state",
+  "evidence": {
+    "rootEmpty": true,
+    "rootHtml": "",
+    "consoleErrors": [
+      "Failed to import ServiceBootstrap: ReferenceError: require is not defined",
+      "The above error occurred in the <App> component:\n\n    at App (http://localhost:5173/src/App.tsx?t=1752084080974:131:23)\n    at AppWrapper\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.",
+      "🚨 15:01:30 [ERROR] Critical error during service initialization\n📋 Context: {\n  \"error\": \"isDevelopment is not a function\",\n  \"stack\": \"TypeError: isDevelopment is not a function\\n    at initializeServices (http://localhost:5173/src/App.tsx?t=1752084080974:216:13)\"\n}",
+      "🚨 15:01:30 [ERROR] Critical error during service initialization\n📋 Context: {\n  \"error\": \"isDevelopment is not a function\",\n  \"stack\": \"TypeError: isDevelopment is not a function\\n    at initializeServices (http://localhost:5173/src/App.tsx?t=1752084080974:216:13)\"\n}",
+      "The above error occurred in the <App> component:\n\n    at App (http://localhost:5173/src/App.tsx?t=1752084080974:131:23)\n    at AppWrapper\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+    ],
+    "consoleWarnings": [
+      "⚠️ 15:01:30 [WARN] Environment validation warnings detected\n📋 Context: {\n  \"errors\": []\n}",
+      "⚠️ 15:01:30 [WARN] Environment validation warnings detected\n📋 Context: {\n  \"errors\": []\n}",
+      "⚠️ 15:01:30 [WARN] DI System initialization had issues\n📋 Context: {\n  \"errors\": [\n    \"Bootstrap not available\"\n  ],\n  \"registeredServices\": 0,\n  \"initializedServices\": 0\n}",
+      "⚠️ 15:01:30 [WARN] DI System initialization had issues\n📋 Context: {\n  \"errors\": [\n    \"Bootstrap not available\"\n  ],\n  \"registeredServices\": 0,\n  \"initializedServices\": 0\n}"
+    ],
+    "hasReact": true,
+    "documentTitle": "Roteirar IA Pro - Gerador de Roteiros com IA",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/138.0.0.0 Safari/537.36",
+    "scripts": [
+      {
+        "src": "",
+        "type": "text/javascript"
+      },
+      {
+        "src": "",
+        "type": "module"
+      },
+      {
+        "src": "http://localhost:5173/@vite/client",
+        "type": "module"
+      },
+      {
+        "src": "http://localhost:5173/src/main.tsx?t=1752084080974",
+        "type": "module"
+      }
+    ],
+    "timestamp": "2025-07-09T18:01:35.461Z"
+  },
+  "metrics": {},
+  "screenshots": []
+}

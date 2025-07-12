@@ -1,0 +1,62 @@
+5c2f01ed271fc59d332f646544c41f81
+"use strict";
+
+// Domain Repositories - Clean Architecture
+// Interfaces para acesso a dados (implementação na Infrastructure)
+/* istanbul ignore next */
+function cov_ag46f4dd4() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/repositories/index.ts";
+  var hash = "ad703358755046260b7fa6426fb1ddb11084e623";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/repositories/index.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 4,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 62
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/repositories/index.ts",
+      mappings: ";AAAA,2CAA2C;AAC3C,mEAAmE",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/domain/repositories/index.ts"],
+      sourcesContent: ["// Domain Repositories - Clean Architecture\n// Interfaces para acesso a dados (implementa\xE7\xE3o na Infrastructure)\n\n// TODO: Implementar interfaces de reposit\xF3rio nas pr\xF3ximas fases (Day 3-4)\n// export { IUserRepository } from './IUserRepository';\n// export { IScriptRepository } from './IScriptRepository';\n// export { ITemplateRepository } from './ITemplateRepository';\n// export { IVoiceRepository } from './IVoiceRepository';\n\n// Arquivo preparado para as pr\xF3ximas fases da arquitetura\nexport {}; "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "ad703358755046260b7fa6426fb1ddb11084e623"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_ag46f4dd4 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_ag46f4dd4();
+cov_ag46f4dd4().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfYWc0NmY0ZGQ0IiwicGF0aCIsImhhc2giLCJnbG9iYWwiLCJGdW5jdGlvbiIsImdjdiIsImNvdmVyYWdlRGF0YSIsInN0YXRlbWVudE1hcCIsInN0YXJ0IiwibGluZSIsImNvbHVtbiIsImVuZCIsImZuTWFwIiwiYnJhbmNoTWFwIiwicyIsImYiLCJiIiwiaW5wdXRTb3VyY2VNYXAiLCJmaWxlIiwibWFwcGluZ3MiLCJuYW1lcyIsInNvdXJjZXMiLCJzb3VyY2VzQ29udGVudCIsInZlcnNpb24iLCJfY292ZXJhZ2VTY2hlbWEiLCJjb3ZlcmFnZSIsImFjdHVhbENvdmVyYWdlIl0sInNvdXJjZXMiOlsiL1VzZXJzL3JvZ2VyaW9yZXNlbmRlL0Rlc2t0b3AvUm90ZWlyYXItaWEvc3JjL2RvbWFpbi9yZXBvc2l0b3JpZXMvaW5kZXgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gRG9tYWluIFJlcG9zaXRvcmllcyAtIENsZWFuIEFyY2hpdGVjdHVyZVxuLy8gSW50ZXJmYWNlcyBwYXJhIGFjZXNzbyBhIGRhZG9zIChpbXBsZW1lbnRhw6fDo28gbmEgSW5mcmFzdHJ1Y3R1cmUpXG5cbi8vIFRPRE86IEltcGxlbWVudGFyIGludGVyZmFjZXMgZGUgcmVwb3NpdMOzcmlvIG5hcyBwcsOzeGltYXMgZmFzZXMgKERheSAzLTQpXG4vLyBleHBvcnQgeyBJVXNlclJlcG9zaXRvcnkgfSBmcm9tICcuL0lVc2VyUmVwb3NpdG9yeSc7XG4vLyBleHBvcnQgeyBJU2NyaXB0UmVwb3NpdG9yeSB9IGZyb20gJy4vSVNjcmlwdFJlcG9zaXRvcnknO1xuLy8gZXhwb3J0IHsgSVRlbXBsYXRlUmVwb3NpdG9yeSB9IGZyb20gJy4vSVRlbXBsYXRlUmVwb3NpdG9yeSc7XG4vLyBleHBvcnQgeyBJVm9pY2VSZXBvc2l0b3J5IH0gZnJvbSAnLi9JVm9pY2VSZXBvc2l0b3J5JztcblxuLy8gQXJxdWl2byBwcmVwYXJhZG8gcGFyYSBhcyBwcsOzeGltYXMgZmFzZXMgZGEgYXJxdWl0ZXR1cmFcbmV4cG9ydCB7fTsgIl0sIm1hcHBpbmdzIjoiOztBQUFBO0FBQ0E7QUFBQTtBQUFBLFNBQUFBLGNBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsSUFBQTtFQUFBLElBQUFDLE1BQUEsT0FBQUMsUUFBQTtFQUFBLElBQUFDLEdBQUE7RUFBQSxJQUFBQyxZQUFBO0lBQUFMLElBQUE7SUFBQU0sWUFBQTtNQUFBO1FBQUFDLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO0lBQUE7SUFBQUUsS0FBQTtJQUFBQyxTQUFBO0lBQUFDLENBQUE7TUFBQTtJQUFBO0lBQUFDLENBQUE7SUFBQUMsQ0FBQTtJQUFBQyxjQUFBO01BQUFDLElBQUE7TUFBQUMsUUFBQTtNQUFBQyxLQUFBO01BQUFDLE9BQUE7TUFBQUMsY0FBQTtNQUFBQyxPQUFBO0lBQUE7SUFBQUMsZUFBQTtJQUFBdEIsSUFBQTtFQUFBO0VBQUEsSUFBQXVCLFFBQUEsR0FBQXRCLE1BQUEsQ0FBQUUsR0FBQSxNQUFBRixNQUFBLENBQUFFLEdBQUE7RUFBQSxLQUFBb0IsUUFBQSxDQUFBeEIsSUFBQSxLQUFBd0IsUUFBQSxDQUFBeEIsSUFBQSxFQUFBQyxJQUFBLEtBQUFBLElBQUE7SUFBQXVCLFFBQUEsQ0FBQXhCLElBQUEsSUFBQUssWUFBQTtFQUFBO0VBQUEsSUFBQW9CLGNBQUEsR0FBQUQsUUFBQSxDQUFBeEIsSUFBQTtFQUFBIiwiaWdub3JlTGlzdCI6W119

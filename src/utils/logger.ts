@@ -1,230 +1,201 @@
 /**
- * 📝 STRUCTURED LOGGER
- * Sistema de logging profissional com níveis e contexto
+ * Logger System V6.4
+ * Sistema de logging melhorado para evitar false positives
  */
+import { environment } from '../config/environment';
 
-import { config, isDevelopment, isProduction } from '../config/environment';
-
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-export interface LogContext {
-  [key: string]: any;
-}
-
-export interface LogEntry {
+interface LogEntry {
+  timestamp: string;
   level: LogLevel;
   message: string;
-  context?: LogContext;
-  timestamp: string;
-  environment: string;
+  context?: Record<string, any>;
   source?: string;
 }
 
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
 class Logger {
-  private readonly isDev = isDevelopment();
-  private readonly isProd = isProduction();
-  private readonly logLevel = config.logLevel;
+  private logs: LogEntry[] = [];
+  private maxLogs = 1000;
+  private logLevel: LogLevel = environment.logging.level as LogLevel;
+  private consoleLogging = environment.logging.consoleLogging;
 
-  /**
-   * Determina se o log deve ser processado baseado no nível
-   */
   private shouldLog(level: LogLevel): boolean {
-    const levels: Record<LogLevel, number> = {
-      debug: 0,
-      info: 1,
-      warn: 2,
-      error: 3,
-    };
-
-    return levels[level] >= levels[this.logLevel];
+    const levels = ['debug', 'info', 'warn', 'error'];
+    return levels.indexOf(level) >= levels.indexOf(this.logLevel);
   }
 
-  /**
-   * Formata entrada de log
-   */
-  private formatLog(level: LogLevel, message: string, context?: LogContext, source?: string): LogEntry {
+  private createLogEntry(level: LogLevel, message: string, context?: Record<string, any>, source?: string): LogEntry {
     return {
+      timestamp: new Date().toISOString(),
       level,
       message,
       context,
-      timestamp: new Date().toISOString(),
-      environment: config.environment,
-      source,
+      source
     };
   }
 
-  /**
-   * Processa e emite log
-   */
-  private emit(entry: LogEntry): void {
-    if (!this.shouldLog(entry.level)) return;
-
-    const logMessage = this.isDev 
-      ? this.formatDevLog(entry)
-      : this.formatProdLog(entry);
-
-    // Emitir para console apropriado
-    switch (entry.level) {
-      case 'debug':
-        console.debug(logMessage);
-        break;
-      case 'info':
-        console.info(logMessage);
-        break;
-      case 'warn':
-        console.warn(logMessage);
-        break;
-      case 'error':
-        console.error(logMessage);
-        break;
-    }
-
-    // Em produção, podemos enviar para serviço de logging
-    if (this.isProd && entry.level === 'error') {
-      this.sendToExternalLogger(entry);
+  private addToBuffer(entry: LogEntry): void {
+    this.logs.push(entry);
+    if (this.logs.length > this.maxLogs) {
+      this.logs.shift();
     }
   }
 
-  /**
-   * Formatação para desenvolvimento (legível)
-   */
-  private formatDevLog(entry: LogEntry): string {
+  private formatMessage(level: LogLevel, message: string, context?: Record<string, any>): string {
+    const timestamp = new Date().toLocaleTimeString();
     const emoji = {
       debug: '🔍',
       info: 'ℹ️',
       warn: '⚠️',
-      error: '❌',
-    }[entry.level];
-
-    const timestamp = new Date(entry.timestamp).toLocaleTimeString();
-    const source = entry.source ? `[${entry.source}]` : '';
+      error: '🚨'
+    }[level];
     
-    let message = `${emoji} ${timestamp} ${source} ${entry.message}`;
+    let formattedMessage = `${emoji} ${timestamp} [${level.toUpperCase()}] ${message}`;
     
-    if (entry.context && Object.keys(entry.context).length > 0) {
-      message += `\n📋 Context: ${JSON.stringify(entry.context, null, 2)}`;
+    if (context) {
+      formattedMessage += `\n📋 Context: ${JSON.stringify(context, null, 2)}`;
     }
     
-    return message;
+    return formattedMessage;
   }
 
-  /**
-   * Formatação para produção (JSON estruturado)
-   */
-  private formatProdLog(entry: LogEntry): string {
-    return JSON.stringify(entry);
-  }
-
-  /**
-   * Enviar para serviço externo de logging (produção)
-   */
-  private async sendToExternalLogger(entry: LogEntry): Promise<void> {
-    // Implementar integração com serviços como Sentry, LogRocket, etc.
-    // Por enquanto, apenas console.error
-    try {
-      // Aqui iria a integração real
-      console.error('External Logger:', entry);
-    } catch (error: unknown) {
-      console.error('Failed to send log to external service:', error);
+  debug(message: string, context?: Record<string, any>, source?: string): void {
+    if (!this.shouldLog('debug')) return;
+    
+    const entry = this.createLogEntry('debug', message, context, source);
+    this.addToBuffer(entry);
+    
+    if (this.consoleLogging && environment.isDevelopment) {
+      console.debug(this.formatMessage('debug', message, context));
     }
   }
 
-  /**
-   * Log de debug
-   */
-  debug(message: string, context?: LogContext, source?: string): void {
-    const entry = this.formatLog('debug', message, context, source);
-    this.emit(entry);
-  }
-
-  /**
-   * Log informativo
-   */
-  info(message: string, context?: LogContext, source?: string): void {
-    const entry = this.formatLog('info', message, context, source);
-    this.emit(entry);
-  }
-
-  /**
-   * Log de warning
-   */
-  warn(message: string, context?: LogContext, source?: string): void {
-    const entry = this.formatLog('warn', message, context, source);
-    this.emit(entry);
-  }
-
-  /**
-   * Log de erro
-   */
-  error(message: string, context?: LogContext, source?: string): void {
-    const entry = this.formatLog('error', message, context, source);
-    this.emit(entry);
-  }
-
-  /**
-   * Log de performance
-   */
-  performance(operation: string, duration: number, context?: LogContext): void {
-    this.info(`Performance: ${operation}`, {
-      ...context,
-      duration: `${duration}ms`,
-      threshold: duration > 1000 ? 'SLOW' : 'OK',
-    }, 'PERFORMANCE');
-  }
-
-  /**
-   * Log de user action
-   */
-  userAction(action: string, context?: LogContext): void {
-    this.info(`User Action: ${action}`, context, 'USER');
-  }
-
-  /**
-   * Log de API call
-   */
-  apiCall(method: string, url: string, status: number, duration: number, context?: LogContext): void {
-    const level = status >= 400 ? 'error' : status >= 300 ? 'warn' : 'info';
+  info(message: string, context?: Record<string, any>, source?: string): void {
+    if (!this.shouldLog('info')) return;
     
-    this[level](`API Call: ${method} ${url}`, {
-      ...context,
+    const entry = this.createLogEntry('info', message, context, source);
+    this.addToBuffer(entry);
+    
+    if (this.consoleLogging) {
+      console.info(this.formatMessage('info', message, context));
+    }
+  }
+
+  warn(message: string, context?: Record<string, any>, source?: string): void {
+    if (!this.shouldLog('warn')) return;
+    
+    const entry = this.createLogEntry('warn', message, context, source);
+    this.addToBuffer(entry);
+    
+    if (this.consoleLogging) {
+      console.warn(this.formatMessage('warn', message, context));
+    }
+  }
+
+  error(message: string, context?: Record<string, any>, source?: string): void {
+    if (!this.shouldLog('error')) return;
+    
+    const entry = this.createLogEntry('error', message, context, source);
+    this.addToBuffer(entry);
+    
+    if (this.consoleLogging) {
+      console.error(this.formatMessage('error', message, context));
+    }
+  }
+
+  // Métodos utilitários
+  getLogs(level?: LogLevel): LogEntry[] {
+    return level ? this.logs.filter(log => log.level === level) : this.logs;
+  }
+
+  clearLogs(): void {
+    this.logs = [];
+  }
+
+  getLogStats(): { total: number; byLevel: Record<LogLevel, number> } {
+    const byLevel = this.logs.reduce((acc, log) => {
+      acc[log.level] = (acc[log.level] || 0) + 1;
+      return acc;
+    }, {} as Record<LogLevel, number>);
+
+    return {
+      total: this.logs.length,
+      byLevel
+    };
+  }
+
+  // Métodos específicos para diferentes componentes
+  logAppInitialization(context: Record<string, any>): void {
+    this.info('App initialization started', context, 'APP');
+  }
+
+  logServiceInitialization(serviceName: string, status: Record<string, any>): void {
+    this.info(`${serviceName} initialization completed`, status, serviceName);
+  }
+
+  logUserAction(action: string, context: Record<string, any>): void {
+    this.info(`User action: ${action}`, context, 'USER');
+  }
+
+  logApiCall(endpoint: string, method: string, status: number, duration?: number): void {
+    const level = status >= 400 ? 'warn' : 'info';
+    this.log(level, `API call: ${method} ${endpoint} - ${status}`, {
+      endpoint,
+      method,
       status,
-      duration: `${duration}ms`,
+      duration
     }, 'API');
   }
 
-  /**
-   * Log de security event
-   */
-  security(event: string, context?: LogContext): void {
-    this.warn(`Security Event: ${event}`, context, 'SECURITY');
+  logPerformance(metric: string, value: number, context?: Record<string, any>): void {
+    if (environment.isDevelopment) {
+      this.debug(`Performance metric: ${metric} = ${value}`, context, 'PERFORMANCE');
+    }
   }
 
-  /**
-   * Criar logger com source fixo
-   */
-  createSourceLogger(source: string) {
-    return {
-      debug: (message: string, context?: LogContext) => this.debug(message, context, source),
-      info: (message: string, context?: LogContext) => this.info(message, context, source),
-      warn: (message: string, context?: LogContext) => this.warn(message, context, source),
-      error: (message: string, context?: LogContext) => this.error(message, context, source),
-      performance: (operation: string, duration: number, context?: LogContext) => 
-        this.performance(operation, duration, context),
-      userAction: (action: string, context?: LogContext) => this.userAction(action, context),
-      apiCall: (method: string, url: string, status: number, duration: number, context?: LogContext) =>
-        this.apiCall(method, url, status, duration, context),
-      security: (event: string, context?: LogContext) => this.security(event, context),
-    };
+  // Método genérico de log
+  log(level: LogLevel, message: string, context?: Record<string, any>, source?: string): void {
+    switch (level) {
+      case 'debug':
+        this.debug(message, context, source);
+        break;
+      case 'info':
+        this.info(message, context, source);
+        break;
+      case 'warn':
+        this.warn(message, context, source);
+        break;
+      case 'error':
+        this.error(message, context, source);
+        break;
+    }
   }
 }
 
-// Singleton logger instance
+// Instância singleton
 export const logger = new Logger();
 
-// Factory function para compatibilidade
-export const createLogger = (source: string) => logger.createSourceLogger(source);
+// Funções de conveniência
+export const logInfo = (message: string, context?: Record<string, any>, source?: string) => 
+  logger.info(message, context, source);
 
-// Convenience exports para uso direto
-export const { debug, info, warn, error, performance, userAction, apiCall, security } = logger;
+export const logWarn = (message: string, context?: Record<string, any>, source?: string) => 
+  logger.warn(message, context, source);
+
+export const logError = (message: string, context?: Record<string, any>, source?: string) => 
+  logger.error(message, context, source);
+
+export const logDebug = (message: string, context?: Record<string, any>, source?: string) => 
+  logger.debug(message, context, source);
+
+// Função de compatibilidade para códigos existentes
+export const createLogger = (source: string) => ({
+  debug: (message: string, context?: Record<string, any>) => logger.debug(message, context, source),
+  info: (message: string, context?: Record<string, any>) => logger.info(message, context, source),
+  warn: (message: string, context?: Record<string, any>) => logger.warn(message, context, source),
+  error: (message: string, context?: Record<string, any>) => logger.error(message, context, source),
+  log: (level: LogLevel, message: string, context?: Record<string, any>) => logger.log(level, message, context, source)
+});
 
 export default logger; 

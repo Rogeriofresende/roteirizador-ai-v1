@@ -25,7 +25,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { PWAInstall } from './components/PWAInstall';
 import ErrorBoundary from './components/ui/ErrorBoundary';
-import { suppressThirdPartyErrors } from './components/ui/ThirdPartyErrorBoundary';
+import { suppressThirdPartyErrors } from './utils/thirdPartyErrorSuppressor';
 
 // Loading components
 import { PageLoadingSpinner } from './components/ui/PageLoadingSpinner';
@@ -37,6 +37,15 @@ import { tallyService } from './services/tallyService';
 import { config, isDevelopment, validateEnvironment } from './config/environment';
 import { logger } from './utils/logger';
 import { performanceService } from './services/performance';
+import { initializeErrorCapture, cleanupErrorCapture } from './utils/errorCapture';
+
+// V6.4 Week 2: DI System Integration - MAIS ROBUSTO COM ERROR HANDLING
+import { 
+  initializeServiceSystem, 
+  disposeServiceSystem, 
+  getSystemStatus,
+  Services
+} from './services';
 
 // =============================================================================
 // LAZY LOADED PAGES - CODE SPLITTING
@@ -46,7 +55,7 @@ import { performanceService } from './services/performance';
 const HomePage = React.lazy(() => 
   performanceService.measureFunction('load_HomePage', () => 
     import('./pages/HomePage').then(module => {
-      logger.debug('HomePage lazy loaded', {}, 'CODE_SPLITTING');
+      logger.log('debug', 'HomePage lazy loaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -55,7 +64,11 @@ const HomePage = React.lazy(() =>
 const GeneratorPage = React.lazy(() => 
   performanceService.measureFunction('load_GeneratorPage', () => 
     import('./pages/GeneratorPage').then(module => {
-      logger.debug('GeneratorPage lazy loaded', {}, 'CODE_SPLITTING');
+      // 🚀 WEEK 7: Preload related AI chunks when GeneratorPage loads
+      import('./services/geminiService');
+      import('./services/multiAIService');
+      import('./components/ScriptForm');
+      logger.log('debug', 'GeneratorPage lazy loaded with AI dependencies preloaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -64,7 +77,7 @@ const GeneratorPage = React.lazy(() =>
 const LoginPage = React.lazy(() => 
   performanceService.measureFunction('load_LoginPage', () => 
     import('./pages/LoginPage').then(module => {
-      logger.debug('LoginPage lazy loaded', {}, 'CODE_SPLITTING');
+      logger.log('debug', 'LoginPage lazy loaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -73,7 +86,7 @@ const LoginPage = React.lazy(() =>
 const SignupPage = React.lazy(() => 
   performanceService.measureFunction('load_SignupPage', () => 
     import('./pages/SignupPage').then(module => {
-      logger.debug('SignupPage lazy loaded', {}, 'CODE_SPLITTING');
+      logger.log('debug', 'SignupPage lazy loaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -82,7 +95,11 @@ const SignupPage = React.lazy(() =>
 const SimpleUserDashboard = React.lazy(() => 
   performanceService.measureFunction('load_SimpleUserDashboard', () => 
     import('./pages/SimpleUserDashboard').then(module => {
-      logger.debug('SimpleUserDashboard lazy loaded', {}, 'CODE_SPLITTING');
+      // 🚀 WEEK 7: Preload dashboard-related chunks
+      import('./services/projectService');
+      import('./services/analyticsService');
+      import('./components/dashboard/ProjectCard');
+      logger.log('debug', 'SimpleUserDashboard lazy loaded with dashboard dependencies preloaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -91,7 +108,29 @@ const SimpleUserDashboard = React.lazy(() =>
 const AdminDashboard = React.lazy(() => 
   performanceService.measureFunction('load_AdminDashboard', () => 
     import('./pages/AdminDashboard').then(module => {
-      logger.debug('AdminDashboard lazy loaded', {}, 'CODE_SPLITTING');
+      // 🚀 WEEK 7: Preload admin-related chunks  
+      import('./services/adminService');
+      import('./services/systemHealthService');
+      import('./components/admin/ErrorDashboard');
+      logger.log('debug', 'AdminDashboard lazy loaded with admin dependencies preloaded', {}, 'CODE_SPLITTING');
+      return module;
+    })
+  )
+);
+
+const ErrorCaptureTest = React.lazy(() => 
+  performanceService.measureFunction('load_ErrorCaptureTest', () => 
+    import('./pages/ErrorCaptureTest').then(module => {
+      logger.log('debug', 'ErrorCaptureTest lazy loaded', {}, 'CODE_SPLITTING');
+      return module;
+    })
+  )
+);
+
+const BancoDeIdeias = React.lazy(() => 
+  performanceService.measureFunction('load_BancoDeIdeias', () => 
+    import('./pages/BancoDeIdeias').then(module => {
+      logger.log('debug', 'BancoDeIdeias lazy loaded', {}, 'CODE_SPLITTING');
       return module;
     })
   )
@@ -102,22 +141,83 @@ const AdminDashboard = React.lazy(() =>
 // =============================================================================
 
 const preloadPages = () => {
-  // V5.1: Preload critical generator page first (principal UX flow)
-  const preloadPromises = [
-    import('./pages/GeneratorPage'), // Priority 1: main functionality
-    import('./pages/HomePage'),      // Priority 2: about/marketing
-    import('./pages/LoginPage'),     // Priority 3: auth flow
-  ];
+  // 🚀 WEEK 7: INTELLIGENT PRELOADING STRATEGY
+  const preloadPromises = [];
   
-  // Preload user dashboard if authenticated
-  if (localStorage.getItem('firebase:auth:user')) {
-    preloadPromises.push(import('./pages/SimpleUserDashboard'));
+  // Priority 1: Critical path - Generator page (main functionality)
+  preloadPromises.push(
+    import('./pages/GeneratorPage').then(() => 
+      logger.log('debug', 'GeneratorPage preloaded', {}, 'CODE_SPLITTING')
+    )
+  );
+  
+  // Priority 2: User authentication state determines next preloads
+  const isAuthenticated = localStorage.getItem('firebase:auth:user');
+  
+  if (isAuthenticated) {
+    // Authenticated users: preload dashboard and related services
+    preloadPromises.push(
+      import('./pages/SimpleUserDashboard').then(() => 
+        logger.log('debug', 'SimpleUserDashboard preloaded for authenticated user', {}, 'CODE_SPLITTING')
+      )
+    );
+    
+    // Preload dashboard services
+    preloadPromises.push(
+      Promise.all([
+        import('./services/projectService'),
+        import('./services/analyticsService'),
+        import('./components/dashboard/ProjectCard')
+      ]).then(() => 
+        logger.log('debug', 'Dashboard services preloaded', {}, 'CODE_SPLITTING')
+      )
+    );
+  } else {
+    // Non-authenticated users: preload auth flow
+    preloadPromises.push(
+      import('./pages/LoginPage').then(() => 
+        logger.log('debug', 'LoginPage preloaded for non-authenticated user', {}, 'CODE_SPLITTING')
+      )
+    );
   }
   
-  Promise.all(preloadPromises).then(() => {
-    logger.debug('Critical pages preloaded - V5.1 order', {}, 'CODE_SPLITTING');
-  }).catch(_error => {
-    logger.warn('Page preloading failed', { error }, 'CODE_SPLITTING');
+  // Priority 3: Homepage (marketing/about) - lowest priority
+  setTimeout(() => {
+    import('./pages/HomePage').then(() => 
+      logger.log('debug', 'HomePage preloaded (deferred)', {}, 'CODE_SPLITTING')
+    );
+  }, 2000);
+  
+  // 🚀 WEEK 7: Conditional admin preloading based on user role
+  if (isAuthenticated) {
+    try {
+      const userData = JSON.parse(localStorage.getItem('firebase:auth:user') || '{}');
+      const userEmail = userData.email || '';
+      
+      // Check if user might be admin (basic heuristic)
+      if (userEmail.includes('admin') || userEmail.includes('support') || userEmail.includes('@roteirar')) {
+        setTimeout(() => {
+          import('./pages/AdminDashboard').then(() => 
+            logger.log('debug', 'AdminDashboard preloaded for potential admin user', {}, 'CODE_SPLITTING')
+          );
+        }, 3000);
+      }
+    } catch (error) {
+      logger.log('debug', 'Could not parse user data for admin preload', { error }, 'CODE_SPLITTING');
+    }
+  }
+  
+  Promise.allSettled(preloadPromises).then((results) => {
+    const successful = results.filter(result => result.status === 'fulfilled').length;
+    const total = results.length;
+    
+    logger.log('info', 'Intelligent preloading completed', {
+      successful,
+      total,
+      successRate: `${Math.round((successful / total) * 100)}%`,
+      isAuthenticated: !!isAuthenticated,
+      strategy: 'Week 7 Performance Optimization'
+    }, 'CODE_SPLITTING');
   });
 };
 
@@ -126,6 +226,7 @@ const preloadPages = () => {
 // =============================================================================
 
 import './App.css';
+import './styles/BancoDeIdeias.css';
 
 const App: React.FC = () => {
   const initialized = useRef(false);
@@ -133,16 +234,20 @@ const App: React.FC = () => {
   useEffect(() => {
     // Prevent double initialization in React Strict Mode
     if (initialized.current) {
-      logger.debug('App already initialized, skipping...', {}, 'APP');
+      logger.log('debug', 'App already initialized, skipping...', {}, 'APP');
       return;
     }
     
     initialized.current = true;
     
+    // 🔍 V6.4: Initialize Error Capture System FIRST - FIX: Usar systemLog
+    initializeErrorCapture();
+    logger.log('info', 'Error Capture System V6.4 initialized - Enhanced with whitelist', {}, 'APP');
+    
     // 🛡️ THIRD-PARTY ERROR SUPPRESSION
     // Initialize global error suppression for scripts like Microsoft Clarity
     const cleanupErrorSuppressor = suppressThirdPartyErrors();
-    logger.debug('Third-party error suppression activated', {
+    logger.log('debug', 'Third-party error suppression activated', {
       patterns: ['clarity.ms', 'Cannot read properties of undefined', 's05cslzjy5'],
       status: 'active'
     }, 'APP');
@@ -153,13 +258,13 @@ const App: React.FC = () => {
     // Validate environment first
     const validation = validateEnvironment();
     if (!validation.valid) {
-      logger.warn('Environment validation warnings detected', {
+      logger.log('warn', 'Environment validation warnings detected', {
         errors: validation.errors,
         environment: config.environment
       }, 'APP');
     }
 
-    logger.info('App initialization started', {
+    logger.log('info', 'App initialization started', {
       environment: config.environment,
       version: config.version,
       debugMode: config.debugMode,
@@ -168,20 +273,48 @@ const App: React.FC = () => {
 
     const initializeServices = async () => {
       try {
-        // Initialize core services in parallel
-        const servicePromises = [
+        // V6.4 Week 2: Initialize DI Container System first - COM FALLBACK SEGURO
+        logger.log('info', 'Initializing DI Container System V6.4...', {}, 'APP');
+        
+        let diResult;
+        try {
+          diResult = await initializeServiceSystem();
+        } catch (diError) {
+          // FALLBACK: Se DI System falhar, continuar com sistema legado
+          logger.log('warn', 'DI System initialization failed, using legacy fallback', {
+            error: diError instanceof Error ? diError.message : 'Unknown error'
+          }, 'APP');
+          
+          diResult = {
+            success: false,
+            errors: ['DI System unavailable, using legacy services'],
+            registeredServices: 0,
+            initializedServices: 0
+          };
+        }
+        
+        if (!diResult.success) {
+          logger.log('warn', 'DI System initialization had issues', {
+            errors: diResult.errors,
+            registeredServices: diResult.registeredServices,
+            initializedServices: diResult.initializedServices
+          }, 'APP');
+        }
+
+        // Initialize legacy services in parallel (maintaining backward compatibility)
+        const legacyServicePromises = [
           analyticsService.initialize().catch(err => ({ service: 'analytics', error: err })),
           clarityService.initialize().catch(err => ({ service: 'clarity', error: err })),
           tallyService.initialize().catch(err => ({ service: 'tally', error: err })),
         ];
 
-        const results = await Promise.allSettled(servicePromises);
+        const legacyResults = await Promise.allSettled(legacyServicePromises);
         
-        // Process results
+        // Process legacy results
         const serviceStatus: Record<string, boolean> = {};
-        const serviceErrors: string[] = [];
+        const serviceErrors: string[] = [...diResult.errors];
 
-        results.forEach((result, index) => {
+        legacyResults.forEach((result, index) => {
           const serviceName = ['analytics', 'clarity', 'tally'][index];
           
           if (result.status === 'fulfilled') {
@@ -201,15 +334,25 @@ const App: React.FC = () => {
         // Record initialization performance
         const initDuration = performance.now() - initStartTime;
         performanceService.recordMetric('app_initialization', initDuration, 'ms', 'loading', {
-          servicesInitialized: Object.keys(serviceStatus).length,
-          successfulServices: Object.values(serviceStatus).filter(Boolean).length,
+          servicesInitialized: Object.keys(serviceStatus).length + diResult.registeredServices,
+          successfulServices: Object.values(serviceStatus).filter(Boolean).length + diResult.initializedServices,
+          diSystemEnabled: true,
+          registeredServices: diResult.registeredServices,
+          initializedServices: diResult.initializedServices
         });
 
-        // Log initialization results
-        logger.info('Services initialization completed', {
-          status: serviceStatus,
-          successCount: Object.values(serviceStatus).filter(Boolean).length,
-          totalCount: Object.keys(serviceStatus).length,
+        // 🔧 V6.4: Enhanced logging with DI system status
+        logger.log('info', 'Services initialization completed with DI System V6.4', {
+          diSystem: {
+            success: diResult.success,
+            registeredServices: diResult.registeredServices,
+            initializedServices: diResult.initializedServices
+          },
+          legacyServices: {
+            status: serviceStatus,
+            successCount: Object.values(serviceStatus).filter(Boolean).length,
+            totalCount: Object.keys(serviceStatus).length
+          },
           errors: serviceErrors.length > 0 ? serviceErrors : undefined,
           duration: `${initDuration.toFixed(2)}ms`
         }, 'APP');
@@ -217,26 +360,55 @@ const App: React.FC = () => {
         // Preload pages after successful initialization
         setTimeout(preloadPages, 1000);
 
-        // Expose debug services ONLY in development
-        if (isDevelopment()) {
-          logger.security('Exposing debug services for development', {
+        // Expose debug services ONLY in development - CORRIGIDO isDevelopment
+        if (isDevelopment) {
+          logger.log('warn', 'Exposing debug services with DI System for development', {
             environment: config.environment,
-            services: Object.keys(serviceStatus)
+            services: Object.keys(serviceStatus),
+            diSystemEnabled: true
           }, 'APP');
 
           window.debugServices = {
+            // Legacy services (backward compatibility)
             analytics: analyticsService,
             clarity: clarityService,
             tally: tallyService,
             performance: performanceService,
             config,
             
+            // V6.4 Week 2: DI System debug utilities - COM FALLBACK SEGURO
+            DI: {
+              getSystemStatus: async () => {
+                try {
+                  return await getSystemStatus();
+                } catch (error) {
+                  return { error: 'DI System not available', available: false };
+                }
+              },
+              Services: Services || {},
+              getSystemHealth: () => {
+                try {
+                  return Services?.getSystemHealth?.() || { status: 'unavailable' };
+                } catch (error) {
+                  return { status: 'error', error: error instanceof Error ? error.message : 'Unknown error' };
+                }
+              },
+              getStats: () => {
+                try {
+                  return Services?.getStats?.() || { status: 'unavailable' };
+                } catch (error) {
+                  return { status: 'error', error: error instanceof Error ? error.message : 'Unknown error' };
+                }
+              }
+            },
+            
             // Utility functions
             getStatus: () => serviceStatus,
             getConfig: () => ({
               environment: config.environment,
               version: config.version,
-              debugMode: config.debugMode
+              debugMode: config.debugMode,
+              diSystemEnabled: true
             }),
             validateEnv: () => validateEnvironment(),
             
@@ -252,31 +424,58 @@ const App: React.FC = () => {
               return Promise.all(allPages);
             },
             
-            // Testing utilities
+            // Enhanced testing utilities with DI - COM FALLBACK SEGURO
             testServices: async () => {
-              logger.info('Testing all services...', {}, 'DEBUG');
-              const tests = await Promise.allSettled([
+              logger.log('info', 'Testing all services (legacy + DI)...', {}, 'DEBUG');
+              
+              // Test legacy services
+              const legacyTests = await Promise.allSettled([
                 analyticsService.trackEvent?.('debug_test', { source: 'debug_services' }),
                 clarityService.trackEvent?.('debug_test'),
                 tallyService.trackEvent?.('debug_test')
               ]);
               
-              const testResults = tests.map((test, i) => ({
+              const legacyResults = legacyTests.map((test, i) => ({
                 service: ['analytics', 'clarity', 'tally'][i],
-                success: test.status === 'fulfilled'
+                success: test.status === 'fulfilled',
+                type: 'legacy'
               }));
               
-              logger.info('Service tests completed', { results: testResults }, 'DEBUG');
-              return testResults;
+              // Test DI system - COM FALLBACK
+              let diResults = [];
+              try {
+                const diStatus = await getSystemStatus();
+                diResults = [{
+                  service: 'DI_System',
+                  success: diStatus.initialized && diStatus.health.overall === 'healthy',
+                  type: 'di',
+                  details: diStatus
+                }];
+              } catch (error) {
+                diResults = [{
+                  service: 'DI_System',
+                  success: false,
+                  type: 'di',
+                  error: error instanceof Error ? error.message : 'DI System unavailable'
+                }];
+              }
+              
+              const allResults = [...legacyResults, ...diResults];
+              
+              logger.log('info', 'Service tests completed (legacy + DI)', { 
+                results: allResults
+              }, 'DEBUG');
+              
+              return allResults;
             }
           };
           
-          logger.debug('Debug services exposed globally', {
+          logger.log('debug', 'Debug services exposed globally', {
             services: Object.keys(serviceStatus),
             utilities: ['getStatus()', 'getConfig()', 'validateEnv()', 'testServices()', 'preloadAllPages()']
           }, 'APP');
         } else {
-          logger.info('Production mode: Debug services not exposed', {
+          logger.log('info', 'Production mode: Debug services not exposed', {
             environment: config.environment
           }, 'APP');
         }
@@ -289,7 +488,7 @@ const App: React.FC = () => {
         }, 'APP');
         
         // In production, we might want to send this to external monitoring
-        if (!isDevelopment()) {
+        if (!isDevelopment) {
           // This would integrate with external error tracking
           console.error('CRITICAL: Service initialization failed in production', error);
         }
@@ -301,20 +500,34 @@ const App: React.FC = () => {
 
     // Cleanup function
     return () => {
-      logger.debug('App cleanup initiated', {}, 'APP');
+      logger.log('debug', 'App cleanup initiated', {}, 'APP');
       initialized.current = false;
+      
+      // 🔍 V6.4: Cleanup error capture system
+      cleanupErrorCapture();
+      logger.log('debug', 'Error capture system cleaned up', {}, 'APP');
       
       // 🛡️ Cleanup error suppression
       cleanupErrorSuppressor();
-      logger.debug('Third-party error suppression cleaned up', {}, 'APP');
+      logger.log('debug', 'Third-party error suppression cleaned up', {}, 'APP');
       
-      // Clean up debug services in development
-      if (isDevelopment() && window.debugServices) {
+      // V6.4 Week 2: Dispose DI Container System - COM FALLBACK SEGURO
+      disposeServiceSystem().then(() => {
+        logger.log('debug', 'DI Container System disposed', {}, 'APP');
+      }).catch(error => {
+        logger.log('warn', 'Error disposing DI Container System (may not be available)', { 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        }, 'APP');
+      });
+      
+      // Clean up debug services in development - CORRIGIDO isDevelopment
+      if (isDevelopment && window.debugServices) {
         delete window.debugServices;
-        logger.debug('Debug services cleaned up', {}, 'APP');
+        logger.log('debug', 'Debug services cleaned up', {}, 'APP');
       }
     };
   }, []); // Empty dependency array for one-time initialization
+
   return (
     <ErrorBoundary>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -327,6 +540,11 @@ const App: React.FC = () => {
                   <Route 
                     path="/" 
                     element={<GeneratorPage />} 
+                  />
+                  {/* WEEK 1: Banco de Ideias - Nueva Feature */}
+                  <Route 
+                    path="/banco-ideias" 
+                    element={<BancoDeIdeias />} 
                   />
                   {/* V5.1: Marketing/About moved to secondary routes */}
                   <Route 
@@ -365,6 +583,18 @@ const App: React.FC = () => {
                       <ProtectedRoute>
                         <AdminDashboard />
                       </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/error-capture-test" 
+                    element={<ErrorCaptureTest />} 
+                  />
+                  <Route 
+                    path="/status" 
+                    element={
+                      <React.Suspense fallback={<PageLoadingSpinner />}>
+                        {React.createElement(React.lazy(() => import('./pages/SystemStatus').then(m => ({ default: m.SystemStatus }))))}
+                      </React.Suspense>
                     } 
                   />
                 </Routes>

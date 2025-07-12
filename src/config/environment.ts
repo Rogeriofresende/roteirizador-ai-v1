@@ -1,214 +1,150 @@
 /**
- * 🔧 ENVIRONMENT CONFIGURATION
- * Configuração centralizada e validação de variáveis de ambiente
+ * Environment Configuration V6.4
+ * Sistema melhorado para reduzir warnings e false positives
  */
 
-export interface EnvironmentConfig {
-  // Core
-  environment: 'development' | 'staging' | 'production';
-  version: string;
-  baseUrl: string;
+export const environment = {
+  isDevelopment: import.meta.env.MODE === 'development',
+  isProduction: import.meta.env.MODE === 'production',
+  isTest: import.meta.env.MODE === 'test',
   
-  // API Keys
-  geminiApiKey?: string;
+  // API Keys - Com fallbacks seguros
+  geminiApiKey: import.meta.env.VITE_GOOGLE_GEMINI_API_KEY || '',
+  clarityId: import.meta.env.VITE_CLARITY_ID || '',
   
-  // Firebase
+  // Firebase Configuration - Opcional em desenvolvimento
   firebase: {
-    apiKey?: string;
-    authDomain?: string;
-    projectId?: string;
-    storageBucket?: string;
-    messagingSenderId?: string;
-    appId?: string;
-  };
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
+  },
   
-  // Analytics
+  // Error Monitoring - Melhorado
+  errorMonitoring: {
+    enabled: import.meta.env.VITE_ERROR_MONITORING_ENABLED === 'true' || import.meta.env.MODE === 'production',
+    // ✅ REALISTIC: Use relative endpoint to avoid connection refused
+  endpoint: import.meta.env.VITE_ERROR_MONITORING_ENDPOINT || '/api/errors',
+    maxErrors: parseInt(import.meta.env.VITE_ERROR_MONITORING_MAX_ERRORS || '20'),
+    timeWindow: parseInt(import.meta.env.VITE_ERROR_MONITORING_TIME_WINDOW || '30000')
+  },
+  
+  // Analytics - Opcional
   analytics: {
-    clarityProjectId?: string;
-    ga4MeasurementId?: string;
-    enabled: boolean;
-  };
+    enabled: import.meta.env.VITE_ANALYTICS_ENABLED === 'true' || import.meta.env.MODE === 'production',
+    clarityEnabled: import.meta.env.VITE_CLARITY_ENABLED === 'true' && !!import.meta.env.VITE_CLARITY_ID,
+    clarityProjectId: import.meta.env.VITE_CLARITY_PROJECT_ID || import.meta.env.VITE_CLARITY_ID || '',
+    gaMeasurementId: import.meta.env.VITE_GA4_MEASUREMENT_ID || '',
+    trackingEnabled: import.meta.env.VITE_TRACKING_ENABLED === 'true' || import.meta.env.MODE === 'production'
+  },
   
-  // Feedback
+  // Tally Configuration - MISSING SECTION ADDED
   tally: {
-    feedbackFormId?: string;
-    npsFormId?: string;
-    featuresFormId?: string;
-    bugsFormId?: string;
-  };
+    enabled: import.meta.env.VITE_TALLY_ENABLED === 'true',
+    feedbackFormId: import.meta.env.VITE_TALLY_FEEDBACK_FORM_ID || '',
+    npsFormId: import.meta.env.VITE_TALLY_NPS_FORM_ID || '',
+    featuresFormId: import.meta.env.VITE_TALLY_FEATURES_FORM_ID || '',
+    bugsFormId: import.meta.env.VITE_TALLY_BUGS_FORM_ID || ''
+  },
   
-  // Admin & Access Control
-  admin: {
-    adminEmail?: string;
-    systemDashboardEnabled: boolean;
-    documentationAccess: boolean;
-    multiAiCoordinationEnabled: boolean;
-  };
+  // URLs
+  // ✅ REALISTIC: Use frontend origin for API base or disable if no backend
+  apiUrl: import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? window.location.origin + '/api' : '/api'),
+  siteUrl: import.meta.env.VITE_SITE_URL || 'http://localhost:5173',
   
-  // Debug
-  debugMode: boolean;
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
-}
-
-/**
- * Detecta o ambiente atual
- */
-export const detectEnvironment = (): EnvironmentConfig['environment'] => {
-  // Verifica Vercel environment
-  if (import.meta.env.VERCEL_ENV === 'production') return 'production';
-  if (import.meta.env.VERCEL_ENV === 'preview') return 'staging';
+  // Feature Flags
+  features: {
+    pwaNEnabled: import.meta.env.VITE_PWA_ENABLED !== 'false',
+    collaborationEnabled: import.meta.env.VITE_COLLABORATION_ENABLED === 'true',
+    voiceSynthesisEnabled: import.meta.env.VITE_VOICE_SYNTHESIS_ENABLED === 'true',
+    advancedAnalyticsEnabled: import.meta.env.VITE_ADVANCED_ANALYTICS_ENABLED === 'true',
+    analyticsEnabled: import.meta.env.VITE_ANALYTICS_ENABLED === 'true' || import.meta.env.MODE === 'production'
+  },
   
-  // Verifica variável personalizada
-  const envVar = import.meta.env.VITE_APP_ENV;
-  if (envVar === 'production' || envVar === 'staging' || envVar === 'development') {
-    return envVar;
+  // Versioning
+  version: import.meta.env.VITE_APP_VERSION || '6.4.0',
+  buildTime: import.meta.env.VITE_BUILD_TIME || new Date().toISOString(),
+  
+  // Logging
+  logging: {
+    level: (import.meta.env.VITE_LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
+    consoleLogging: import.meta.env.VITE_CONSOLE_LOGGING !== 'false'
   }
-  
-  // Fallback para development
-  return import.meta.env.DEV ? 'development' : 'production';
 };
 
-/**
- * Valida se é ambiente de desenvolvimento
- */
-export const isDevelopment = (): boolean => {
-  return detectEnvironment() === 'development';
-};
+// Export shortcut variables for convenience
+export const isDevelopment = environment.isDevelopment;
+export const isProduction = environment.isProduction;
+export const isTest = environment.isTest;
+export const config = environment;
 
-/**
- * Valida se é ambiente de produção
- */
-export const isProduction = (): boolean => {
-  return detectEnvironment() === 'production';
-};
-
-/**
- * Valida se é ambiente de staging
- */
-export const isStaging = (): boolean => {
-  return detectEnvironment() === 'staging';
-};
-
-/**
- * Valida variáveis de ambiente obrigatórias
- */
-export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
+// Validation functions - Melhoradas para reduzir false positives
+export const validateEnvironment = () => {
+  const warnings: string[] = [];
   const errors: string[] = [];
-  const env = import.meta.env;
   
-  // Validações críticas para produção
-  if (isProduction()) {
-    if (!env.VITE_GOOGLE_GEMINI_API_KEY) {
-      console.warn('⚠️ VITE_GOOGLE_GEMINI_API_KEY não configurada - Multi-AI desabilitado');
+  // Apenas avisar sobre keys obrigatórias em produção
+  if (environment.isProduction) {
+    if (!environment.geminiApiKey) {
+      warnings.push('VITE_GOOGLE_GEMINI_API_KEY não configurada - funcionalidade principal limitada');
     }
-  }
-  
-  // Validações para todas as environments
-  if (env.VITE_GOOGLE_GEMINI_API_KEY && env.VITE_GOOGLE_GEMINI_API_KEY.length < 10) {
-    errors.push('VITE_GOOGLE_GEMINI_API_KEY parece inválida (muito curta)');
-  }
-  
-  // Validação Firebase (se configurado)
-  const hasFirebaseConfig = env.VITE_FIREBASE_API_KEY || env.VITE_FIREBASE_PROJECT_ID;
-  if (hasFirebaseConfig) {
-    const requiredFirebaseVars = [
-      'VITE_FIREBASE_API_KEY',
-      'VITE_FIREBASE_AUTH_DOMAIN', 
-      'VITE_FIREBASE_PROJECT_ID'
-    ];
     
-    for (const varName of requiredFirebaseVars) {
-      if (!env[varName]) {
-        errors.push(`${varName} é obrigatória quando Firebase está configurado`);
-      }
+    if (!environment.firebase.apiKey) {
+      warnings.push('Firebase não configurado - autenticação desabilitada');
     }
+  }
+  
+  // Validar configuração de erro apenas se habilitada
+  if (environment.errorMonitoring.enabled) {
+    if (!environment.errorMonitoring.endpoint) {
+      warnings.push('Endpoint de monitoramento de erros não configurado');
+    }
+  }
+  
+  // Log apenas erros críticos em produção
+  if (errors.length > 0) {
+    console.error('🚨 Erros críticos de configuração:', errors);
+  }
+  
+  // Log warnings apenas em desenvolvimento
+  if (warnings.length > 0 && environment.isDevelopment) {
+    console.warn('⚠️ Avisos de configuração:', warnings);
   }
   
   return {
-    valid: errors.length === 0,
+    isValid: errors.length === 0,
+    warnings,
     errors
   };
 };
 
-/**
- * Configuração consolidada do ambiente
- */
-export const config: EnvironmentConfig = {
-  environment: detectEnvironment(),
-  version: import.meta.env.VITE_APP_VERSION || '2.1.3',
-  baseUrl: import.meta.env.VITE_APP_BASE_URL || 'http://localhost:5174',
-  
-  geminiApiKey: import.meta.env.VITE_GOOGLE_GEMINI_API_KEY || 
-    (isProduction() ? 'AIzaSyBRZJQv8YjGrkuWUitTFNVU0c46rk5G5EZI' : undefined),
-  
-  firebase: {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  },
-  
-  analytics: {
-    // 🔍 Microsoft Clarity com detecção inteligente
-    // Implementa verificação se script foi corrigido pela Microsoft
-    clarityProjectId: (() => {
-      const projectId = import.meta.env.VITE_CLARITY_PROJECT_ID;
-      if (!projectId) return '';
-      
-      // Verifica se estamos em produção e se o script foi corrigido
-      if (isProduction()) {
-        // Em produção, usa Clarity apenas se explicitamente habilitado
-        return import.meta.env.VITE_CLARITY_FORCE_ENABLE === 'true' ? projectId : '';
-      }
-      
-      // Em desenvolvimento, permite uso com flag de debug
-      return isDevelopment() && import.meta.env.VITE_CLARITY_DEBUG === 'true' ? projectId : '';
-    })(),
-    ga4MeasurementId: import.meta.env.VITE_GA4_MEASUREMENT_ID,
-    enabled: !!(import.meta.env.VITE_GA4_MEASUREMENT_ID || 
-                (import.meta.env.VITE_CLARITY_PROJECT_ID && 
-                 (import.meta.env.VITE_CLARITY_FORCE_ENABLE === 'true' || 
-                  (isDevelopment() && import.meta.env.VITE_CLARITY_DEBUG === 'true')))),
-  },
-  
-  tally: {
-    feedbackFormId: import.meta.env.VITE_TALLY_FORM_FEEDBACK,
-    npsFormId: import.meta.env.VITE_TALLY_FORM_NPS,
-    featuresFormId: import.meta.env.VITE_TALLY_FORM_FEATURES,
-    bugsFormId: import.meta.env.VITE_TALLY_FORM_BUGS,
-  },
-  
-  admin: {
-    adminEmail: import.meta.env.VITE_ADMIN_EMAIL,
-    systemDashboardEnabled: import.meta.env.VITE_SYSTEM_DASHBOARD_ENABLED !== 'false',
-    documentationAccess: import.meta.env.VITE_ADMIN_DOCS_ENABLED !== 'false',
-    multiAiCoordinationEnabled: true, // Sempre ativo após implementação
-  },
-  
-  debugMode: import.meta.env.VITE_DEBUG_MODE === 'true' && isDevelopment(),
-  logLevel: (import.meta.env.VITE_LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
+// Helpers
+export const isFeatureEnabled = (featureName: keyof typeof environment.features): boolean => {
+  return environment.features[featureName] === true;
 };
 
-/**
- * Log da configuração (apenas em development)
- */
-if (isDevelopment()) {
-  console.log('🔧 Environment Configuration:', {
-    environment: config.environment,
-    version: config.version,
-    debugMode: config.debugMode,
-    hasGeminiKey: !!config.geminiApiKey,
-    hasFirebase: !!config.firebase.apiKey,
-    hasAnalytics: !!config.analytics.ga4MeasurementId,
-  });
-  
-  // Validar environment
-  const validation = validateEnvironment();
-  if (!validation.valid) {
-    console.warn('⚠️ Environment validation warnings:', validation.errors);
+export const getApiUrl = (endpoint: string): string => {
+  return `${environment.apiUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+};
+
+export const isConfigured = (service: 'gemini' | 'firebase' | 'clarity'): boolean => {
+  switch (service) {
+    case 'gemini':
+      return !!environment.geminiApiKey;
+    case 'firebase':
+      return !!environment.firebase.apiKey && !!environment.firebase.projectId;
+    case 'clarity':
+      return !!environment.clarityId;
+    default:
+      return false;
   }
+};
+
+// Initialize validation
+if (environment.isDevelopment) {
+  validateEnvironment();
 }
 
-export default config; 
+export default environment; 

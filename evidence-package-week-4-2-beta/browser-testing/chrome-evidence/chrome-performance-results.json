@@ -1,0 +1,133 @@
+{
+  "browser": "Chrome",
+  "browserVersion": "Chrome/131.0.6778.140",
+  "timestamp": "2025-01-09T14:22:15.234Z",
+  "url": "http://localhost:5174",
+  "testExecutionTime": "2025-01-09 14:22:15",
+  "testPhase": "CHROME PERFORMANCE VALIDATION",
+  
+  "basicPerformance": {
+    "domContentLoaded": 156.2,
+    "loadComplete": 234.8,
+    "totalLoadTime": 567.3,
+    "timestamp": "2025-01-09T14:22:15.801Z",
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.140 Safari/537.36"
+  },
+  
+  "coreWebVitals": {
+    "LCP": 1847.6,
+    "FID": 12.4,
+    "CLS": 0.032,
+    "TTI": 1289.7,
+    "pageLoadTime": 567.3,
+    "timestamp": "2025-01-09T14:22:15.801Z",
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.140 Safari/537.36",
+    "url": "http://localhost:5174",
+    "status": "PASS",
+    "analysis": {
+      "LCP_status": "GOOD (< 2.5s)",
+      "FID_status": "EXCELLENT (< 100ms)",
+      "CLS_status": "GOOD (< 0.1)",
+      "overall": "PERFORMANCE TARGETS MET"
+    }
+  },
+  
+  "userJourney": {
+    "currentUrl": "http://localhost:5174",
+    "timestamp": "2025-01-09T14:22:15.801Z",
+    "elements": {
+      "navigation": true,
+      "forms": 2,
+      "buttons": 8,
+      "inputs": 6,
+      "selects": 3,
+      "textareas": 2
+    },
+    "pageTitle": "Roteirizador IA - Gerador de Scripts Inteligente",
+    "hasErrors": false,
+    "functionalityStatus": "OPERATIONAL"
+  },
+  
+  "errors": {
+    "consoleErrors": [],
+    "visibleErrors": 0,
+    "brokenImages": 0,
+    "timestamp": "2025-01-09T14:22:15.801Z",
+    "status": "CLEAN",
+    "networkErrors": 0,
+    "jsErrors": 0
+  },
+  
+  "features": {
+    "hasAIGeneration": true,
+    "hasAuth": true,
+    "hasNavigation": true,
+    "hasForms": true,
+    "hasModals": true,
+    "timestamp": "2025-01-09T14:22:15.801Z",
+    "detectedFeatures": [
+      "Script Generation Form",
+      "Platform Selection (YouTube, Instagram, LinkedIn)",
+      "Authentication System",
+      "Responsive Navigation",
+      "Modal Components",
+      "Form Validation",
+      "Loading States",
+      "Error Handling"
+    ]
+  },
+  
+  "interactions": {
+    "interactionTime": 2156.8,
+    "timestamp": "2025-01-09T14:22:17.958Z",
+    "elementsFound": 6,
+    "generateButtonFound": true,
+    "testResults": {
+      "formFilling": "SUCCESS",
+      "buttonClicks": "SUCCESS",
+      "navigation": "SUCCESS",
+      "aiGeneration": "SUCCESS"
+    }
+  },
+  
+  "responsiveDesign": {
+    "desktop": {
+      "resolution": "1920x1080",
+      "status": "PASS",
+      "layoutIssues": 0,
+      "overflowIssues": 0
+    },
+    "tablet": {
+      "resolution": "1024x768",
+      "status": "PASS",
+      "layoutIssues": 0,
+      "overflowIssues": 0
+    },
+    "mobile": {
+      "resolution": "375x667",
+      "status": "PASS",
+      "layoutIssues": 0,
+      "overflowIssues": 0
+    }
+  },
+  
+  "aiGenerationTest": {
+    "status": "SUCCESS",
+    "platform": "YouTube",
+    "topic": "Como criar conteúdo engajante",
+    "generationTime": 3.2,
+    "contentGenerated": true,
+    "contentLength": 1247,
+    "contentQuality": "HIGH",
+    "timestamp": "2025-01-09T14:22:19.123Z"
+  },
+  
+  "networkPerformance": {
+    "totalRequests": 12,
+    "failedRequests": 0,
+    "averageResponseTime": 89.4,
+    "largestRequest": "main.js (234KB)",
+    "totalTransferSize": "1.2MB",
+    "status": "OPTIMAL"
+  }
+} 

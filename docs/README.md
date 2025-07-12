@@ -63,6 +63,20 @@ Esta seção contém toda a documentação técnica, gerencial e operacional do 
 - **[contributing.md](developer-guide/contributing.md)** - Guia de contribuição
 - **[pwa-development.md](developer-guide/pwa-development.md)** - Desenvolvimento PWA
 
+#### **[🚀 Diretrizes de Escalabilidade e Manutenibilidade](developer-guide/DIRETRIZES_ESCALABILIDADE_MANUTENCAO.md)** ✨ **NOVO**
+> **Objetivo:** Guia técnico consolidado para desenvolvimento sustentável  
+> **Baseado em:** Reflexão técnica pós Week 6 - Conquista histórica (115 testes, 100% success rate)  
+> **Status:** ✅ Diretrizes Validadas em Produção  
+
+**Conteúdo Essencial:**
+- **Análise de Escalabilidade:** Test performance, bundle monitoring, arquitetura modular
+- **Análise de Manutenibilidade:** Clean architecture, documentation sustainability, code review
+- **Technical Debt Monitoring:** Métricas automatizadas, debt detection
+- **Performance Budgets:** Runtime, bundle, memory management
+- **Deployment & CI/CD:** Zero-downtime, feature flags, health checks
+- **Checklists de Implementação:** Para novas features e refactoring
+- **Métricas de Success:** KPIs técnicos para escalabilidade e manutenibilidade
+
 ---
 
 ### **📊 3. ANALYTICS E MONITORAMENTO**

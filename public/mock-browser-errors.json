@@ -1,0 +1,66 @@
+[
+  {
+    "id": "mock-react-error",
+    "type": "runtime",
+    "subType": "react",
+    "priority": "CRITICAL",
+    "timestamp": "2025-01-24T17:30:00.000Z",
+    "error": {
+      "message": "React Error #321 - PWA Hook issue (Mock)",
+      "stack": "Error: PWA Hook issue\n  at usePWA (PWAProvider.tsx:45)\n  at HomePage (HomePage.tsx:23)",
+      "url": "HomePage.tsx",
+      "line": 23,
+      "column": 12
+    },
+    "status": "detected",
+    "source": "browser"
+  },
+  {
+    "id": "mock-js-error",
+    "type": "runtime",
+    "subType": "javascript",
+    "priority": "CRITICAL",
+    "timestamp": "2025-01-24T17:25:00.000Z",
+    "error": {
+      "message": "JavaScript Null Reference (Mock)",
+      "stack": "TypeError: Cannot read properties of null\n  at HomePage (HomePage.tsx:45)",
+      "url": "HomePage.tsx",
+      "line": 45,
+      "column": 8
+    },
+    "status": "detected",
+    "source": "browser"
+  },
+  {
+    "id": "mock-network-error",
+    "type": "network",
+    "subType": "api",
+    "priority": "HIGH",
+    "timestamp": "2025-01-24T17:20:00.000Z",
+    "error": {
+      "message": "Network Error - API Call Failed (Mock)",
+      "stack": "Error: Request failed with status 500\n  at apiCall (apiService.ts:23)",
+      "url": "apiService.ts",
+      "line": 23,
+      "column": 10
+    },
+    "status": "analyzing",
+    "source": "api"
+  },
+  {
+    "id": "mock-console-warning",
+    "type": "console",
+    "subType": "configuration",
+    "priority": "MEDIUM",
+    "timestamp": "2025-01-24T17:15:00.000Z",
+    "error": {
+      "message": "Environment Warning (Mock)",
+      "stack": "Warning: Missing configuration\n  at validateConfig (config.ts:12)",
+      "url": "config.ts",
+      "line": 12,
+      "column": 1
+    },
+    "status": "resolved",
+    "source": "monitor"
+  }
+] 

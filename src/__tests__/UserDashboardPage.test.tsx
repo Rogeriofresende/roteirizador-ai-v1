@@ -43,9 +43,9 @@ const mockScripts = [
 ];
 
 describe('UserDashboardPage component', () => {
-  const mockUseAuth = useAuth as jest.MockedFunction<typeof 
-  const mockGetDocs = getDocs as jest.MockedFunction<typeof 
-  const mockDeleteDoc = deleteDoc as jest.MockedFunction<typeof 
+  const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+  const mockGetDocs = getDocs as jest.MockedFunction<typeof getDocs>;
+  const mockDeleteDoc = deleteDoc as jest.MockedFunction<typeof deleteDoc>;
 
   const setup = (user: User | null, scripts: unknown[], error = false) => {
     mockUseAuth.mockReturnValue({ currentUser: user });

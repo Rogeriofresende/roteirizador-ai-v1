@@ -1,0 +1,227 @@
+7641bcebd56c3e1790f9a50dd2e62b30
+"use strict";
+
+/**
+ * 🔄 ADVANCED ANALYTICS SERVICE - UNIFIED ALIAS V6.4
+ * Week 2 Consolidation: This now exports advanced analytics from the unified service
+ * Maintains backward compatibility while using the consolidated implementation
+ */
+/* istanbul ignore next */
+function cov_4b66crsni() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/advancedAnalyticsService.ts";
+  var hash = "89b6e52753ef61f8b4692b9a74c3cfd7f92f7b80";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/advancedAnalyticsService.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 7,
+          column: 0
+        },
+        end: {
+          line: 7,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 8,
+          column: 0
+        },
+        end: {
+          line: 8,
+          column: 60
+        }
+      },
+      "2": {
+        start: {
+          line: 10,
+          column: 32
+        },
+        end: {
+          line: 10,
+          column: 68
+        }
+      },
+      "3": {
+        start: {
+          line: 11,
+          column: 0
+        },
+        end: {
+          line: 11,
+          column: 161
+        }
+      },
+      "4": {
+        start: {
+          line: 11,
+          column: 98
+        },
+        end: {
+          line: 11,
+          column: 155
+        }
+      },
+      "5": {
+        start: {
+          line: 13,
+          column: 32
+        },
+        end: {
+          line: 13,
+          column: 68
+        }
+      },
+      "6": {
+        start: {
+          line: 14,
+          column: 0
+        },
+        end: {
+          line: 14,
+          column: 144
+        }
+      },
+      "7": {
+        start: {
+          line: 14,
+          column: 81
+        },
+        end: {
+          line: 14,
+          column: 138
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 11,
+            column: 84
+          },
+          end: {
+            line: 11,
+            column: 85
+          }
+        },
+        loc: {
+          start: {
+            line: 11,
+            column: 96
+          },
+          end: {
+            line: 11,
+            column: 157
+          }
+        },
+        line: 11
+      },
+      "1": {
+        name: "(anonymous_1)",
+        decl: {
+          start: {
+            line: 14,
+            column: 67
+          },
+          end: {
+            line: 14,
+            column: 68
+          }
+        },
+        loc: {
+          start: {
+            line: 14,
+            column: 79
+          },
+          end: {
+            line: 14,
+            column: 140
+          }
+        },
+        line: 14
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/advancedAnalyticsService.ts",
+      mappings: ";AAAA;;;;GAIG;;;AAEH,8DAA8D;AAC9D,qEAAgG;AAAvF,mIAAA,uBAAuB,OAA4B;AAS5D,iBAAiB;AACjB,qEAA+E;AAAtE,kHAAA,uBAAuB,OAAW",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/services/advancedAnalyticsService.ts"],
+      sourcesContent: ["/**\n * \uD83D\uDD04 ADVANCED ANALYTICS SERVICE - UNIFIED ALIAS V6.4\n * Week 2 Consolidation: This now exports advanced analytics from the unified service\n * Maintains backward compatibility while using the consolidated implementation\n */\n\n// Export advanced analytics features from the unified service\nexport { unifiedAnalyticsService as AdvancedAnalyticsService } from './unifiedAnalyticsService';\n\n// Re-export types for backward compatibility\nexport type { \n  ProductivityMetrics, \n  UserAnalytics, \n  DashboardMetrics\n} from './unifiedAnalyticsService';\n\n// Export default\nexport { unifiedAnalyticsService as default } from './unifiedAnalyticsService'; "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "89b6e52753ef61f8b4692b9a74c3cfd7f92f7b80"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_4b66crsni = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_4b66crsni();
+cov_4b66crsni().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_4b66crsni().s[1]++;
+exports.default = exports.AdvancedAnalyticsService = void 0;
+// Export advanced analytics features from the unified service
+var unifiedAnalyticsService_1 =
+/* istanbul ignore next */
+(cov_4b66crsni().s[2]++, require("./unifiedAnalyticsService"));
+/* istanbul ignore next */
+cov_4b66crsni().s[3]++;
+Object.defineProperty(exports, "AdvancedAnalyticsService", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_4b66crsni().f[0]++;
+    cov_4b66crsni().s[4]++;
+    return unifiedAnalyticsService_1.unifiedAnalyticsService;
+  }
+});
+// Export default
+var unifiedAnalyticsService_2 =
+/* istanbul ignore next */
+(cov_4b66crsni().s[5]++, require("./unifiedAnalyticsService"));
+/* istanbul ignore next */
+cov_4b66crsni().s[6]++;
+Object.defineProperty(exports, "default", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_4b66crsni().f[1]++;
+    cov_4b66crsni().s[7]++;
+    return unifiedAnalyticsService_2.unifiedAnalyticsService;
+  }
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfNGI2NmNyc25pIiwicGF0aCIsImhhc2giLCJnbG9iYWwiLCJGdW5jdGlvbiIsImdjdiIsImNvdmVyYWdlRGF0YSIsInN0YXRlbWVudE1hcCIsInN0YXJ0IiwibGluZSIsImNvbHVtbiIsImVuZCIsImZuTWFwIiwibmFtZSIsImRlY2wiLCJsb2MiLCJicmFuY2hNYXAiLCJzIiwiZiIsImIiLCJpbnB1dFNvdXJjZU1hcCIsImZpbGUiLCJtYXBwaW5ncyIsIm5hbWVzIiwic291cmNlcyIsInNvdXJjZXNDb250ZW50IiwidmVyc2lvbiIsIl9jb3ZlcmFnZVNjaGVtYSIsImNvdmVyYWdlIiwiYWN0dWFsQ292ZXJhZ2UiLCJ1bmlmaWVkQW5hbHl0aWNzU2VydmljZV8xIiwicmVxdWlyZSIsIk9iamVjdCIsImRlZmluZVByb3BlcnR5IiwiZXhwb3J0cyIsImVudW1lcmFibGUiLCJnZXQiLCJ1bmlmaWVkQW5hbHl0aWNzU2VydmljZSIsInVuaWZpZWRBbmFseXRpY3NTZXJ2aWNlXzIiXSwic291cmNlcyI6WyIvVXNlcnMvcm9nZXJpb3Jlc2VuZGUvRGVza3RvcC9Sb3RlaXJhci1pYS9zcmMvc2VydmljZXMvYWR2YW5jZWRBbmFseXRpY3NTZXJ2aWNlLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8qKlxuICog8J+UhCBBRFZBTkNFRCBBTkFMWVRJQ1MgU0VSVklDRSAtIFVOSUZJRUQgQUxJQVMgVjYuNFxuICogV2VlayAyIENvbnNvbGlkYXRpb246IFRoaXMgbm93IGV4cG9ydHMgYWR2YW5jZWQgYW5hbHl0aWNzIGZyb20gdGhlIHVuaWZpZWQgc2VydmljZVxuICogTWFpbnRhaW5zIGJhY2t3YXJkIGNvbXBhdGliaWxpdHkgd2hpbGUgdXNpbmcgdGhlIGNvbnNvbGlkYXRlZCBpbXBsZW1lbnRhdGlvblxuICovXG5cbi8vIEV4cG9ydCBhZHZhbmNlZCBhbmFseXRpY3MgZmVhdHVyZXMgZnJvbSB0aGUgdW5pZmllZCBzZXJ2aWNlXG5leHBvcnQgeyB1bmlmaWVkQW5hbHl0aWNzU2VydmljZSBhcyBBZHZhbmNlZEFuYWx5dGljc1NlcnZpY2UgfSBmcm9tICcuL3VuaWZpZWRBbmFseXRpY3NTZXJ2aWNlJztcblxuLy8gUmUtZXhwb3J0IHR5cGVzIGZvciBiYWNrd2FyZCBjb21wYXRpYmlsaXR5XG5leHBvcnQgdHlwZSB7IFxuICBQcm9kdWN0aXZpdHlNZXRyaWNzLCBcbiAgVXNlckFuYWx5dGljcywgXG4gIERhc2hib2FyZE1ldHJpY3Ncbn0gZnJvbSAnLi91bmlmaWVkQW5hbHl0aWNzU2VydmljZSc7XG5cbi8vIEV4cG9ydCBkZWZhdWx0XG5leHBvcnQgeyB1bmlmaWVkQW5hbHl0aWNzU2VydmljZSBhcyBkZWZhdWx0IH0gZnJvbSAnLi91bmlmaWVkQW5hbHl0aWNzU2VydmljZSc7ICJdLCJtYXBwaW5ncyI6Ijs7QUFBQTs7Ozs7QUFBQTtBQUFBLFNBQUFBLGNBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsSUFBQTtFQUFBLElBQUFDLE1BQUEsT0FBQUMsUUFBQTtFQUFBLElBQUFDLEdBQUE7RUFBQSxJQUFBQyxZQUFBO0lBQUFMLElBQUE7SUFBQU0sWUFBQTtNQUFBO1FBQUFDLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7SUFBQTtJQUFBRSxLQUFBO01BQUE7UUFBQUMsSUFBQTtRQUFBQyxJQUFBO1VBQUFOLEtBQUE7WUFBQUMsSUFBQTtZQUFBQyxNQUFBO1VBQUE7VUFBQUMsR0FBQTtZQUFBRixJQUFBO1lBQUFDLE1BQUE7VUFBQTtRQUFBO1FBQUFLLEdBQUE7VUFBQVAsS0FBQTtZQUFBQyxJQUFBO1lBQUFDLE1BQUE7VUFBQTtVQUFBQyxHQUFBO1lBQUFGLElBQUE7WUFBQUMsTUFBQTtVQUFBO1FBQUE7UUFBQUQsSUFBQTtNQUFBO01BQUE7UUFBQUksSUFBQTtRQUFBQyxJQUFBO1VBQUFOLEtBQUE7WUFBQUMsSUFBQTtZQUFBQyxNQUFBO1VBQUE7VUFBQUMsR0FBQTtZQUFBRixJQUFBO1lBQUFDLE1BQUE7VUFBQTtRQUFBO1FBQUFLLEdBQUE7VUFBQVAsS0FBQTtZQUFBQyxJQUFBO1lBQUFDLE1BQUE7VUFBQTtVQUFBQyxHQUFBO1lBQUFGLElBQUE7WUFBQUMsTUFBQTtVQUFBO1FBQUE7UUFBQUQsSUFBQTtNQUFBO0lBQUE7SUFBQU8sU0FBQTtJQUFBQyxDQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7TUFBQTtJQUFBO0lBQUFDLENBQUE7TUFBQTtNQUFBO0lBQUE7SUFBQUMsQ0FBQTtJQUFBQyxjQUFBO01BQUFDLElBQUE7TUFBQUMsUUFBQTtNQUFBQyxLQUFBO01BQUFDLE9BQUE7TUFBQUMsY0FBQTtNQUFBQyxPQUFBO0lBQUE7SUFBQUMsZUFBQTtJQUFBekIsSUFBQTtFQUFBO0VBQUEsSUFBQTBCLFFBQUEsR0FBQXpCLE1BQUEsQ0FBQUUsR0FBQSxNQUFBRixNQUFBLENBQUFFLEdBQUE7RUFBQSxLQUFBdUIsUUFBQSxDQUFBM0IsSUFBQSxLQUFBMkIsUUFBQSxDQUFBM0IsSUFBQSxFQUFBQyxJQUFBLEtBQUFBLElBQUE7SUFBQTBCLFFBQUEsQ0FBQTNCLElBQUEsSUFBQUssWUFBQTtFQUFBO0VBQUEsSUFBQXVCLGNBQUEsR0FBQUQsUUFBQSxDQUFBM0IsSUFBQTtFQUFBOzs7Ozs7Ozs7Ozs7Ozs7O0FBTUE7QUFDQSxJQUFBNkIseUJBQUE7QUFBQTtBQUFBLENBQUE5QixhQUFBLEdBQUFpQixDQUFBLE9BQUFjLE9BQUE7QUFBZ0c7QUFBQS9CLGFBQUEsR0FBQWlCLENBQUE7QUFBdkZlLE1BQUEsQ0FBQUMsY0FBQSxDQUFBQyxPQUFBO0VBQUFDLFVBQUE7RUFBQUMsR0FBQSxXQUFBQSxDQUFBO0lBQUE7SUFBQXBDLGFBQUEsR0FBQWtCLENBQUE7SUFBQWxCLGFBQUEsR0FBQWlCLENBQUE7SUFBQSxPQUFBYSx5QkFBQSxDQUFBTyx1QkFBdUI7RUFBQTtBQUFBO0FBU2hDO0FBQ0EsSUFBQUMseUJBQUE7QUFBQTtBQUFBLENBQUF0QyxhQUFBLEdBQUFpQixDQUFBLE9BQUFjLE9BQUE7QUFBK0U7QUFBQS9CLGFBQUEsR0FBQWlCLENBQUE7QUFBdEVlLE1BQUEsQ0FBQUMsY0FBQSxDQUFBQyxPQUFBO0VBQUFDLFVBQUE7RUFBQUMsR0FBQSxXQUFBQSxDQUFBO0lBQUE7SUFBQXBDLGFBQUEsR0FBQWtCLENBQUE7SUFBQWxCLGFBQUEsR0FBQWlCLENBQUE7SUFBQSxPQUFBcUIseUJBQUEsQ0FBQUQsdUJBQXVCO0VBQUE7QUFBQSIsImlnbm9yZUxpc3QiOltdfQ==

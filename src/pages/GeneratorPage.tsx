@@ -9,7 +9,6 @@ import { Separator } from "../components/ui/Separator";
 import { Glow } from "../components/ui/Glow";
 import { geminiService } from '../services/geminiService';
 import { GeminiApiConfig } from '../components/GeminiApiConfig';
-import ShareButton from '../components/ShareButton';
 import type { FormData } from '../types';
 import { analyticsService } from '../services/analyticsService';
 import { cn } from '../lib/utils';
@@ -26,13 +25,15 @@ import AIInsightsDashboard from '../components/analytics/AIInsightsDashboard';
 
 // STEP 5: Collaboration Service Integration - Real-time Collaboration Enterprise
 import { CollaborationService } from '../services/collaborationService';
+import { CollaborationPanel, ShareButton } from '../features/collaboration';
 
 // STEP 6: Template Library Integration - 50+ Templates Enterprise
 import { TemplateService } from '../services/templateService';
 
-// V5.1 Enhanced Framework imports
+// V5.1 Enhanced Framework imports - FIXED IMPORTS
 import { usePredictiveUX } from '../hooks/usePredictiveUX';
-import { SmartLoadingStates, useSmartLoading } from '../components/ui/SmartLoadingStates';
+import { SmartLoadingStates } from '../components/ui/SmartLoadingStates';
+import { useSimpleLoading } from '../hooks/useSmartLoading';
 import { PredictiveButton, PredictiveCard } from '../components/ui/AdvancedMicroInteractions';
 import { v51Intelligence } from '../services/v51Intelligence';
 
@@ -55,10 +56,8 @@ const GeneratorPage: React.FC = () => {
   // STEP 4: Advanced Analytics Integration
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  // STEP 5: Collaboration Integration
-  const [collaborationSession, setCollaborationSession] = useState<any>(null);
+  // STEP 5: Collaboration Integration - Week 8 Implementation
   const [showCollaborationPanel, setShowCollaborationPanel] = useState(false);
-  const [participants, setParticipants] = useState<any[]>([]);
 
   // STEP 6: Template Library Integration
   const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
@@ -67,7 +66,7 @@ const GeneratorPage: React.FC = () => {
 
   // V5.1: Predictive UX and Smart Loading
   const { trackAction, getMostLikelyNext, getSessionStats } = usePredictiveUX();
-  const { isLoading: isGenerating, startLoading, stopLoading, LoadingWrapper } = useSmartLoading('generator');
+  const { isLoading: isGenerating, startLoading, stopLoading } = useSimpleLoading();
 
   // V5.1: Track user interactions for learning
   useEffect(() => {
@@ -116,9 +115,10 @@ const GeneratorPage: React.FC = () => {
       if (configured) {
         // V5.1: Enhanced tracking with predictive context
         trackAction('configuration', 'api_ready', { timestamp: Date.now() });
-        analyticsService.trackUserAction('generator_ready', {
+        analyticsService.trackEvent('generator_ready', {
           timestamp: Date.now(),
-          sessionStats: getSessionStats()
+          sessionStats: getSessionStats(),
+          context: 'generator_ready'
         });
       }
     };
@@ -152,16 +152,17 @@ const GeneratorPage: React.FC = () => {
       sessionStats: getSessionStats()
     });
 
-    startLoading('script_generation');
+    startLoading();
     setScript('');
     
     try {
       // V5.1: Enhanced analytics with prediction context
-      analyticsService.trackConversionFunnel('generation_started', {
+      analyticsService.trackEvent('generation_started', {
         ...formData,
         selectedAI,
         predictiveContext: getMostLikelyNext(),
-        sessionStats: getSessionStats()
+        sessionStats: getSessionStats(),
+        context: 'generation_started'
       });
       
       // V5.1: Multi-AI Support - Route to selected AI service
@@ -199,10 +200,11 @@ const GeneratorPage: React.FC = () => {
       );
       
       // Track successful generation with V5.1 context
-      analyticsService.trackConversionFunnel('generation_completed', {
+      analyticsService.trackEvent('generation_completed', {
         ...formData,
         script_length: generatedScript.length,
-        sessionStats: getSessionStats()
+        sessionStats: getSessionStats(),
+        context: 'generation_completed'
       });
       
     } catch (error: unknown) {
@@ -258,48 +260,21 @@ const GeneratorPage: React.FC = () => {
     });
   }, [showAnalytics, trackAction, getSessionStats]);
 
-  // STEP 5: Collaboration handlers
-  const handleStartCollaboration = useCallback(async () => {
-    if (!currentUser || !currentProjectId) return;
-
-    try {
-      const session = await CollaborationService.createSession(
-        currentProjectId,
-        currentUser.uid,
-        {
-          allowEdit: true,
-          allowComment: true,
-          allowVoiceChat: false,
-          maxParticipants: 5
-        }
-      );
-      
-      setCollaborationSession(session);
-      setShowCollaborationPanel(true);
-      
-      trackAction('collaboration', 'session_created', {
-        projectId: currentProjectId,
-        sessionId: session.id,
-        scriptLength: script.length
-      });
-
-      // Subscribe to participants
-      CollaborationService.subscribeToParticipants(session.id, (newParticipants) => {
-        setParticipants(newParticipants);
-      });
-
-    } catch (error) {
-      console.error('Erro ao iniciar colaboração:', error);
-      alert('Erro ao iniciar colaboração: ' + (error as Error).message);
-    }
-  }, [currentUser, currentProjectId, script.length, trackAction]);
-
+  // STEP 5: Collaboration handlers - Week 8 Implementation
   const handleToggleCollaboration = useCallback(() => {
     setShowCollaborationPanel(!showCollaborationPanel);
     trackAction('click', showCollaborationPanel ? 'close_collaboration' : 'open_collaboration', {
-      hasActiveSession: !!collaborationSession
+      projectId: currentProjectId
     });
-  }, [showCollaborationPanel, collaborationSession, trackAction]);
+  }, [showCollaborationPanel, trackAction, currentProjectId]);
+
+  const handleShareCollaboration = useCallback((shareLink: string) => {
+    trackAction('collaboration', 'share_link_generated', {
+      projectId: currentProjectId,
+      shareLink
+    });
+    console.log('🔗 Collaboration link generated:', shareLink);
+  }, [trackAction, currentProjectId]);
 
   // STEP 6: Template library handlers
   const handleToggleTemplates = useCallback(() => {
@@ -309,7 +284,7 @@ const GeneratorPage: React.FC = () => {
     });
   }, [showTemplateLibrary, featuredTemplates.length, trackAction]);
 
-  const handleUseTemplate = useCallback(async (template: Event) => {
+  const handleUseTemplate = useCallback(async (template: any) => {
     if (!currentUser) return;
 
     try {
@@ -322,7 +297,7 @@ const GeneratorPage: React.FC = () => {
         solution: 'solução eficaz'
       };
 
-      const newScript = await TemplateService.useTemplate(
+      const newScript = await TemplateService.applyTemplate(
         template.id,
         currentUser.uid,
         placeholderValues
@@ -484,39 +459,30 @@ const GeneratorPage: React.FC = () => {
                   </div>
                 </PredictiveCard>
 
-                {/* STEP 5: Collaboration Controls */}
+                {/* STEP 5: Collaboration Controls - Week 8 Implementation */}
                 {currentUser && currentProjectId && (
                   <PredictiveCard className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-medium">Colaboração em Tempo Real</h3>
                         <p className="text-sm text-muted-foreground">
-                          {collaborationSession 
-                            ? `Sessão ativa • ${participants.length} participantes`
-                            : 'Edite e comente com outros usuários'
-                          }
+                          Compartilhe e edite roteiros em tempo real
                         </p>
                       </div>
                       <div className="flex space-x-2">
-                        {!collaborationSession ? (
-                          <PredictiveButton
-                            onClick={handleStartCollaboration}
-                            variant="outline"
-                            size="sm"
-                            data-track-id="start_collaboration"
-                          >
-                            🤝 Iniciar Colaboração
-                          </PredictiveButton>
-                        ) : (
-                          <PredictiveButton
-                            onClick={handleToggleCollaboration}
-                            variant={showCollaborationPanel ? "default" : "outline"}
-                            size="sm"
-                            data-track-id="toggle_collaboration"
-                          >
-                            👥 {showCollaborationPanel ? 'Ocultar' : 'Ver'} Colaboradores
-                          </PredictiveButton>
-                        )}
+                        <ShareButton
+                          projectId={currentProjectId}
+                          onShare={handleShareCollaboration}
+                          size="small"
+                        />
+                        <PredictiveButton
+                          onClick={handleToggleCollaboration}
+                          variant={showCollaborationPanel ? "default" : "outline"}
+                          size="sm"
+                          data-track-id="toggle_collaboration"
+                        >
+                          👥 {showCollaborationPanel ? 'Ocultar' : 'Ver'} Painel
+                        </PredictiveButton>
                       </div>
                     </div>
                   </PredictiveCard>
@@ -548,11 +514,10 @@ const GeneratorPage: React.FC = () => {
 
               {/* V5.1 Enhanced Script Area */}
               <div className="space-y-6">
-                <LoadingWrapper
+                <SmartLoadingStates
                   type="generator"
                   context="script_generation"
-                  expectedDuration={8000}
-                  onTimeout={() => alert('A geração está demorando mais que o esperado. Verifique sua conexão.')}
+                  isLoading={isGenerating}
                 >
                   <PredictiveCard 
                     className="p-6 h-fit"
@@ -690,7 +655,7 @@ const GeneratorPage: React.FC = () => {
                       </div>
                     )}
                   </PredictiveCard>
-                </LoadingWrapper>
+                </SmartLoadingStates>
               </div>
             </div>
 
@@ -737,95 +702,13 @@ const GeneratorPage: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 5: Collaboration Panel - Enterprise Feature */}
-            {showCollaborationPanel && collaborationSession && (
-              <div className="w-full max-w-7xl animate-appear opacity-100 mt-8">
-                <PredictiveCard className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      Colaboração em Tempo Real
-                    </h2>
-                    <PredictiveButton
-                      onClick={handleToggleCollaboration}
-                      variant="outline"
-                      size="sm"
-                    >
-                      ✖️ Fechar
-                    </PredictiveButton>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Session Info */}
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-lg font-medium mb-2">Informações da Sessão</h3>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">ID da Sessão:</span>
-                            <span className="font-mono">{collaborationSession.id.slice(-8)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Participantes:</span>
-                            <span>{participants.length} / {collaborationSession.settings.maxParticipants}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Status:</span>
-                            <span className="text-green-600">🟢 Ativa</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <PredictiveButton
-                          onClick={() => {
-                            const sessionUrl = `${window.location.origin}?session=${collaborationSession.id}`;
-                            navigator.clipboard.writeText(sessionUrl);
-                            alert('Link da sessão copiado!');
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
-                          📋 Copiar Link da Sessão
-                        </PredictiveButton>
-                      </div>
-                    </div>
-                    
-                    {/* Participants List */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Participantes</h3>
-                      <div className="space-y-2">
-                        {participants.map((participant) => (
-                          <div key={participant.userId} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <div className={`w-3 h-3 rounded-full ${
-                                participant.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                              }`} />
-                              <div>
-                                <div className="font-medium">{participant.displayName}</div>
-                                <div className="text-xs text-muted-foreground">{participant.role}</div>
-                              </div>
-                            </div>
-                            {participant.role === 'owner' && (
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                                Host
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {participants.length === 1 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <div className="text-4xl mb-2">👥</div>
-                          <p>Compartilhe o link da sessão para outros se juntarem!</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </PredictiveCard>
-              </div>
-            )}
+            {/* STEP 5: Collaboration Panel - Week 8 Implementation */}
+            <CollaborationPanel
+              projectId={currentProjectId}
+              isVisible={showCollaborationPanel}
+              onClose={handleToggleCollaboration}
+              currentUserId={currentUser?.uid || ''}
+            />
 
             {/* STEP 6: Template Library Panel - Enterprise Feature */}
             {showTemplateLibrary && (

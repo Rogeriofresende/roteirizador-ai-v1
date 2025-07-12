@@ -1,0 +1,263 @@
+ef9c85a559e7996468e53ef5346069e8
+"use strict";
+
+/**
+ * Base Service Interface
+ * Contract base para todos os serviços do sistema
+ */
+/* istanbul ignore next */
+function cov_1vfg75lmc0() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IBaseService.ts";
+  var hash = "b8a239a83f42cf30a65332e75fe8e2f56ea05188";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IBaseService.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 6,
+          column: 0
+        },
+        end: {
+          line: 6,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 7,
+          column: 0
+        },
+        end: {
+          line: 7,
+          column: 39
+        }
+      },
+      "2": {
+        start: {
+          line: 12,
+          column: 0
+        },
+        end: {
+          line: 20,
+          column: 90
+        }
+      },
+      "3": {
+        start: {
+          line: 13,
+          column: 4
+        },
+        end: {
+          line: 13,
+          column: 61
+        }
+      },
+      "4": {
+        start: {
+          line: 14,
+          column: 4
+        },
+        end: {
+          line: 14,
+          column: 59
+        }
+      },
+      "5": {
+        start: {
+          line: 15,
+          column: 4
+        },
+        end: {
+          line: 15,
+          column: 45
+        }
+      },
+      "6": {
+        start: {
+          line: 16,
+          column: 4
+        },
+        end: {
+          line: 16,
+          column: 51
+        }
+      },
+      "7": {
+        start: {
+          line: 17,
+          column: 4
+        },
+        end: {
+          line: 17,
+          column: 49
+        }
+      },
+      "8": {
+        start: {
+          line: 18,
+          column: 4
+        },
+        end: {
+          line: 18,
+          column: 53
+        }
+      },
+      "9": {
+        start: {
+          line: 19,
+          column: 4
+        },
+        end: {
+          line: 19,
+          column: 51
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 12,
+            column: 1
+          },
+          end: {
+            line: 12,
+            column: 2
+          }
+        },
+        loc: {
+          start: {
+            line: 12,
+            column: 34
+          },
+          end: {
+            line: 20,
+            column: 1
+          }
+        },
+        line: 12
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 20,
+            column: 3
+          },
+          end: {
+            line: 20,
+            column: 88
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 20,
+            column: 3
+          },
+          end: {
+            line: 20,
+            column: 24
+          }
+        }, {
+          start: {
+            line: 20,
+            column: 29
+          },
+          end: {
+            line: 20,
+            column: 87
+          }
+        }],
+        line: 20
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {
+      "0": [0, 0]
+    },
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IBaseService.ts",
+      mappings: ";AAAA;;;GAGG;;;AA6CH;;GAEG;AACH,IAAY,qBAQX;AARD,WAAY,qBAAqB;IAC/B,wDAA+B,CAAA;IAC/B,sDAA6B,CAAA;IAC7B,wCAAe,CAAA;IACf,8CAAqB,CAAA;IACrB,4CAAmB,CAAA;IACnB,gDAAuB,CAAA;IACvB,8CAAqB,CAAA;AACvB,CAAC,EARW,qBAAqB,qCAArB,qBAAqB,QAQhC",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IBaseService.ts"],
+      sourcesContent: ["/**\n * Base Service Interface\n * Contract base para todos os servi\xE7os do sistema\n */\n\nexport interface ServiceHealthStatus {\n  status: 'healthy' | 'degraded' | 'offline';\n  lastCheck: Date;\n  details?: Record<string, any>;\n  error?: string;\n}\n\nexport interface ServiceMetrics {\n  initTime?: number;\n  lastActivity?: Date;\n  operationCount?: number;\n  errorCount?: number;\n  [key: string]: any;\n}\n\nexport interface IBaseService {\n  // Lifecycle methods\n  initialize(): Promise<void> | void;\n  dispose(): Promise<void> | void;\n  \n  // Health monitoring\n  getHealth(): Promise<ServiceHealthStatus> | ServiceHealthStatus;\n  getMetrics(): ServiceMetrics;\n  \n  // Service identification\n  getServiceName(): string;\n  getVersion(): string;\n}\n\n/**\n * Service configuration interface\n */\nexport interface ServiceConfig {\n  enabled: boolean;\n  environment: 'development' | 'test' | 'production';\n  retryPolicy?: {\n    maxRetries: number;\n    backoffMs: number;\n  };\n  timeout?: number;\n  [key: string]: any;\n}\n\n/**\n * Service lifecycle states\n */\nexport enum ServiceLifecycleState {\n  UNINITIALIZED = 'uninitialized',\n  INITIALIZING = 'initializing', \n  READY = 'ready',\n  DEGRADED = 'degraded',\n  OFFLINE = 'offline',\n  DISPOSING = 'disposing',\n  DISPOSED = 'disposed'\n} "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "b8a239a83f42cf30a65332e75fe8e2f56ea05188"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1vfg75lmc0 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1vfg75lmc0();
+cov_1vfg75lmc0().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_1vfg75lmc0().s[1]++;
+exports.ServiceLifecycleState = void 0;
+/**
+ * Service lifecycle states
+ */
+var ServiceLifecycleState;
+/* istanbul ignore next */
+cov_1vfg75lmc0().s[2]++;
+(function (ServiceLifecycleState) {
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().f[0]++;
+  cov_1vfg75lmc0().s[3]++;
+  ServiceLifecycleState["UNINITIALIZED"] = "uninitialized";
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().s[4]++;
+  ServiceLifecycleState["INITIALIZING"] = "initializing";
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().s[5]++;
+  ServiceLifecycleState["READY"] = "ready";
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().s[6]++;
+  ServiceLifecycleState["DEGRADED"] = "degraded";
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().s[7]++;
+  ServiceLifecycleState["OFFLINE"] = "offline";
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().s[8]++;
+  ServiceLifecycleState["DISPOSING"] = "disposing";
+  /* istanbul ignore next */
+  cov_1vfg75lmc0().s[9]++;
+  ServiceLifecycleState["DISPOSED"] = "disposed";
+})(
+/* istanbul ignore next */
+(cov_1vfg75lmc0().b[0][0]++, ServiceLifecycleState) ||
+/* istanbul ignore next */
+(cov_1vfg75lmc0().b[0][1]++, exports.ServiceLifecycleState = ServiceLifecycleState = {}));
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMXZmZzc1bG1jMCIsInBhdGgiLCJoYXNoIiwiZ2xvYmFsIiwiRnVuY3Rpb24iLCJnY3YiLCJjb3ZlcmFnZURhdGEiLCJzdGF0ZW1lbnRNYXAiLCJzdGFydCIsImxpbmUiLCJjb2x1bW4iLCJlbmQiLCJmbk1hcCIsIm5hbWUiLCJkZWNsIiwibG9jIiwiYnJhbmNoTWFwIiwidHlwZSIsImxvY2F0aW9ucyIsInMiLCJmIiwiYiIsImlucHV0U291cmNlTWFwIiwiZmlsZSIsIm1hcHBpbmdzIiwibmFtZXMiLCJzb3VyY2VzIiwic291cmNlc0NvbnRlbnQiLCJ2ZXJzaW9uIiwiX2NvdmVyYWdlU2NoZW1hIiwiY292ZXJhZ2UiLCJhY3R1YWxDb3ZlcmFnZSIsIlNlcnZpY2VMaWZlY3ljbGVTdGF0ZSIsImV4cG9ydHMiXSwic291cmNlcyI6WyIvVXNlcnMvcm9nZXJpb3Jlc2VuZGUvRGVza3RvcC9Sb3RlaXJhci1pYS9zcmMvc2VydmljZXMvaW50ZXJmYWNlcy9JQmFzZVNlcnZpY2UudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBCYXNlIFNlcnZpY2UgSW50ZXJmYWNlXG4gKiBDb250cmFjdCBiYXNlIHBhcmEgdG9kb3Mgb3Mgc2VydmnDp29zIGRvIHNpc3RlbWFcbiAqL1xuXG5leHBvcnQgaW50ZXJmYWNlIFNlcnZpY2VIZWFsdGhTdGF0dXMge1xuICBzdGF0dXM6ICdoZWFsdGh5JyB8ICdkZWdyYWRlZCcgfCAnb2ZmbGluZSc7XG4gIGxhc3RDaGVjazogRGF0ZTtcbiAgZGV0YWlscz86IFJlY29yZDxzdHJpbmcsIGFueT47XG4gIGVycm9yPzogc3RyaW5nO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIFNlcnZpY2VNZXRyaWNzIHtcbiAgaW5pdFRpbWU/OiBudW1iZXI7XG4gIGxhc3RBY3Rpdml0eT86IERhdGU7XG4gIG9wZXJhdGlvbkNvdW50PzogbnVtYmVyO1xuICBlcnJvckNvdW50PzogbnVtYmVyO1xuICBba2V5OiBzdHJpbmddOiBhbnk7XG59XG5cbmV4cG9ydCBpbnRlcmZhY2UgSUJhc2VTZXJ2aWNlIHtcbiAgLy8gTGlmZWN5Y2xlIG1ldGhvZHNcbiAgaW5pdGlhbGl6ZSgpOiBQcm9taXNlPHZvaWQ+IHwgdm9pZDtcbiAgZGlzcG9zZSgpOiBQcm9taXNlPHZvaWQ+IHwgdm9pZDtcbiAgXG4gIC8vIEhlYWx0aCBtb25pdG9yaW5nXG4gIGdldEhlYWx0aCgpOiBQcm9taXNlPFNlcnZpY2VIZWFsdGhTdGF0dXM+IHwgU2VydmljZUhlYWx0aFN0YXR1cztcbiAgZ2V0TWV0cmljcygpOiBTZXJ2aWNlTWV0cmljcztcbiAgXG4gIC8vIFNlcnZpY2UgaWRlbnRpZmljYXRpb25cbiAgZ2V0U2VydmljZU5hbWUoKTogc3RyaW5nO1xuICBnZXRWZXJzaW9uKCk6IHN0cmluZztcbn1cblxuLyoqXG4gKiBTZXJ2aWNlIGNvbmZpZ3VyYXRpb24gaW50ZXJmYWNlXG4gKi9cbmV4cG9ydCBpbnRlcmZhY2UgU2VydmljZUNvbmZpZyB7XG4gIGVuYWJsZWQ6IGJvb2xlYW47XG4gIGVudmlyb25tZW50OiAnZGV2ZWxvcG1lbnQnIHwgJ3Rlc3QnIHwgJ3Byb2R1Y3Rpb24nO1xuICByZXRyeVBvbGljeT86IHtcbiAgICBtYXhSZXRyaWVzOiBudW1iZXI7XG4gICAgYmFja29mZk1zOiBudW1iZXI7XG4gIH07XG4gIHRpbWVvdXQ/OiBudW1iZXI7XG4gIFtrZXk6IHN0cmluZ106IGFueTtcbn1cblxuLyoqXG4gKiBTZXJ2aWNlIGxpZmVjeWNsZSBzdGF0ZXNcbiAqL1xuZXhwb3J0IGVudW0gU2VydmljZUxpZmVjeWNsZVN0YXRlIHtcbiAgVU5JTklUSUFMSVpFRCA9ICd1bmluaXRpYWxpemVkJyxcbiAgSU5JVElBTElaSU5HID0gJ2luaXRpYWxpemluZycsIFxuICBSRUFEWSA9ICdyZWFkeScsXG4gIERFR1JBREVEID0gJ2RlZ3JhZGVkJyxcbiAgT0ZGTElORSA9ICdvZmZsaW5lJyxcbiAgRElTUE9TSU5HID0gJ2Rpc3Bvc2luZycsXG4gIERJU1BPU0VEID0gJ2Rpc3Bvc2VkJ1xufSAiXSwibWFwcGluZ3MiOiI7O0FBQUE7Ozs7QUFBQTtBQUFBLFNBQUFBLGVBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsSUFBQTtFQUFBLElBQUFDLE1BQUEsT0FBQUMsUUFBQTtFQUFBLElBQUFDLEdBQUE7RUFBQSxJQUFBQyxZQUFBO0lBQUFMLElBQUE7SUFBQU0sWUFBQTtNQUFBO1FBQUFDLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO01BQUE7UUFBQUYsS0FBQTtVQUFBQyxJQUFBO1VBQUFDLE1BQUE7UUFBQTtRQUFBQyxHQUFBO1VBQUFGLElBQUE7VUFBQUMsTUFBQTtRQUFBO01BQUE7TUFBQTtRQUFBRixLQUFBO1VBQUFDLElBQUE7VUFBQUMsTUFBQTtRQUFBO1FBQUFDLEdBQUE7VUFBQUYsSUFBQTtVQUFBQyxNQUFBO1FBQUE7TUFBQTtNQUFBO1FBQUFGLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO0lBQUE7SUFBQUUsS0FBQTtNQUFBO1FBQUFDLElBQUE7UUFBQUMsSUFBQTtVQUFBTixLQUFBO1lBQUFDLElBQUE7WUFBQUMsTUFBQTtVQUFBO1VBQUFDLEdBQUE7WUFBQUYsSUFBQTtZQUFBQyxNQUFBO1VBQUE7UUFBQTtRQUFBSyxHQUFBO1VBQUFQLEtBQUE7WUFBQUMsSUFBQTtZQUFBQyxNQUFBO1VBQUE7VUFBQUMsR0FBQTtZQUFBRixJQUFBO1lBQUFDLE1BQUE7VUFBQTtRQUFBO1FBQUFELElBQUE7TUFBQTtJQUFBO0lBQUFPLFNBQUE7TUFBQTtRQUFBRCxHQUFBO1VBQUFQLEtBQUE7WUFBQUMsSUFBQTtZQUFBQyxNQUFBO1VBQUE7VUFBQUMsR0FBQTtZQUFBRixJQUFBO1lBQUFDLE1BQUE7VUFBQTtRQUFBO1FBQUFPLElBQUE7UUFBQUMsU0FBQTtVQUFBVixLQUFBO1lBQUFDLElBQUE7WUFBQUMsTUFBQTtVQUFBO1VBQUFDLEdBQUE7WUFBQUYsSUFBQTtZQUFBQyxNQUFBO1VBQUE7UUFBQTtVQUFBRixLQUFBO1lBQUFDLElBQUE7WUFBQUMsTUFBQTtVQUFBO1VBQUFDLEdBQUE7WUFBQUYsSUFBQTtZQUFBQyxNQUFBO1VBQUE7UUFBQTtRQUFBRCxJQUFBO01BQUE7SUFBQTtJQUFBVSxDQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7TUFBQTtNQUFBO01BQUE7SUFBQTtJQUFBQyxDQUFBO01BQUE7SUFBQTtJQUFBQyxDQUFBO01BQUE7SUFBQTtJQUFBQyxjQUFBO01BQUFDLElBQUE7TUFBQUMsUUFBQTtNQUFBQyxLQUFBO01BQUFDLE9BQUE7TUFBQUMsY0FBQTtNQUFBQyxPQUFBO0lBQUE7SUFBQUMsZUFBQTtJQUFBM0IsSUFBQTtFQUFBO0VBQUEsSUFBQTRCLFFBQUEsR0FBQTNCLE1BQUEsQ0FBQUUsR0FBQSxNQUFBRixNQUFBLENBQUFFLEdBQUE7RUFBQSxLQUFBeUIsUUFBQSxDQUFBN0IsSUFBQSxLQUFBNkIsUUFBQSxDQUFBN0IsSUFBQSxFQUFBQyxJQUFBLEtBQUFBLElBQUE7SUFBQTRCLFFBQUEsQ0FBQTdCLElBQUEsSUFBQUssWUFBQTtFQUFBO0VBQUEsSUFBQXlCLGNBQUEsR0FBQUQsUUFBQSxDQUFBN0IsSUFBQTtFQUFBO0lBdURFO0lBQUFELGNBQUEsWUFBQUEsQ0FBQTtNQUFBLE9BQUErQixjQUFBO0lBQUE7RUFBQTtFQUFBLE9BQUFBLGNBQUE7QUFBQTtBQUFBL0IsY0FBQTtBQUFBQSxjQUFBLEdBQUFtQixDQUFBOzs7Ozs7O0FBUEY7OztBQUdBLElBQVlhLHFCQVFYO0FBQUE7QUFBQWhDLGNBQUEsR0FBQW1CLENBQUE7QUFSRCxXQUFZYSxxQkFBcUI7RUFBQTtFQUFBaEMsY0FBQSxHQUFBb0IsQ0FBQTtFQUFBcEIsY0FBQSxHQUFBbUIsQ0FBQTtFQUMvQmEscUJBQUEsbUNBQStCO0VBQUE7RUFBQWhDLGNBQUEsR0FBQW1CLENBQUE7RUFDL0JhLHFCQUFBLGlDQUE2QjtFQUFBO0VBQUFoQyxjQUFBLEdBQUFtQixDQUFBO0VBQzdCYSxxQkFBQSxtQkFBZTtFQUFBO0VBQUFoQyxjQUFBLEdBQUFtQixDQUFBO0VBQ2ZhLHFCQUFBLHlCQUFxQjtFQUFBO0VBQUFoQyxjQUFBLEdBQUFtQixDQUFBO0VBQ3JCYSxxQkFBQSx1QkFBbUI7RUFBQTtFQUFBaEMsY0FBQSxHQUFBbUIsQ0FBQTtFQUNuQmEscUJBQUEsMkJBQXVCO0VBQUE7RUFBQWhDLGNBQUEsR0FBQW1CLENBQUE7RUFDdkJhLHFCQUFBLHlCQUFxQjtBQUN2QixDQUFDO0FBUlc7QUFBQSxDQUFBaEMsY0FBQSxHQUFBcUIsQ0FBQSxVQUFBVyxxQkFBcUI7QUFBQTtBQUFBLENBQUFoQyxjQUFBLEdBQUFxQixDQUFBLFVBQUFZLE9BQUEsQ0FBQUQscUJBQUEsR0FBckJBLHFCQUFxQiIsImlnbm9yZUxpc3QiOltdfQ==

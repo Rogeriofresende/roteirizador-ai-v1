@@ -1,0 +1,117 @@
+  771:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  789:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  217:37  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  222:36  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  227:35  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  232:36  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  237:31  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  242:36  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  249:29  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  261:31  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  266:38  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  272:31  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  280:30  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  285:30  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  290:37  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  296:32  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  302:35  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/ErrorBoundaryV6.tsx
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/admin/ErrorDashboard.tsx
+   98:23  warning  'setBuildErrors' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  221:14  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/admin/ErrorTestPanel.tsx
+  26:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  76:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  53:5   warning  'error' is assigned a value but never used   @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/ui/ErrorBoundary.tsx
+  243:38  warning  'errorInfo' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+  349:29  warning  '_error' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+  171:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/components/ui/ThirdPartyErrorBoundary.tsx
+  277:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  333:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  334:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  335:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  374:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  375:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  376:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  377:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  378:9   error    Unexpected lexical declaration in case block                                                                      no-case-declarations
+  158:9   error    'current' is never reassigned. Use 'const' instead                                                                        prefer-const
+  900:29  error    Constraining the generic type `T` to `any` does nothing and is unnecessary                                                      @typescript-eslint/no-unnecessary-type-constraint
+  828:26  error    Constraining the generic type `T` to `any` does nothing and is unnecessary                                                      @typescript-eslint/no-unnecessary-type-constraint
+  275:13  error    Unexpected lexical declaration in case block                                                                                    no-case-declarations
+  651:11  error    Unexpected lexical declaration in case block                                                                                    no-case-declarations
+  490:54  error  Parsing error: Identifier expected
+/Users/rogerioresende/Desktop/Roteirar-ia/src/features/admin/components/ErrorDashboard.tsx
+   98:23  warning  'setBuildErrors' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  221:14  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/features/admin/components/ErrorTestPanel.tsx
+  26:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  76:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  53:5   warning  'error' is assigned a value but never used   @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/features/admin/pages/ErrorCaptureTest.tsx
+   44:10  warning  'error' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/features/ui-system/components/ErrorBoundary.tsx
+  171:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/features/ui-system/components/ui/ErrorBoundary.tsx
+  243:38  warning  'errorInfo' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+  349:29  warning  '_error' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+  171:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/features/ui-system/components/ui/ThirdPartyErrorBoundary.tsx
+   80:9   error    Unexpected lexical declaration in case block                                                                                    no-case-declarations
+  33:16  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+  127:6   warning  React Hook useEffect has missing dependencies: 'config', 'setupErrorTracking', 'setupInteractionTracking', 'setupPerformanceTracking', 'trackErrors', 'trackInteractions', 'trackPageView', 'trackPageViews', and 'trackPerformance'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+/Users/rogerioresende/Desktop/Roteirar-ia/src/hooks/useErrorHandler.ts
+  5:25  warning  'errorInfo' is defined but never used  @typescript-eslint/no-unused-vars
+  168:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/pages/ErrorCaptureTest.tsx
+   44:10  warning  'error' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  630:16  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  196:11  error    Unexpected lexical declaration in case block  no-case-declarations
+  427:9   error    'satisfactionImprovements' is never reassigned. Use 'const' instead  prefer-const
+  428:9   error    'costImpacts' is never reassigned. Use 'const' instead               prefer-const
+  363:41  error  Parsing error: ';' expected
+  539:9   error    Unexpected lexical declaration in case block  no-case-declarations
+  611:14  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+  931:9   error    Unexpected lexical declaration in case block  no-case-declarations
+   863:9   error    Unexpected lexical declaration in case block    no-case-declarations
+   869:9   error    Unexpected lexical declaration in case block    no-case-declarations
+   957:9   error    Unexpected lexical declaration in case block    no-case-declarations
+   969:9   error    Unexpected lexical declaration in case block    no-case-declarations
+  199:14   warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+  207:14   warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+  204:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  118:15  warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  646:9   error    'breaker' is never reassigned. Use 'const' instead  prefer-const
+  139:14  warning  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  265:7   warning  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+/Users/rogerioresende/Desktop/Roteirar-ia/src/services/errorTrackingService.ts
+  264:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/services/mockErrorCollection.ts
+  153:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  227:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  523:57  error  Parsing error: ',' expected
+  467:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+    9:10  warning  'createErrorMessage' is defined but never used  @typescript-eslint/no-unused-vars
+  350:11  warning  'errorBoundary' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  354:9   warning  'errorsCaught' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  259:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  507:11  error    Unexpected lexical declaration in case block  no-case-declarations
+  532:14  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+  661:9   error    Unexpected lexical declaration in case block  no-case-declarations
+  401:9   error    Unexpected lexical declaration in case block       no-case-declarations
+  423:9   error    Unexpected lexical declaration in case block       no-case-declarations
+  333:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  642:16   warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+   10:10  warning  'createErrorMessage' is defined but never used  @typescript-eslint/no-unused-vars
+  129:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  159:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  190:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  200:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  422:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+/Users/rogerioresende/Desktop/Roteirar-ia/src/utils/errorCapture.ts
+  253:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  271:16  warning  'storageError' is defined but never used  @typescript-eslint/no-unused-vars
+✖ 1952 problems (47 errors, 1905 warnings)
+  4 errors and 0 warnings potentially fixable with the `--fix` option.

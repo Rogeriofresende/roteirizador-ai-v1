@@ -1,0 +1,64 @@
+f84d1cef8f19c292642c0db25fe9a056
+"use strict";
+
+/**
+ * Analytics Service Interface
+ * Contract para serviços de analytics e tracking
+ */
+/* istanbul ignore next */
+function cov_9c2ir1l0x() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAnalyticsService.ts";
+  var hash = "74052955abdd47f725a606fa0bbbcc1a0818fa9c";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAnalyticsService.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 6,
+          column: 0
+        },
+        end: {
+          line: 6,
+          column: 62
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAnalyticsService.ts",
+      mappings: ";AAAA;;;GAGG",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/services/interfaces/IAnalyticsService.ts"],
+      sourcesContent: ["/**\n * Analytics Service Interface\n * Contract para servi\xE7os de analytics e tracking\n */\n\nimport { IBaseService } from './IBaseService';\n\nexport interface AnalyticsEvent {\n  name: string;\n  parameters?: Record<string, any>;\n  timestamp?: Date;\n  userId?: string;\n  sessionId?: string;\n}\n\nexport interface AnalyticsPageView {\n  page: string;\n  title?: string;\n  referrer?: string;\n  timestamp?: Date;\n}\n\nexport interface AnalyticsUserProperties {\n  userId: string;\n  properties: Record<string, any>;\n}\n\nexport interface AnalyticsMetrics {\n  totalEvents: number;\n  uniqueUsers: number;\n  pageViews: number;\n  sessionDuration: number;\n  conversionRate?: number;\n}\n\nexport interface IAnalyticsService extends IBaseService {\n  // Event tracking\n  track(event: AnalyticsEvent): Promise<void>;\n  trackPageView(pageView: AnalyticsPageView): Promise<void>;\n  \n  // User management\n  setUserProperties(userProps: AnalyticsUserProperties): Promise<void>;\n  setUserId(userId: string): Promise<void>;\n  \n  // Session management\n  startSession(): Promise<string>;\n  endSession(sessionId: string): Promise<void>;\n  \n  // Data retrieval\n  getMetrics(timeRange?: { start: Date; end: Date }): Promise<AnalyticsMetrics>;\n  getEvents(filters?: Record<string, any>): Promise<AnalyticsEvent[]>;\n  \n  // Configuration\n  configure(config: AnalyticsConfig): Promise<void>;\n  isEnabled(): boolean;\n}\n\nexport interface AnalyticsConfig {\n  trackingId?: string;\n  clarityProjectId?: string;\n  tallyFormIds?: {\n    feedback?: string;\n    nps?: string;\n    features?: string;\n    bugs?: string;\n  };\n  enabled: boolean;\n  debug?: boolean;\n  sampleRate?: number;\n} "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "74052955abdd47f725a606fa0bbbcc1a0818fa9c"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_9c2ir1l0x = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_9c2ir1l0x();
+cov_9c2ir1l0x().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfOWMyaXIxbDB4IiwicGF0aCIsImhhc2giLCJnbG9iYWwiLCJGdW5jdGlvbiIsImdjdiIsImNvdmVyYWdlRGF0YSIsInN0YXRlbWVudE1hcCIsInN0YXJ0IiwibGluZSIsImNvbHVtbiIsImVuZCIsImZuTWFwIiwiYnJhbmNoTWFwIiwicyIsImYiLCJiIiwiaW5wdXRTb3VyY2VNYXAiLCJmaWxlIiwibWFwcGluZ3MiLCJuYW1lcyIsInNvdXJjZXMiLCJzb3VyY2VzQ29udGVudCIsInZlcnNpb24iLCJfY292ZXJhZ2VTY2hlbWEiLCJjb3ZlcmFnZSIsImFjdHVhbENvdmVyYWdlIl0sInNvdXJjZXMiOlsiL1VzZXJzL3JvZ2VyaW9yZXNlbmRlL0Rlc2t0b3AvUm90ZWlyYXItaWEvc3JjL3NlcnZpY2VzL2ludGVyZmFjZXMvSUFuYWx5dGljc1NlcnZpY2UudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBBbmFseXRpY3MgU2VydmljZSBJbnRlcmZhY2VcbiAqIENvbnRyYWN0IHBhcmEgc2VydmnDp29zIGRlIGFuYWx5dGljcyBlIHRyYWNraW5nXG4gKi9cblxuaW1wb3J0IHsgSUJhc2VTZXJ2aWNlIH0gZnJvbSAnLi9JQmFzZVNlcnZpY2UnO1xuXG5leHBvcnQgaW50ZXJmYWNlIEFuYWx5dGljc0V2ZW50IHtcbiAgbmFtZTogc3RyaW5nO1xuICBwYXJhbWV0ZXJzPzogUmVjb3JkPHN0cmluZywgYW55PjtcbiAgdGltZXN0YW1wPzogRGF0ZTtcbiAgdXNlcklkPzogc3RyaW5nO1xuICBzZXNzaW9uSWQ/OiBzdHJpbmc7XG59XG5cbmV4cG9ydCBpbnRlcmZhY2UgQW5hbHl0aWNzUGFnZVZpZXcge1xuICBwYWdlOiBzdHJpbmc7XG4gIHRpdGxlPzogc3RyaW5nO1xuICByZWZlcnJlcj86IHN0cmluZztcbiAgdGltZXN0YW1wPzogRGF0ZTtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBBbmFseXRpY3NVc2VyUHJvcGVydGllcyB7XG4gIHVzZXJJZDogc3RyaW5nO1xuICBwcm9wZXJ0aWVzOiBSZWNvcmQ8c3RyaW5nLCBhbnk+O1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIEFuYWx5dGljc01ldHJpY3Mge1xuICB0b3RhbEV2ZW50czogbnVtYmVyO1xuICB1bmlxdWVVc2VyczogbnVtYmVyO1xuICBwYWdlVmlld3M6IG51bWJlcjtcbiAgc2Vzc2lvbkR1cmF0aW9uOiBudW1iZXI7XG4gIGNvbnZlcnNpb25SYXRlPzogbnVtYmVyO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIElBbmFseXRpY3NTZXJ2aWNlIGV4dGVuZHMgSUJhc2VTZXJ2aWNlIHtcbiAgLy8gRXZlbnQgdHJhY2tpbmdcbiAgdHJhY2soZXZlbnQ6IEFuYWx5dGljc0V2ZW50KTogUHJvbWlzZTx2b2lkPjtcbiAgdHJhY2tQYWdlVmlldyhwYWdlVmlldzogQW5hbHl0aWNzUGFnZVZpZXcpOiBQcm9taXNlPHZvaWQ+O1xuICBcbiAgLy8gVXNlciBtYW5hZ2VtZW50XG4gIHNldFVzZXJQcm9wZXJ0aWVzKHVzZXJQcm9wczogQW5hbHl0aWNzVXNlclByb3BlcnRpZXMpOiBQcm9taXNlPHZvaWQ+O1xuICBzZXRVc2VySWQodXNlcklkOiBzdHJpbmcpOiBQcm9taXNlPHZvaWQ+O1xuICBcbiAgLy8gU2Vzc2lvbiBtYW5hZ2VtZW50XG4gIHN0YXJ0U2Vzc2lvbigpOiBQcm9taXNlPHN0cmluZz47XG4gIGVuZFNlc3Npb24oc2Vzc2lvbklkOiBzdHJpbmcpOiBQcm9taXNlPHZvaWQ+O1xuICBcbiAgLy8gRGF0YSByZXRyaWV2YWxcbiAgZ2V0TWV0cmljcyh0aW1lUmFuZ2U/OiB7IHN0YXJ0OiBEYXRlOyBlbmQ6IERhdGUgfSk6IFByb21pc2U8QW5hbHl0aWNzTWV0cmljcz47XG4gIGdldEV2ZW50cyhmaWx0ZXJzPzogUmVjb3JkPHN0cmluZywgYW55Pik6IFByb21pc2U8QW5hbHl0aWNzRXZlbnRbXT47XG4gIFxuICAvLyBDb25maWd1cmF0aW9uXG4gIGNvbmZpZ3VyZShjb25maWc6IEFuYWx5dGljc0NvbmZpZyk6IFByb21pc2U8dm9pZD47XG4gIGlzRW5hYmxlZCgpOiBib29sZWFuO1xufVxuXG5leHBvcnQgaW50ZXJmYWNlIEFuYWx5dGljc0NvbmZpZyB7XG4gIHRyYWNraW5nSWQ/OiBzdHJpbmc7XG4gIGNsYXJpdHlQcm9qZWN0SWQ/OiBzdHJpbmc7XG4gIHRhbGx5Rm9ybUlkcz86IHtcbiAgICBmZWVkYmFjaz86IHN0cmluZztcbiAgICBucHM/OiBzdHJpbmc7XG4gICAgZmVhdHVyZXM/OiBzdHJpbmc7XG4gICAgYnVncz86IHN0cmluZztcbiAgfTtcbiAgZW5hYmxlZDogYm9vbGVhbjtcbiAgZGVidWc/OiBib29sZWFuO1xuICBzYW1wbGVSYXRlPzogbnVtYmVyO1xufSAiXSwibWFwcGluZ3MiOiI7O0FBQUE7Ozs7QUFBQTtBQUFBLFNBQUFBLGNBQUE7RUFBQSxJQUFBQyxJQUFBO0VBQUEsSUFBQUMsSUFBQTtFQUFBLElBQUFDLE1BQUEsT0FBQUMsUUFBQTtFQUFBLElBQUFDLEdBQUE7RUFBQSxJQUFBQyxZQUFBO0lBQUFMLElBQUE7SUFBQU0sWUFBQTtNQUFBO1FBQUFDLEtBQUE7VUFBQUMsSUFBQTtVQUFBQyxNQUFBO1FBQUE7UUFBQUMsR0FBQTtVQUFBRixJQUFBO1VBQUFDLE1BQUE7UUFBQTtNQUFBO0lBQUE7SUFBQUUsS0FBQTtJQUFBQyxTQUFBO0lBQUFDLENBQUE7TUFBQTtJQUFBO0lBQUFDLENBQUE7SUFBQUMsQ0FBQTtJQUFBQyxjQUFBO01BQUFDLElBQUE7TUFBQUMsUUFBQTtNQUFBQyxLQUFBO01BQUFDLE9BQUE7TUFBQUMsY0FBQTtNQUFBQyxPQUFBO0lBQUE7SUFBQUMsZUFBQTtJQUFBdEIsSUFBQTtFQUFBO0VBQUEsSUFBQXVCLFFBQUEsR0FBQXRCLE1BQUEsQ0FBQUUsR0FBQSxNQUFBRixNQUFBLENBQUFFLEdBQUE7RUFBQSxLQUFBb0IsUUFBQSxDQUFBeEIsSUFBQSxLQUFBd0IsUUFBQSxDQUFBeEIsSUFBQSxFQUFBQyxJQUFBLEtBQUFBLElBQUE7SUFBQXVCLFFBQUEsQ0FBQXhCLElBQUEsSUFBQUssWUFBQTtFQUFBO0VBQUEsSUFBQW9CLGNBQUEsR0FBQUQsUUFBQSxDQUFBeEIsSUFBQTtFQUFBIiwiaWdub3JlTGlzdCI6W119

@@ -1,0 +1,163 @@
+9b330b624f0e23ae98fb58267d7b8d27
+"use strict";
+
+/* istanbul ignore next */
+function cov_1iekwsiro0() {
+  var path = "/Users/rogerioresende/Desktop/Roteirar-ia/src/hooks/useErrorHandler.ts";
+  var hash = "033b4039812cb046ab231495e03935830527d2f0";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/rogerioresende/Desktop/Roteirar-ia/src/hooks/useErrorHandler.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 3,
+          column: 42
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 4
+        },
+        end: {
+          line: 11,
+          column: 6
+        }
+      },
+      "3": {
+        start: {
+          line: 10,
+          column: 8
+        },
+        end: {
+          line: 10,
+          column: 20
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "useErrorHandler",
+        decl: {
+          start: {
+            line: 7,
+            column: 9
+          },
+          end: {
+            line: 7,
+            column: 24
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 27
+          },
+          end: {
+            line: 12,
+            column: 1
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "(anonymous_1)",
+        decl: {
+          start: {
+            line: 8,
+            column: 11
+          },
+          end: {
+            line: 8,
+            column: 12
+          }
+        },
+        loc: {
+          start: {
+            line: 8,
+            column: 33
+          },
+          end: {
+            line: 11,
+            column: 5
+          }
+        },
+        line: 8
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {},
+    inputSourceMap: {
+      file: "/Users/rogerioresende/Desktop/Roteirar-ia/src/hooks/useErrorHandler.ts",
+      mappings: ";;AAGA,0CAKC;AARD;;GAEG;AACH,SAAgB,eAAe;IAC7B,OAAO,CAAC,KAAY,EAAE,SAAuC,EAAE,EAAE;QAC/D,oDAAoD;QACpD,MAAM,KAAK,CAAC;IACd,CAAC,CAAC;AACJ,CAAC",
+      names: [],
+      sources: ["/Users/rogerioresende/Desktop/Roteirar-ia/src/hooks/useErrorHandler.ts"],
+      sourcesContent: ["/**\n * Hook for manually triggering error boundary (for testing)\n */\nexport function useErrorHandler() {\n  return (error: Error, errorInfo?: { componentStack?: string }) => {\n    // This will be caught by the nearest error boundary\n    throw error;\n  };\n} "],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "033b4039812cb046ab231495e03935830527d2f0"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1iekwsiro0 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1iekwsiro0();
+cov_1iekwsiro0().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_1iekwsiro0().s[1]++;
+exports.useErrorHandler = useErrorHandler;
+/**
+ * Hook for manually triggering error boundary (for testing)
+ */
+function useErrorHandler() {
+  /* istanbul ignore next */
+  cov_1iekwsiro0().f[0]++;
+  cov_1iekwsiro0().s[2]++;
+  return (error, errorInfo) => {
+    /* istanbul ignore next */
+    cov_1iekwsiro0().f[1]++;
+    cov_1iekwsiro0().s[3]++;
+    // This will be caught by the nearest error boundary
+    throw error;
+  };
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJleHBvcnRzIiwidXNlRXJyb3JIYW5kbGVyIiwiY292XzFpZWt3c2lybzAiLCJmIiwicyIsImVycm9yIiwiZXJyb3JJbmZvIl0sInNvdXJjZXMiOlsiL1VzZXJzL3JvZ2VyaW9yZXNlbmRlL0Rlc2t0b3AvUm90ZWlyYXItaWEvc3JjL2hvb2tzL3VzZUVycm9ySGFuZGxlci50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvKipcbiAqIEhvb2sgZm9yIG1hbnVhbGx5IHRyaWdnZXJpbmcgZXJyb3IgYm91bmRhcnkgKGZvciB0ZXN0aW5nKVxuICovXG5leHBvcnQgZnVuY3Rpb24gdXNlRXJyb3JIYW5kbGVyKCkge1xuICByZXR1cm4gKGVycm9yOiBFcnJvciwgZXJyb3JJbmZvPzogeyBjb21wb25lbnRTdGFjaz86IHN0cmluZyB9KSA9PiB7XG4gICAgLy8gVGhpcyB3aWxsIGJlIGNhdWdodCBieSB0aGUgbmVhcmVzdCBlcnJvciBib3VuZGFyeVxuICAgIHRocm93IGVycm9yO1xuICB9O1xufSAiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFHQUEsT0FBQSxDQUFBQyxlQUFBLEdBQUFBLGVBQUE7QUFIQTs7O0FBR0EsU0FBZ0JBLGVBQWVBLENBQUE7RUFBQTtFQUFBQyxjQUFBLEdBQUFDLENBQUE7RUFBQUQsY0FBQSxHQUFBRSxDQUFBO0VBQzdCLE9BQU8sQ0FBQ0MsS0FBWSxFQUFFQyxTQUF1QyxLQUFJO0lBQUE7SUFBQUosY0FBQSxHQUFBQyxDQUFBO0lBQUFELGNBQUEsR0FBQUUsQ0FBQTtJQUMvRDtJQUNBLE1BQU1DLEtBQUs7RUFDYixDQUFDO0FBQ0giLCJpZ25vcmVMaXN0IjpbXX0=

@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePredictiveUX } from '../../hooks/usePredictiveUX';
+import { useRenderTracking } from '../../hooks/useRenderTracking';
 
 interface LoadingStage {
   stage: string;
@@ -31,7 +32,7 @@ interface SmartLoadingProps {
 // V5.1: Histórico de performance por tipo
 const performanceHistory = new Map<string, number[]>();
 
-export const SmartLoadingStates: React.FC<SmartLoadingProps> = ({
+const SmartLoadingStatesComponent: React.FC<SmartLoadingProps> = ({
   isLoading,
   type = 'generic',
   message,
@@ -52,6 +53,13 @@ export const SmartLoadingStates: React.FC<SmartLoadingProps> = ({
   const progressInterval = useRef<NodeJS.Timeout>();
   
   const { trackAction, getSmartSuggestions } = usePredictiveUX();
+
+  // ✅ PERFORMANCE MONITORING: Track component re-renders
+  const renderTracking = useRenderTracking({ 
+    componentName: 'SmartLoadingStates',
+    warningThreshold: 15,
+    timeThreshold: 50
+  });
 
   // V5.1: Mensagens contextuais inteligentes
   const contextualMessageMap: Record<string, string[]> = {
@@ -105,7 +113,7 @@ export const SmartLoadingStates: React.FC<SmartLoadingProps> = ({
       setCurrentProgress(0);
       setElapsedTime(0);
       
-      // Track loading start
+      // ✅ PERFORMANCE OPTIMIZATION: Track loading start only once per loading session
       if (trackPerformance) {
         trackAction('loading', `start-${type}`, { 
           predictedDuration: predictedTime,
@@ -135,12 +143,12 @@ export const SmartLoadingStates: React.FC<SmartLoadingProps> = ({
         setCurrentProgress(progress);
       }, 100);
 
-    } else if (startTime.current > 0) {
+    } else {
       // Loading finished
       const duration = Date.now() - startTime.current;
       
-      // V5.1: Track performance
-      if (trackPerformance && type) {
+      // ✅ PERFORMANCE OPTIMIZATION: Track performance only when loading completes
+      if (trackPerformance && type && duration > 0) {
         const history = performanceHistory.get(type) || [];
         history.push(duration);
         if (history.length > 10) history.shift(); // Keep last 10
@@ -167,7 +175,9 @@ export const SmartLoadingStates: React.FC<SmartLoadingProps> = ({
         clearInterval(progressInterval.current);
       }
     };
-  }, [isLoading, type, trackPerformance, trackAction, predictedTime, stages]);
+  }, [isLoading, type, trackPerformance, predictedTime, stages.length]); // ✅ STABLE: Essential dependencies only
+
+  // ✅ REMOVED: Redundant trackAction effect that was causing re-renders
 
   // V5.1: Determinar mensagem contextual
   const displayMessage = useMemo(() => {
@@ -275,55 +285,26 @@ export const SmartLoadingStates: React.FC<SmartLoadingProps> = ({
   );
 };
 
-// V5.1: Hook avançado para gerenciamento de loading
-export const useSmartLoading = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingType, setLoadingType] = useState<SmartLoadingProps['type']>('generic');
-  const [stages, setStages] = useState<LoadingStage[]>([]);
-  
-  const { trackAction } = usePredictiveUX();
+// ✅ PERFORMANCE OPTIMIZATION: Apply React.memo with custom comparison
+export const SmartLoadingStates = React.memo(SmartLoadingStatesComponent, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.type === nextProps.type &&
+    prevProps.message === nextProps.message &&
+    prevProps.className === nextProps.className &&
+    prevProps.showProgress === nextProps.showProgress &&
+    prevProps.predictDuration === nextProps.predictDuration &&
+    prevProps.trackPerformance === nextProps.trackPerformance &&
+    prevProps.contextualMessages === nextProps.contextualMessages &&
+    JSON.stringify(prevProps.stages) === JSON.stringify(nextProps.stages)
+  );
+});
 
-  const startLoading = React.useCallback((
-    type: SmartLoadingProps['type'] = 'generic',
-    customStages?: LoadingStage[]
-  ) => {
-    setIsLoading(true);
-    setLoadingType(type);
-    if (customStages) {
-      setStages(customStages);
-    }
-    
-    // V5.1: Track loading patterns
-    trackAction('loading', `manual-start-${type}`, {
-      hasStages: !!customStages
-    });
-  }, [trackAction]);
+SmartLoadingStates.displayName = 'SmartLoadingStates';
 
-  const stopLoading = React.useCallback(() => {
-    setIsLoading(false);
-    setStages([]);
-  }, []);
+// Alias export para manter compatibilidade
+export { SmartLoadingStates as default };
 
-  const withLoading = React.useCallback(async <T,>(
-    operation: () => Promise<T>,
-    type: SmartLoadingProps['type'] = 'generic',
-    customStages?: LoadingStage[]
-  ): Promise<T> => {
-    startLoading(type, customStages);
-    try {
-      const result = await operation();
-      return result;
-    } finally {
-      stopLoading();
-    }
-  }, [startLoading, stopLoading]);
-
-  return {
-    isLoading,
-    loadingType,
-    stages,
-    startLoading,
-    stopLoading,
-    withLoading
-  };
-};
+// Named export adicional
+export const SmartLoadingWrapper = SmartLoadingStates;

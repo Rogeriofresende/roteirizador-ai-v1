@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-07-09T18:08:16.446Z",
+  "type": "navigation-analysis",
+  "evidence": {
+    "hasNavElements": true,
+    "hasLinks": true,
+    "hasButtons": true,
+    "bodyContent": "\n  <div id=\"root\"><div class=\"min-h-screen bg-background text-foreground\"><header class=\"fixed top-0 left-0 right-0 z-50 transition-all duration-300\n        py-3 bg-transparent\"><div class=\"container mx-auto px-4\"><div class=\"flex justify-between items-center\"><a class=\"text-xl font-bold text-primary relative group\" href=\"/\"><span class=\"relative z-10\">Roteirar IA</span><span class=\"absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300\"></span></a><div cla",
+    "timestamp": "2025-07-09T18:08:10.991Z"
+  },
+  "metrics": {},
+  "screenshots": []
+}

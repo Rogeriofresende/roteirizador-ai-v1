@@ -139,12 +139,14 @@ const Navbar: React.FC = () => {
               {!isFirebaseEnabled ? (
                 <>
                   <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                   <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
                 </>
               ) : currentUser ? (
                 <>
                   <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                   <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <NavLink to="/dashboard" icon={<User size={16} />}>Dashboard</NavLink>
                   {/* V6.2: Admin Dashboard Access */}
@@ -161,6 +163,7 @@ const Navbar: React.FC = () => {
               ) : (
                 <>
                   <NavLink to="/" icon={<FileText size={16} />}>Gerador</NavLink>
+                  <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                   <NavLink to="/about" icon={<Home size={16} />}>Sobre</NavLink>
                   <Link to="/login">
                     <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -234,12 +237,14 @@ const Navbar: React.FC = () => {
                 {!isFirebaseEnabled ? (
                   <>
                     <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                     <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
                     <NavLink to="/dashboard" icon={<User size={18} />}>Dashboard</NavLink>
                   </>
                 ) : currentUser ? (
                   <>
                     <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                     <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
                     <NavLink to="/dashboard" icon={<User size={18} />}>Dashboard</NavLink>
                     {/* V6.2: Admin Dashboard Access Mobile */}
@@ -261,6 +266,7 @@ const Navbar: React.FC = () => {
                 ) : (
                   <>
                     <NavLink to="/" icon={<FileText size={18} />}>Gerador</NavLink>
+                    <NavLink to="/banco-ideias" icon={<span>🧠</span>}>Banco de Ideias</NavLink>
                     <NavLink to="/about" icon={<Home size={18} />}>Sobre</NavLink>
                     <Link to="/login" onClick={closeMenu} className="w-full">
                       <Button variant="outline" size="sm" className="flex items-center gap-2 w-full justify-start">

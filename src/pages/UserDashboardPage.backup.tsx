@@ -602,7 +602,7 @@ const UserDashboardPage: React.FC = () => {
           });
           break;
 
-        case 'duplicate':
+        case 'duplicate': {
           const duplicated = await services.ProjectService.duplicateProject(project.id, currentUser.uid);
           if (duplicated) {
             await loadProjects();
@@ -612,8 +612,9 @@ const UserDashboardPage: React.FC = () => {
             }
           }
           break;
+        }
 
-        case 'toggleFavorite':
+        case 'toggleFavorite': {
           const updated = await services.ProjectService.updateProject(project.id, {
             isFavorite: !project.isFavorite
           });
@@ -629,8 +630,9 @@ const UserDashboardPage: React.FC = () => {
             }
           }
           break;
+        }
 
-        case 'share':
+        case 'share': {
           const shareData = await services.ProjectService.shareProject(project.id);
           if (shareData) {
             await navigator.clipboard.writeText(shareData.shareUrl);
@@ -641,8 +643,9 @@ const UserDashboardPage: React.FC = () => {
             }
           }
           break;
+        }
 
-        case 'export':
+        case 'export': {
           const exported = await services.ProjectService.exportProject(project.id);
           if (exported) {
             // Trigger download
@@ -655,8 +658,9 @@ const UserDashboardPage: React.FC = () => {
             URL.revokeObjectURL(url);
           }
           break;
+        }
 
-        case 'delete':
+        case 'delete': {
           if (window.confirm('Tem certeza que deseja excluir este projeto?')) {
             const deleted = await services.ProjectService.deleteProject(project.id);
             if (deleted) {
@@ -668,6 +672,7 @@ const UserDashboardPage: React.FC = () => {
             }
           }
           break;
+        }
 
         case 'select':
           setSelectedProjects(prev => 

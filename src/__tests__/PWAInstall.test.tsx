@@ -9,7 +9,7 @@ jest.mock('../hooks/usePWA', () => ({
   usePWA: jest.fn(),
 }));
 
-const mockUsePWA = usePWA as jest.MockedFunction<typeof 
+const mockUsePWA = usePWA as jest.MockedFunction<typeof usePWA>;
 
 describe('PWAInstall', () => {
   const defaultMockReturn = {

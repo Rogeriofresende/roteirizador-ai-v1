@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-07-09T18:08:56.751Z",
+  "type": "react-app-mounted",
+  "evidence": {
+    "rootExists": true,
+    "reactDetected": true,
+    "reactFiberDetected": false,
+    "rootIsEmpty": false,
+    "hasErrorMessage": false,
+    "rootContent": "<div class=\"min-h-screen bg-background text-foreground\"><header class=\"fixed top-0 left-0 right-0 z-50 transition-all duration-300\n        py-3 bg-transparent\"><div class=\"container mx-auto px-4\"><div class=\"flex justify-between items-center\"><a class=\"text-xl font-bold text-primary relative group\" ",
+    "timestamp": "2025-07-09T18:08:51.422Z"
+  },
+  "metrics": {},
+  "screenshots": []
+}
