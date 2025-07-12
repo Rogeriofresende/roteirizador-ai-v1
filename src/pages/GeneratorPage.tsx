@@ -13,6 +13,11 @@ import type { FormData } from '../types';
 import { analyticsService } from '../services/analyticsService';
 import { cn } from '../lib/utils';
 
+// CONVERSION OPTIMIZATION COMPONENTS
+import { OnboardingFlow, QuickStartPrompt } from '../components/onboarding/OnboardingFlow';
+import { ProgressiveFeatureDisclosure } from '../components/cro/ProgressiveFeatureDisclosure';
+import { useOnboarding } from '../hooks/useOnboarding';
+
 // STEP 2: Advanced Text Editor Integration - Enterprise Features
 import { AdvancedTextEditor } from '../components/editor/AdvancedTextEditor';
 import { useAuth } from '../contexts/AuthContext';
@@ -46,6 +51,39 @@ const GeneratorPage: React.FC = () => {
   // V5.1: Multi-AI Selection State
   const [selectedAI, setSelectedAI] = useState<'gemini' | 'chatgpt'>('gemini');
 
+  // CONVERSION OPTIMIZATION STATE
+  const {
+    isFirstTime,
+    hasCompletedOnboarding,
+    userJourneyStage,
+    showQuickStart,
+    isOnboardingOpen,
+    startOnboarding,
+    completeOnboarding,
+    skipOnboarding,
+    dismissQuickStart,
+    getUserGuidance
+  } = useOnboarding();
+
+  // Track user's script generation count for progressive disclosure
+  const [userScriptCount, setUserScriptCount] = useState(() => {
+    try {
+      return parseInt(localStorage.getItem('user_script_count') || '0');
+    } catch {
+      return 0;
+    }
+  });
+
+  // Progressive Feature Disclosure state
+  const [visibleFeatures, setVisibleFeatures] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('visible_features');
+      return stored ? JSON.parse(stored) : ['templates']; // Only templates visible by default
+    } catch {
+      return ['templates'];
+    }
+  });
+
   // STEP 2: Advanced Editor Integration
   const { currentUser } = useAuth();
   const [currentProjectId, setCurrentProjectId] = useState<string>('');
@@ -68,12 +106,38 @@ const GeneratorPage: React.FC = () => {
   const { trackAction, getMostLikelyNext, getSessionStats } = usePredictiveUX();
   const { isLoading: isGenerating, startLoading, stopLoading } = useSimpleLoading();
 
+  // CONVERSION OPTIMIZATION: Update script count and persist visible features
+  useEffect(() => {
+    localStorage.setItem('visible_features', JSON.stringify(visibleFeatures));
+  }, [visibleFeatures]);
+
+  // Handle feature toggle for progressive disclosure
+  const handleFeatureToggle = useCallback((featureId: string, isVisible: boolean) => {
+    setVisibleFeatures(prev => {
+      if (isVisible) {
+        return [...prev.filter(id => id !== featureId), featureId];
+      } else {
+        return prev.filter(id => id !== featureId);
+      }
+    });
+
+    // Track feature usage for analytics
+    analyticsService.trackEvent('feature_toggled', {
+      featureId,
+      isVisible,
+      userScriptCount,
+      userJourneyStage
+    });
+  }, [userScriptCount, userJourneyStage]);
+
   // V5.1: Track user interactions for learning
   useEffect(() => {
     trackAction('navigation', 'generator_page', { 
       timestamp: Date.now(),
       userAgent: navigator.userAgent,
-      screenSize: `${window.innerWidth}x${window.innerHeight}`
+      screenSize: `${window.innerWidth}x${window.innerHeight}`,
+      userJourneyStage,
+      hasCompletedOnboarding
     });
 
     // V5.1: Record pattern for intelligence system
@@ -81,9 +145,13 @@ const GeneratorPage: React.FC = () => {
       'session_' + Date.now(),
       ['navigation:homepage', 'navigation:generator_page'],
       'success',
-      { entryPoint: 'direct_access' }
+      { 
+        entryPoint: 'direct_access',
+        userJourneyStage,
+        isFirstTime
+      }
     );
-  }, []);
+  }, [trackAction, userJourneyStage, hasCompletedOnboarding, isFirstTime]);
 
   // STEP 2: Initialize project ID for Advanced Editor
   useEffect(() => {
@@ -114,11 +182,15 @@ const GeneratorPage: React.FC = () => {
       
       if (configured) {
         // V5.1: Enhanced tracking with predictive context
-        trackAction('configuration', 'api_ready', { timestamp: Date.now() });
+        trackAction('configuration', 'api_ready', { 
+          timestamp: Date.now(),
+          userJourneyStage 
+        });
         analyticsService.trackEvent('generator_ready', {
           timestamp: Date.now(),
           sessionStats: getSessionStats(),
-          context: 'generator_ready'
+          context: 'generator_ready',
+          userJourneyStage
         });
       }
     };
@@ -135,9 +207,9 @@ const GeneratorPage: React.FC = () => {
       window.removeEventListener('storage', checkConfig);
       clearInterval(interval);
     };
-  }, [trackAction, getSessionStats]);
+  }, [trackAction, getSessionStats, userJourneyStage]);
 
-  // V5.1: Enhanced generate handler with predictive intelligence
+  // CONVERSION OPTIMIZATION: Enhanced generate handler with script count tracking
   const handleGenerate = useCallback(async (formData: FormData) => {
     if (!isConfigured) {
       alert('Configure sua API key do Gemini primeiro!');
@@ -149,7 +221,9 @@ const GeneratorPage: React.FC = () => {
       formData,
       selectedAI,
       prediction: getMostLikelyNext(),
-      sessionStats: getSessionStats()
+      sessionStats: getSessionStats(),
+      userJourneyStage,
+      currentScriptCount: userScriptCount
     });
 
     startLoading();
@@ -162,11 +236,12 @@ const GeneratorPage: React.FC = () => {
         selectedAI,
         predictiveContext: getMostLikelyNext(),
         sessionStats: getSessionStats(),
-        context: 'generation_started'
+        context: 'generation_started',
+        userJourneyStage,
+        scriptCount: userScriptCount
       });
       
       // V5.1: Multi-AI Support - Route to selected AI service
-      // TODO (IA B): Integrate ChatGPT service when available
       const generatedScript = selectedAI === 'gemini'
         ? await geminiService.generateScript({
             subject: formData.subject,
@@ -186,6 +261,11 @@ const GeneratorPage: React.FC = () => {
           });
       
       setScript(generatedScript);
+
+      // CONVERSION OPTIMIZATION: Update script count
+      const newScriptCount = userScriptCount + 1;
+      setUserScriptCount(newScriptCount);
+      localStorage.setItem('user_script_count', newScriptCount.toString());
       
       // V5.1: Record successful pattern for learning
       v51Intelligence.recordPattern(
@@ -195,7 +275,9 @@ const GeneratorPage: React.FC = () => {
         { 
           scriptLength: generatedScript.length,
           platform: formData.platform,
-          subject: formData.subject.substring(0, 50) // Truncate for privacy
+          subject: formData.subject.substring(0, 50), // Truncate for privacy
+          scriptCount: newScriptCount,
+          userJourneyStage
         }
       );
       
@@ -204,7 +286,9 @@ const GeneratorPage: React.FC = () => {
         ...formData,
         script_length: generatedScript.length,
         sessionStats: getSessionStats(),
-        context: 'generation_completed'
+        context: 'generation_completed',
+        scriptCount: newScriptCount,
+        userJourneyStage
       });
       
     } catch (error: unknown) {
@@ -214,23 +298,25 @@ const GeneratorPage: React.FC = () => {
     } finally {
       stopLoading();
     }
-  }, [isConfigured, trackAction, getMostLikelyNext, getSessionStats, startLoading, stopLoading]);
+  }, [isConfigured, trackAction, getMostLikelyNext, getSessionStats, startLoading, stopLoading, selectedAI, userScriptCount, userJourneyStage]);
 
   // V5.1: Enhanced script change handler with tracking
   const handleScriptChange = useCallback((newScript: string) => {
     setScript(newScript);
     trackAction('input', 'script_edit', { 
       length: newScript.length,
-      action: 'manual_edit'
+      action: 'manual_edit',
+      userJourneyStage
     });
-  }, [trackAction]);
+  }, [trackAction, userJourneyStage]);
 
   // V5.1: Enhanced copy handler with predictive context
   const handleCopyScript = useCallback(() => {
     navigator.clipboard.writeText(script);
     trackAction('click', 'copy_script', { 
       scriptLength: script.length,
-      nextPrediction: getMostLikelyNext()
+      nextPrediction: getMostLikelyNext(),
+      userJourneyStage
     });
     
     // V5.1: Record copy pattern for learning
@@ -238,51 +324,59 @@ const GeneratorPage: React.FC = () => {
       'session_' + Date.now(),
       ['data:script_generated', 'click:copy_script'],
       'success',
-      { scriptLength: script.length }
+      { 
+        scriptLength: script.length,
+        userJourneyStage
+      }
     );
-  }, [script, trackAction, getMostLikelyNext]);
+  }, [script, trackAction, getMostLikelyNext, userJourneyStage]);
 
   // STEP 3: Voice synthesis handler
   const handleOpenVoicePanel = useCallback(() => {
     setShowVoicePanel(true);
     trackAction('click', 'open_voice_panel', {
       scriptLength: script.length,
-      hasScript: script.length > 0
+      hasScript: script.length > 0,
+      userJourneyStage
     });
-  }, [script.length, trackAction]);
+  }, [script.length, trackAction, userJourneyStage]);
 
   // STEP 4: Analytics dashboard handler
   const handleToggleAnalytics = useCallback(() => {
     setShowAnalytics(!showAnalytics);
     trackAction('click', showAnalytics ? 'close_analytics' : 'open_analytics', {
       currentView: showAnalytics ? 'visible' : 'hidden',
-      sessionStats: getSessionStats()
+      sessionStats: getSessionStats(),
+      userJourneyStage
     });
-  }, [showAnalytics, trackAction, getSessionStats]);
+  }, [showAnalytics, trackAction, getSessionStats, userJourneyStage]);
 
   // STEP 5: Collaboration handlers - Week 8 Implementation
   const handleToggleCollaboration = useCallback(() => {
     setShowCollaborationPanel(!showCollaborationPanel);
     trackAction('click', showCollaborationPanel ? 'close_collaboration' : 'open_collaboration', {
-      projectId: currentProjectId
+      projectId: currentProjectId,
+      userJourneyStage
     });
-  }, [showCollaborationPanel, trackAction, currentProjectId]);
+  }, [showCollaborationPanel, trackAction, currentProjectId, userJourneyStage]);
 
   const handleShareCollaboration = useCallback((shareLink: string) => {
     trackAction('collaboration', 'share_link_generated', {
       projectId: currentProjectId,
-      shareLink
+      shareLink,
+      userJourneyStage
     });
     console.log('🔗 Collaboration link generated:', shareLink);
-  }, [trackAction, currentProjectId]);
+  }, [trackAction, currentProjectId, userJourneyStage]);
 
   // STEP 6: Template library handlers
   const handleToggleTemplates = useCallback(() => {
     setShowTemplateLibrary(!showTemplateLibrary);
     trackAction('click', showTemplateLibrary ? 'close_templates' : 'open_templates', {
-      featuredCount: featuredTemplates.length
+      featuredCount: featuredTemplates.length,
+      userJourneyStage
     });
-  }, [showTemplateLibrary, featuredTemplates.length, trackAction]);
+  }, [showTemplateLibrary, featuredTemplates.length, trackAction, userJourneyStage]);
 
   const handleUseTemplate = useCallback(async (template: any) => {
     if (!currentUser) return;
@@ -311,14 +405,27 @@ const GeneratorPage: React.FC = () => {
         templateId: template.id,
         templateTitle: template.title,
         category: template.category,
-        scriptLength: newScript.content.length
+        scriptLength: newScript.content.length,
+        userJourneyStage
       });
 
     } catch (error) {
       console.error('Erro ao usar template:', error);
       alert('Erro ao aplicar template: ' + (error as Error).message);
     }
-  }, [currentUser, trackAction]);
+  }, [currentUser, trackAction, userJourneyStage]);
+
+  // CONVERSION OPTIMIZATION: Handle onboarding completion
+  const handleOnboardingComplete = useCallback(() => {
+    completeOnboarding();
+    
+    // Track successful onboarding conversion
+    analyticsService.trackEvent('onboarding_conversion_success', {
+      userJourneyStage: 'experienced',
+      timestamp: Date.now(),
+      conversionType: 'completed'
+    });
+  }, [completeOnboarding]);
 
   // Se API não está configurada, mostrar interface de configuração V5.1
   if (!isConfigured) {
@@ -335,6 +442,15 @@ const GeneratorPage: React.FC = () => {
   return (
     <>
       <Navbar />
+      
+      {/* CONVERSION OPTIMIZATION: Onboarding Flow */}
+      <OnboardingFlow
+        isOpen={isOnboardingOpen}
+        onComplete={handleOnboardingComplete}
+        onSkip={skipOnboarding}
+        variant="first-time"
+      />
+
       <section className={cn(
         "bg-background text-foreground",
         "py-12 sm:py-24 md:py-32 px-4",
@@ -352,74 +468,88 @@ const GeneratorPage: React.FC = () => {
               Transforme suas ideias em roteiros profissionais com inteligência preditiva
             </p>
 
+            {/* CONVERSION OPTIMIZATION: Quick Start Prompt for new/returning users */}
+            {showQuickStart && !hasCompletedOnboarding && (
+              <div className="w-full max-w-2xl animate-appear opacity-0 delay-200">
+                <QuickStartPrompt
+                  onStartOnboarding={startOnboarding}
+                  onDismiss={dismissQuickStart}
+                />
+              </div>
+            )}
+
             {/* V5.1 Enhanced Main Content Grid */}
-            <div className="relative z-10 w-full grid lg:grid-cols-2 gap-8 max-w-7xl animate-appear opacity-0 delay-300">
+            <div className="relative z-10 w-full grid lg:grid-cols-3 gap-8 max-w-7xl animate-appear opacity-0 delay-300">
               {/* V5.1 Enhanced Form Section */}
-              <div className="space-y-6">
-                {/* V5.1: Multi-AI Selector */}
-                <PredictiveCard 
-                  className="p-4"
-                  data-track-id="ai_selector_card"
-                >
-                  <h3 className="text-lg font-semibold mb-4 text-foreground">
-                    Escolha sua IA
-                  </h3>
-                  <div className="flex gap-3 p-3 bg-muted/30 rounded-lg">
-                    <PredictiveButton
-                      variant={selectedAI === 'gemini' ? 'default' : 'outline'}
-                      className={cn(
-                        "flex items-center gap-2 px-4 py-2 transition-all",
-                        selectedAI === 'gemini' && "shadow-md scale-[1.02]"
-                      )}
-                      onClick={() => {
-                        setSelectedAI('gemini');
-                        trackAction('click', 'ai_selector_gemini', { 
-                          previousAI: selectedAI,
-                          newAI: 'gemini' 
-                        });
-                      }}
-                      data-track-id="select_gemini"
-                    >
-                      <span className="text-xl">🧠</span>
-                      <span className="font-medium">Gemini AI</span>
-                      {selectedAI === 'gemini' && (
-                        <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                          Ativo
-                        </span>
-                      )}
-                    </PredictiveButton>
-                    
-                    <PredictiveButton
-                      variant={selectedAI === 'chatgpt' ? 'default' : 'outline'}
-                      className={cn(
-                        "flex items-center gap-2 px-4 py-2 transition-all",
-                        selectedAI === 'chatgpt' && "shadow-md scale-[1.02]"
-                      )}
-                      onClick={() => {
-                        setSelectedAI('chatgpt');
-                        trackAction('click', 'ai_selector_chatgpt', { 
-                          previousAI: selectedAI,
-                          newAI: 'chatgpt' 
-                        });
-                      }}
-                      data-track-id="select_chatgpt"
-                    >
-                      <span className="text-xl">🤖</span>
-                      <span className="font-medium">ChatGPT</span>
-                      {selectedAI === 'chatgpt' && (
-                        <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                          Ativo
-                        </span>
-                      )}
-                    </PredictiveButton>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-3">
-                    {selectedAI === 'gemini' 
-                      ? '⚡ Gemini: Rápido e criativo, ideal para conteúdo viral'
-                      : '💡 ChatGPT: Detalhado e eloquente, perfeito para roteiros complexos'
-                    }
-                  </p>
-                </PredictiveCard>
+              <div className="lg:col-span-2 space-y-6">
+                {/* V5.1: Multi-AI Selector - Only show if advanced features unlocked */}
+                {(userScriptCount >= 3 || visibleFeatures.includes('multi-ai')) && (
+                  <PredictiveCard 
+                    className="p-4"
+                    data-track-id="ai_selector_card"
+                  >
+                    <h3 className="text-lg font-semibold mb-4 text-foreground">
+                      Escolha sua IA
+                    </h3>
+                    <div className="flex gap-3 p-3 bg-muted/30 rounded-lg">
+                      <PredictiveButton
+                        variant={selectedAI === 'gemini' ? 'default' : 'outline'}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 transition-all",
+                          selectedAI === 'gemini' && "shadow-md scale-[1.02]"
+                        )}
+                        onClick={() => {
+                          setSelectedAI('gemini');
+                          trackAction('click', 'ai_selector_gemini', { 
+                            previousAI: selectedAI,
+                            newAI: 'gemini',
+                            userJourneyStage
+                          });
+                        }}
+                        data-track-id="select_gemini"
+                      >
+                        <span className="text-xl">🧠</span>
+                        <span className="font-medium">Gemini AI</span>
+                        {selectedAI === 'gemini' && (
+                          <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                            Ativo
+                          </span>
+                        )}
+                      </PredictiveButton>
+                      
+                      <PredictiveButton
+                        variant={selectedAI === 'chatgpt' ? 'default' : 'outline'}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 transition-all",
+                          selectedAI === 'chatgpt' && "shadow-md scale-[1.02]"
+                        )}
+                        onClick={() => {
+                          setSelectedAI('chatgpt');
+                          trackAction('click', 'ai_selector_chatgpt', { 
+                            previousAI: selectedAI,
+                            newAI: 'chatgpt',
+                            userJourneyStage
+                          });
+                        }}
+                        data-track-id="select_chatgpt"
+                      >
+                        <span className="text-xl">🤖</span>
+                        <span className="font-medium">ChatGPT</span>
+                        {selectedAI === 'chatgpt' && (
+                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                            Ativo
+                          </span>
+                        )}
+                      </PredictiveButton>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-3">
+                      {selectedAI === 'gemini' 
+                        ? '⚡ Gemini: Rápido e criativo, ideal para conteúdo viral'
+                        : '💡 ChatGPT: Detalhado e eloquente, perfeito para roteiros complexos'
+                      }
+                    </p>
+                  </PredictiveCard>
+                )}
 
                 <PredictiveCard 
                   className="p-6"
@@ -439,28 +569,30 @@ const GeneratorPage: React.FC = () => {
                   <PWAFeedback />
                 </div>
 
-                {/* STEP 4: Analytics Toggle Button */}
-                <PredictiveCard className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Insights de IA</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Análise comportamental e recomendações
-                      </p>
+                {/* STEP 4: Analytics Toggle Button - Progressive Disclosure */}
+                {(userScriptCount >= 1 || visibleFeatures.includes('analytics')) && (
+                  <PredictiveCard className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Insights de IA</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Análise comportamental e recomendações
+                        </p>
+                      </div>
+                      <PredictiveButton
+                        onClick={handleToggleAnalytics}
+                        variant={showAnalytics ? "default" : "outline"}
+                        size="sm"
+                        data-track-id="analytics_toggle"
+                      >
+                        📊 {showAnalytics ? 'Ocultar' : 'Ver'} Analytics
+                      </PredictiveButton>
                     </div>
-                    <PredictiveButton
-                      onClick={handleToggleAnalytics}
-                      variant={showAnalytics ? "default" : "outline"}
-                      size="sm"
-                      data-track-id="analytics_toggle"
-                    >
-                      📊 {showAnalytics ? 'Ocultar' : 'Ver'} Analytics
-                    </PredictiveButton>
-                  </div>
-                </PredictiveCard>
+                  </PredictiveCard>
+                )}
 
-                {/* STEP 5: Collaboration Controls - Week 8 Implementation */}
-                {currentUser && currentProjectId && (
+                {/* STEP 5: Collaboration Controls - Progressive Disclosure */}
+                {currentUser && currentProjectId && (userScriptCount >= 3 || visibleFeatures.includes('collaboration')) && (
                   <PredictiveCard className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -489,312 +621,110 @@ const GeneratorPage: React.FC = () => {
                 )}
 
                 {/* STEP 6: Template Library Controls */}
-                <PredictiveCard className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Biblioteca de Templates</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedTemplate 
-                          ? `Template ativo: ${selectedTemplate.title}`
-                          : `${featuredTemplates.length} templates disponíveis`
-                        }
-                      </p>
+                {visibleFeatures.includes('templates') && (
+                  <PredictiveCard className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Biblioteca de Templates</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedTemplate 
+                            ? `Template ativo: ${selectedTemplate.title}`
+                            : `${featuredTemplates.length} templates disponíveis`
+                          }
+                        </p>
+                      </div>
+                      <PredictiveButton
+                        onClick={handleToggleTemplates}
+                        variant={showTemplateLibrary ? "default" : "outline"}
+                        size="sm"
+                        data-track-id="toggle_templates"
+                      >
+                        📚 {showTemplateLibrary ? 'Ocultar' : 'Ver'} Templates
+                      </PredictiveButton>
                     </div>
-                    <PredictiveButton
-                      onClick={handleToggleTemplates}
-                      variant={showTemplateLibrary ? "default" : "outline"}
-                      size="sm"
-                      data-track-id="template_library_toggle"
-                    >
-                      📝 {showTemplateLibrary ? 'Ocultar' : 'Ver'} Templates
-                    </PredictiveButton>
-                  </div>
-                </PredictiveCard>
+                  </PredictiveCard>
+                )}
               </div>
 
-              {/* V5.1 Enhanced Script Area */}
+              {/* CONVERSION OPTIMIZATION: Progressive Feature Disclosure Sidebar */}
               <div className="space-y-6">
-                <SmartLoadingStates
-                  type="generator"
-                  context="script_generation"
-                  isLoading={isGenerating}
-                >
-                  <PredictiveCard 
-                    className="p-6 h-fit"
-                    data-track-id="script_card"
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-semibold text-foreground">
-                        Seu Roteiro
-                      </h2>
-                      {script && (
-                        <ShareButton 
-                          shareData={{
-                            title: 'Roteiro criado com Roteirar IA V5.1',
-                            text: 'Confira este roteiro criado com IA preditiva:',
-                            content: script,
-                            url: window.location.href
-                          }}
-                          className="ml-auto"
-                          size="sm"
-                        />
-                      )}
-                    </div>
-
-                    <Separator className="mb-6" />
-                    
-                    {script ? (
-                      <div className="space-y-4">
-                        {/* STEP 2: Advanced Text Editor with Enterprise Features */}
-                        {currentUser && currentProjectId && (
-                          <AdvancedTextEditor
-                            projectId={currentProjectId}
-                            userId={currentUser.uid}
-                            initialContent={script}
-                            onContentChange={handleScriptChange}
-                            onSelectionChange={(selection) => {
-                              if (selection) {
-                                trackAction('text_selection', 'editor_selection', {
-                                  selectedLength: selection.selectedText.length,
-                                  selectionStart: selection.startIndex,
-                                  selectionEnd: selection.endIndex
-                                });
-                              }
-                            }}
-                            config={{
-                              preferences: {
-                                autoSave: true,
-                                autoSaveInterval: 30,
-                                aiSuggestionsEnabled: true,
-                                showVersionHistory: true,
-                                highlightChanges: true
-                              }
-                            }}
-                            callbacks={{
-                              onAIRequest: (request) => {
-                                trackAction('ai_refinement', 'refinement_requested', {
-                                  type: request.refinementType,
-                                  textLength: request.selectedText.length
-                                });
-                              },
-                              onVersionRestore: (version) => {
-                                trackAction('version_restore', 'version_restored', {
-                                  versionNumber: version.versionNumber,
-                                  timestamp: version.timestamp
-                                });
-                              }
-                            }}
-                          />
-                        )}
-                        
-                        {/* Fallback textarea if user not authenticated or no projectId */}
-                        {(!currentUser || !currentProjectId) && (
-                          <textarea
-                            ref={textareaRef}
-                            value={script}
-                            onChange={(e) => handleScriptChange(e.target.value)}
-                            className="w-full h-96 p-4 border border-border rounded-lg resize-y focus:ring-2 focus:ring-primary dark:bg-background dark:text-foreground transition-all duration-200"
-                            placeholder="Seu roteiro aparecerá aqui..."
-                            onFocus={() => trackAction('focus', 'script_textarea')}
-                          />
-                        )}
-                        
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          {/* V5.1: Enhanced Voice Synthesis Button */}
-                          <PredictiveButton
-                            onClick={handleOpenVoicePanel}
-                            variant="default"
-                            className={cn(
-                              "flex items-center gap-2 flex-1 sm:flex-none",
-                              "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
-                              "text-white shadow-lg hover:shadow-xl transition-all"
-                            )}
-                            data-track-id="voice_button"
-                            disabled={!script || script.length === 0}
-                          >
-                            <span className="text-xl">🎙️</span>
-                            <span className="font-medium">Gerar Narração</span>
-                            <span className="hidden sm:inline text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                              25+ vozes
-                            </span>
-                          </PredictiveButton>
-                          
-                          {/* Copy Button */}
-                          <PredictiveButton
-                            onClick={handleCopyScript}
-                            variant="outline"
-                            className="flex items-center gap-2"
-                            data-track-id="copy_button"
-                          >
-                            <span>📋</span>
-                            <span>Copiar Roteiro</span>
-                          </PredictiveButton>
-                        </div>
-                        
-                        {/* V5.1: Voice Synthesis Hint */}
-                        {script && script.length > 50 && !showVoicePanel && (
-                          <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                            <p className="text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                              <span>💡</span>
-                              <span>
-                                Novo! Transforme seu roteiro em áudio profissional com narração realista
-                              </span>
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                        <div className="text-6xl mb-4">🤖</div>
-                        <p className="text-lg text-center">
-                          Preencha o formulário e clique em "Gerar Roteiro" para começar!
-                        </p>
-                        <p className="text-sm text-center mt-2">
-                          Sua IA V5.1 está pronta para criar roteiros profissionais
-                        </p>
-                      </div>
-                    )}
-                  </PredictiveCard>
-                </SmartLoadingStates>
+                <ProgressiveFeatureDisclosure
+                  userScriptCount={userScriptCount}
+                  onFeatureToggle={handleFeatureToggle}
+                  visibleFeatures={visibleFeatures}
+                  variant="sidebar"
+                />
               </div>
             </div>
 
-            {/* V5.1: Voice Synthesis Panel - Now accessible to all users */}
-            {script && showVoicePanel && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                <VoiceSynthesisPanel
-                  projectId={currentProjectId || `temp_${Date.now()}`}
-                  userId={currentUser?.uid || 'anonymous'}
-                  text={script}
-                  isVisible={showVoicePanel}
-                  onClose={() => {
-                    setShowVoicePanel(false);
-                    trackAction('click', 'close_voice_panel', {
-                      sessionTime: Date.now(),
-                      wasAuthenticated: !!currentUser
-                    });
-                  }}
+            {/* Enhanced Result Section with Progressive Features */}
+            {script && (
+              <div className="relative z-10 w-full max-w-4xl animate-appear opacity-0 delay-500">
+                <Card className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-semibold text-foreground">
+                      Seu Roteiro Gerado
+                    </h2>
+                    <div className="flex space-x-2">
+                      <PredictiveButton
+                        onClick={handleCopyScript}
+                        variant="outline"
+                        size="sm"
+                        data-track-id="copy_script"
+                      >
+                        📋 Copiar
+                      </PredictiveButton>
+                      
+                      {/* Voice Panel - Progressive Disclosure */}
+                      {(userScriptCount >= 1 || visibleFeatures.includes('voice-synthesis')) && (
+                        <PredictiveButton
+                          onClick={handleOpenVoicePanel}
+                          variant="outline"
+                          size="sm"
+                          data-track-id="voice_panel"
+                        >
+                          🎤 Áudio
+                        </PredictiveButton>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <AdvancedTextEditor
+                    value={script}
+                    onChange={handleScriptChange}
+                    projectId={currentProjectId}
+                    className="min-h-[400px]"
+                  />
+                </Card>
+              </div>
+            )}
+
+            {/* Analytics Dashboard - Progressive Disclosure */}
+            {showAnalytics && (userScriptCount >= 1 || visibleFeatures.includes('analytics')) && (
+              <div className="relative z-10 w-full max-w-6xl animate-appear opacity-0 delay-600">
+                <AIInsightsDashboard />
+              </div>
+            )}
+
+            {/* Collaboration Panel - Progressive Disclosure */}
+            {showCollaborationPanel && currentUser && (userScriptCount >= 3 || visibleFeatures.includes('collaboration')) && (
+              <div className="relative z-10 w-full max-w-4xl animate-appear opacity-0 delay-700">
+                <CollaborationPanel
+                  projectId={currentProjectId}
+                  initialScript={script}
+                  onScriptChange={handleScriptChange}
                 />
               </div>
             )}
 
-            {/* STEP 4: Advanced Analytics Dashboard - Enterprise Feature */}
-            {showAnalytics && (
-              <div className="w-full max-w-7xl animate-appear opacity-100 mt-8">
-                <PredictiveCard className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      Analytics & Insights
-                    </h2>
-                    <PredictiveButton
-                      onClick={handleToggleAnalytics}
-                      variant="outline"
-                      size="sm"
-                    >
-                      ✖️ Fechar
-                    </PredictiveButton>
-                  </div>
-                  <AIInsightsDashboard 
-                    showUserSegments={true}
-                    maxInsights={10}
-                  />
-                </PredictiveCard>
-              </div>
-            )}
-
-            {/* STEP 5: Collaboration Panel - Week 8 Implementation */}
-            <CollaborationPanel
-              projectId={currentProjectId}
-              isVisible={showCollaborationPanel}
-              onClose={handleToggleCollaboration}
-              currentUserId={currentUser?.uid || ''}
-            />
-
-            {/* STEP 6: Template Library Panel - Enterprise Feature */}
-            {showTemplateLibrary && (
-              <div className="w-full max-w-7xl animate-appear opacity-100 mt-8">
-                <PredictiveCard className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      Biblioteca de Templates
-                    </h2>
-                    <PredictiveButton
-                      onClick={handleToggleTemplates}
-                      variant="outline"
-                      size="sm"
-                    >
-                      ✖️ Fechar
-                    </PredictiveButton>
-                  </div>
-                  
-                  {featuredTemplates.length > 0 ? (
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-lg font-medium mb-4">Templates em Destaque</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {featuredTemplates.map((template) => (
-                            <div key={template.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
-                              <div className="space-y-3">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <h4 className="font-medium text-foreground">{template.title}</h4>
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                      {template.description}
-                                    </p>
-                                  </div>
-                                  <span className="text-lg">{TemplateService.getCategories().find(c => c.id === template.category)?.icon || '📝'}</span>
-                                </div>
-                                
-                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                  <span className="capitalize">{template.category}</span>
-                                  <div className="flex items-center space-x-2">
-                                    <span>⭐ {template.rating || 0}</span>
-                                    <span>👁️ {template.usage || 0}</span>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex space-x-2">
-                                  <PredictiveButton
-                                    onClick={() => handleUseTemplate(template)}
-                                    size="sm"
-                                    className="flex-1"
-                                    data-track-id="use_template"
-                                  >
-                                    📄 Usar Template
-                                  </PredictiveButton>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="text-center py-4 border-t border-border">
-                        <p className="text-sm text-muted-foreground">
-                          💡 Dica: Os templates usam placeholders que são automaticamente preenchidos com valores padrão
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <div className="text-6xl mb-4">📝</div>
-                      <h3 className="text-lg font-medium mb-2">Carregando Templates...</h3>
-                      <p className="text-muted-foreground">
-                        A biblioteca de templates está sendo preparada
-                      </p>
-                    </div>
-                  )}
-                </PredictiveCard>
-              </div>
-            )}
-
-            {/* V5.1 Enhanced Glow Effect */}
-            <div className="relative">
-              <Glow
-                variant="center"
-                className="animate-appear-zoom opacity-0 delay-1000"
+            {/* Voice Synthesis Panel */}
+            {showVoicePanel && script && (
+              <VoiceSynthesisPanel
+                script={script}
+                onClose={() => setShowVoicePanel(false)}
+                projectId={currentProjectId}
               />
-            </div>
+            )}
           </div>
         </div>
       </section>

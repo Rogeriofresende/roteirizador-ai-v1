@@ -798,10 +798,12 @@ class UsageTierService {
 
   private getNextTier(currentTier: string): UserTier | null {
     switch (currentTier) {
-      case 'free':
+      case 'free': {
         return this.getTier('premium');
-      case 'premium':
+      }
+      case 'premium': {
         return this.getTier('enterprise');
+      }
       default:
         return null;
     }
@@ -840,14 +842,18 @@ class UsageTierService {
     switch (feature) {
       case 'personalization':
       case 'analytics':
-      case 'premium_templates':
+      case 'premium_templates': {
         return tier.limits.advancedFeatures;
-      case 'api_access':
+      }
+      case 'api_access': {
         return tier.limits.apiAccess;
-      case 'priority_support':
+      }
+      case 'priority_support': {
         return tier.limits.prioritySupport;
-      case 'team_collaboration':
+      }
+      case 'team_collaboration': {
         return tier.limits.collaborators > 0;
+      }
       default:
         return true; // Basic features available to all
     }

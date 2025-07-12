@@ -553,7 +553,7 @@ class EmergencyProtocolService {
    */
   private async checkIfEmergencyResolved(emergency: EmergencyEvent): Promise<boolean> {
     switch (emergency.type) {
-      case 'cost_overrun':
+      case 'cost_overrun': {
         try {
           const { costManagementService } = await import('./costManagementService');
           const systemBudget = costManagementService.getSystemBudget();
@@ -561,6 +561,7 @@ class EmergencyProtocolService {
         } catch {
           return false;
         }
+      }
       
       case 'api_outage':
         // Check if API is responding
