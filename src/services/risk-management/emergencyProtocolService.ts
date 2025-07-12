@@ -205,26 +205,26 @@ class EmergencyProtocolService {
     emergency: EmergencyEvent
   ): Promise<void> {
     switch (action.type) {
-      case 'circuit_breaker':
+      case 'circuit_breaker': {
         await this.activateCircuitBreaker(parameters.service, parameters.duration);
         break;
-        
-      case 'service_degradation':
+      }
+      case 'service_degradation': {
         await this.degradeServices(parameters.level, parameters.features);
         break;
-        
-      case 'notification':
+      }
+      case 'notification': {
         await this.sendEmergencyNotification(emergency, parameters.contacts, parameters.channels);
         break;
-        
-      case 'rollback':
+      }
+      case 'rollback': {
         await this.executeRollback(parameters.service, parameters.version);
         break;
-        
-      case 'manual_intervention':
+      }
+      case 'manual_intervention': {
         await this.requestManualIntervention(emergency, parameters.urgency);
         break;
-        
+      }
       default:
         throw new Error(`Unknown emergency action type: ${action.type}`);
     }
@@ -346,20 +346,24 @@ class EmergencyProtocolService {
     data: any
   ): Promise<void> {
     switch (channel) {
-      case 'email':
+      case 'email': {
         await this.sendEmailNotification(contact.email, data);
         break;
-      case 'sms':
+      }
+      case 'sms': {
         if (contact.phone) {
           await this.sendSMSNotification(contact.phone, data);
         }
         break;
-      case 'slack':
+      }
+      case 'slack': {
         await this.sendSlackNotification(contact, data);
         break;
-      case 'webhook':
+      }
+      case 'webhook': {
         await this.sendWebhookNotification(data);
         break;
+      }
       default:
         logger.warn('Unknown notification channel', { channel }, 'EMERGENCY_NOTIFICATION');
     }
@@ -658,19 +662,19 @@ class EmergencyProtocolService {
 
   private calculateSeverity(type: EmergencyEvent['type'], data: any): EmergencyEvent['severity'] {
     switch (type) {
-      case 'cost_overrun':
+      case 'cost_overrun': {
         const overrun = data.currentCost / data.threshold;
         if (overrun >= 2) return 'critical';
         if (overrun >= 1.5) return 'high';
         if (overrun >= 1.2) return 'medium';
         return 'low';
-      
-      case 'system_failure':
+      }
+      case 'system_failure': {
         return 'critical';
-      
-      case 'api_outage':
+      }
+      case 'api_outage': {
         return data.failureRate >= 0.8 ? 'critical' : 'high';
-      
+      }
       default:
         return 'medium';
     }
@@ -726,12 +730,15 @@ class EmergencyProtocolService {
 
   private calculateReducedLimits(level: string): Record<string, number> {
     switch (level) {
-      case 'degraded':
+      case 'degraded': {
         return { dailyIdeas: 3, requestsPerMinute: 1 };
-      case 'minimal':
+      }
+      case 'minimal': {
         return { dailyIdeas: 1, requestsPerMinute: 0.5 };
-      case 'emergency':
+      }
+      case 'emergency': {
         return { dailyIdeas: 0, requestsPerMinute: 0 };
+      }
       default:
         return {};
     }
@@ -739,12 +746,15 @@ class EmergencyProtocolService {
 
   private getDegradationDescription(level: string): string {
     switch (level) {
-      case 'degraded':
+      case 'degraded': {
         return 'Some features disabled, reduced limits in effect';
-      case 'minimal':
+      }
+      case 'minimal': {
         return 'Minimal functionality only, severe limits in effect';
-      case 'emergency':
+      }
+      case 'emergency': {
         return 'Emergency mode - all non-essential features disabled';
+      }
       default:
         return 'Normal operation';
     }
@@ -752,12 +762,15 @@ class EmergencyProtocolService {
 
   private estimateRecoveryTime(level: string): string {
     switch (level) {
-      case 'degraded':
+      case 'degraded': {
         return '10-30 minutes';
-      case 'minimal':
+      }
+      case 'minimal': {
         return '30-60 minutes';
-      case 'emergency':
+      }
+      case 'emergency': {
         return '1-4 hours';
+      }
       default:
         return 'Immediate';
     }
@@ -785,10 +798,12 @@ class EmergencyProtocolService {
 
   private getEscalationContacts(urgency: string): string[] {
     switch (urgency) {
-      case 'critical':
+      case 'critical': {
         return ['tech_lead', 'project_manager', 'admin'];
-      case 'high':
+      }
+      case 'high': {
         return ['tech_lead', 'project_manager'];
+      }
       default:
         return ['tech_lead'];
     }
