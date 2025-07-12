@@ -253,24 +253,30 @@ class CostAlertService {
     channel: NotificationChannel
   ): Promise<void> {
     switch (channel.type) {
-      case 'email':
+      case 'email': {
         await this.sendEmailAlert(alert, message, channel);
         break;
-      case 'sms':
+      }
+      case 'sms': {
         await this.sendSMSAlert(alert, message, channel);
         break;
-      case 'slack':
+      }
+      case 'slack': {
         await this.sendSlackAlert(alert, message, channel);
         break;
-      case 'webhook':
+      }
+      case 'webhook': {
         await this.sendWebhookAlert(alert, message, channel);
         break;
-      case 'in_app':
+      }
+      case 'in_app': {
         await this.sendInAppAlert(alert, message, channel);
         break;
-      case 'push':
+      }
+      case 'push': {
         await this.sendPushAlert(alert, message, channel);
         break;
+      }
       default:
         throw new Error(`Unsupported channel type: ${channel.type}`);
     }
@@ -691,14 +697,18 @@ class CostAlertService {
 
   private getCurrentValue(metric: string, costData: any): number {
     switch (metric) {
-      case 'daily_cost':
+      case 'daily_cost': {
         return costData.dailyCost;
-      case 'monthly_cost':
+      }
+      case 'monthly_cost': {
         return costData.monthlyCost;
-      case 'projected_monthly_cost':
+      }
+      case 'projected_monthly_cost': {
         return costData.projectedMonthlyCost;
-      case 'api_calls':
+      }
+      case 'api_calls': {
         return costData.apiCallRate;
+      }
       default:
         return 0;
     }
@@ -706,14 +716,18 @@ class CostAlertService {
 
   private evaluateThreshold(current: number, threshold: number, comparison: string): boolean {
     switch (comparison) {
-      case 'greater_than':
+      case 'greater_than': {
         return current > threshold;
-      case 'less_than':
+      }
+      case 'less_than': {
         return current < threshold;
-      case 'equals':
+      }
+      case 'equals': {
         return current === threshold;
-      case 'not_equals':
+      }
+      case 'not_equals': {
         return current !== threshold;
+      }
       default:
         return false;
     }
@@ -738,12 +752,15 @@ class CostAlertService {
 
   private getUrgencyFromType(type: string): CostAlert['urgency'] {
     switch (type) {
-      case 'emergency':
+      case 'emergency': {
         return 'critical';
-      case 'critical':
+      }
+      case 'critical': {
         return 'high';
-      case 'warning':
+      }
+      case 'warning': {
         return 'medium';
+      }
       default:
         return 'low';
     }
@@ -767,12 +784,15 @@ class CostAlertService {
 
   private getSlackColor(type: string): string {
     switch (type) {
-      case 'emergency':
+      case 'emergency': {
         return 'danger';
-      case 'critical':
+      }
+      case 'critical': {
         return 'warning';
-      case 'warning':
+      }
+      case 'warning': {
         return 'warning';
+      }
       default:
         return 'good';
     }
@@ -793,12 +813,15 @@ class CostAlertService {
 
   private getPushIcon(type: string): string {
     switch (type) {
-      case 'emergency':
+      case 'emergency': {
         return '/icons/alert-emergency.png';
-      case 'critical':
+      }
+      case 'critical': {
         return '/icons/alert-critical.png';
-      case 'warning':
+      }
+      case 'warning': {
         return '/icons/alert-warning.png';
+      }
       default:
         return '/icons/alert-info.png';
     }
@@ -806,12 +829,15 @@ class CostAlertService {
 
   private getPushBadge(urgency: string): number {
     switch (urgency) {
-      case 'critical':
+      case 'critical': {
         return 3;
-      case 'high':
+      }
+      case 'high': {
         return 2;
-      case 'medium':
+      }
+      case 'medium': {
         return 1;
+      }
       default:
         return 0;
     }
