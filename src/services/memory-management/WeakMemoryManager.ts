@@ -8,7 +8,7 @@
  * @methodology V8.0_UNIFIED_DEVELOPMENT
  */
 
-import { logger } from '../../lib/logger';
+import { logger } from '../../utils/logger';
 
 // =============================================================================
 // TYPES & INTERFACES

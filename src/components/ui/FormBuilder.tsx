@@ -12,7 +12,7 @@ import {
   Copy,
   RotateCcw,
   Settings,
-  Layout,
+  Layout as LayoutIcon,
   Grid,
   List,
   Box,
@@ -40,8 +40,8 @@ import FormRadio from './FormRadio';
 import FormValidation from './FormValidation';
 import FormSubmit from './FormSubmit';
 
-// Layout.Section - V7.5 Enhanced Structure
-const Layout = {
+// FormFormLayout.Section - V7.5 Enhanced Structure  
+const FormLayout = {
   Section: ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
     <div className={`relative ${className}`}>{children}</div>
   ),
@@ -694,7 +694,7 @@ const FieldTemplatesPanel: React.FC<{
   const categories = [
     { id: 'basic', name: 'Basic', icon: <Type size={14} /> },
     { id: 'advanced', name: 'Advanced', icon: <Sparkles size={14} /> },
-    { id: 'layout', name: 'Layout', icon: <Layout size={14} /> },
+    { id: 'layout', name: 'Layout', icon: <LayoutIcon size={14} /> },
     { id: 'validation', name: 'Validation', icon: <Shield size={14} /> },
   ];
 
@@ -703,8 +703,8 @@ const FieldTemplatesPanel: React.FC<{
   );
 
   return (
-    <Layout.Container className="p-4 bg-white border-r border-gray-200">
-      <Layout.Row className="justify-between items-center mb-4">
+          <FormLayout.Container className="p-4 bg-white border-r border-gray-200">
+        <FormLayout.Row className="justify-between items-center mb-4">
         <h3 style={{
           fontSize: designTokens.typography.fontSize.lg,
           fontWeight: designTokens.typography.fontWeight.semibold,
@@ -714,7 +714,7 @@ const FieldTemplatesPanel: React.FC<{
           Field Templates
         </h3>
         <Target size={16} className="text-blue-500" />
-      </Layout.Row>
+      </FormLayout.Row>
 
       {/* Category Tabs */}
       <div style={{
@@ -807,7 +807,7 @@ const FieldTemplatesPanel: React.FC<{
           </motion.button>
         ))}
       </div>
-    </Layout.Container>
+    </FormLayout.Container>
   );
 };
 
@@ -821,7 +821,7 @@ const FieldEditor: React.FC<{
 }> = ({ field, onUpdateField, onRemoveField, onDuplicateField, size }) => {
   if (!field) {
     return (
-      <Layout.Container className="p-4 bg-gray-50 border-l border-gray-200">
+      <FormLayout.Container className="p-4 bg-gray-50 border-l border-gray-200">
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -835,7 +835,7 @@ const FieldEditor: React.FC<{
             Select a field to edit properties
           </p>
         </div>
-      </Layout.Container>
+      </FormLayout.Container>
     );
   }
 
@@ -853,8 +853,8 @@ const FieldEditor: React.FC<{
   };
 
   return (
-    <Layout.Container className="p-4 bg-white border-l border-gray-200">
-      <Layout.Row className="justify-between items-center mb-4">
+    <FormLayout.Container className="p-4 bg-white border-l border-gray-200">
+      <FormLayout.Row className="justify-between items-center mb-4">
         <h3 style={{
           fontSize: designTokens.typography.fontSize.lg,
           fontWeight: designTokens.typography.fontWeight.semibold,
@@ -863,7 +863,7 @@ const FieldEditor: React.FC<{
         }}>
           Field Settings
         </h3>
-        <Layout.Row>
+        <FormLayout.Row>
           <button
             onClick={() => onDuplicateField(field.id)}
             style={{
@@ -897,10 +897,10 @@ const FieldEditor: React.FC<{
           >
             <Trash2 size={14} />
           </button>
-        </Layout.Row>
-      </Layout.Row>
+        </FormLayout.Row>
+      </FormLayout.Row>
 
-      <Layout.Container className="space-y-4">
+      <FormLayout.Container className="space-y-4">
         {/* Basic Properties */}
         <div>
           <label style={{
@@ -999,7 +999,7 @@ const FieldEditor: React.FC<{
         </div>
 
         {/* Checkboxes */}
-        <Layout.Row>
+        <FormLayout.Row>
           <label style={{
             display: 'flex',
             alignItems: 'center',
@@ -1028,7 +1028,7 @@ const FieldEditor: React.FC<{
             />
             Disabled
           </label>
-        </Layout.Row>
+        </FormLayout.Row>
 
         {/* Options for select/checkbox/radio */}
         {(field.type === 'select' || field.type === 'checkbox' || field.type === 'radio') && (
@@ -1049,7 +1049,7 @@ const FieldEditor: React.FC<{
               backgroundColor: designTokens.colors.neutral[50],
             }}>
               {field.options?.map((option, index) => (
-                <Layout.Row key={index} className="mb-2">
+                <FormLayout.Row key={index} className="mb-2">
                   <input
                     type="text"
                     value={option.label}
@@ -1082,7 +1082,7 @@ const FieldEditor: React.FC<{
                   >
                     <Trash2 size={12} />
                   </button>
-                </Layout.Row>
+                </FormLayout.Row>
               ))}
               <button
                 onClick={() => {
@@ -1111,8 +1111,8 @@ const FieldEditor: React.FC<{
             </div>
           </div>
         )}
-      </Layout.Container>
-    </Layout.Container>
+      </FormLayout.Container>
+    </FormLayout.Container>
   );
 };
 
@@ -1412,10 +1412,10 @@ const FormBuilder = memo(forwardRef<HTMLDivElement, FormBuilderProps>((props, re
 
   // ===== RENDER =====
   return (
-    <Layout.Section ref={ref} style={containerStyles} className={className} data-testid={testId}>
+    <FormLayout.Section ref={ref} style={containerStyles} className={className} data-testid={testId}>
       {/* Header */}
-      <Layout.Row className="justify-between items-center p-4 bg-white border-b border-gray-200">
-        <Layout.Row>
+      <FormLayout.Row className="justify-between items-center p-4 bg-white border-b border-gray-200">
+        <FormLayout.Row>
           <h1 style={{
             fontSize: designTokens.typography.fontSize.xl,
             fontWeight: designTokens.typography.fontWeight.bold,
@@ -1436,9 +1436,9 @@ const FormBuilder = memo(forwardRef<HTMLDivElement, FormBuilderProps>((props, re
               Unsaved
             </span>
           )}
-        </Layout.Row>
+        </FormLayout.Row>
         
-        <Layout.Row>
+        <FormLayout.Row>
           {/* Actions */}
           <button
             onClick={undo}
@@ -1573,8 +1573,8 @@ const FormBuilder = memo(forwardRef<HTMLDivElement, FormBuilderProps>((props, re
             <Save size={16} />
             Save
           </button>
-        </Layout.Row>
-      </Layout.Row>
+        </FormLayout.Row>
+      </FormLayout.Row>
 
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
@@ -1634,7 +1634,7 @@ const FormBuilder = memo(forwardRef<HTMLDivElement, FormBuilderProps>((props, re
                       color: designTokens.colors.neutral[500],
                       textAlign: 'center',
                     }}>
-                      <Layout size={48} className="mb-4" />
+                      <LayoutIcon size={48} className="mb-4" />
                       <h3 style={{ margin: 0, fontSize: designTokens.typography.fontSize.lg }}>
                         No fields added yet
                       </h3>
@@ -1676,8 +1676,8 @@ const FormBuilder = memo(forwardRef<HTMLDivElement, FormBuilderProps>((props, re
       </div>
 
       {/* Status Bar */}
-      <Layout.Row className="justify-between items-center p-2 bg-gray-100 border-t border-gray-200 text-sm text-gray-600">
-        <Layout.Row>
+      <FormLayout.Row className="justify-between items-center p-2 bg-gray-100 border-t border-gray-200 text-sm text-gray-600">
+        <FormLayout.Row>
           <span>{builderState.currentSchema.fields.length} fields</span>
           <span>•</span>
           <span>Version {builderState.currentSchema.version}</span>
@@ -1687,14 +1687,14 @@ const FormBuilder = memo(forwardRef<HTMLDivElement, FormBuilderProps>((props, re
               <span>Last saved: {new Date(builderState.lastSavedAt).toLocaleTimeString()}</span>
             </>
           )}
-        </Layout.Row>
+        </FormLayout.Row>
         
-        <Layout.Row>
+        <FormLayout.Row>
           <Sparkles size={14} className="text-yellow-500" />
           <span>FormBuilder V7.5 Enhanced</span>
-        </Layout.Row>
-      </Layout.Row>
-    </Layout.Section>
+        </FormLayout.Row>
+      </FormLayout.Row>
+    </FormLayout.Section>
   );
 }));
 

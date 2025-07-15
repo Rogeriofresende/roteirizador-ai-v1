@@ -918,16 +918,16 @@ class CostAlertService {
         name: 'Budget Warning',
         type: 'warning',
         category: 'budget_threshold',
-        subject: 'Budget Alert: {{title}}',
+        subject: 'Budget Alert: {title}',
         bodyText: `Budget Warning
         
-Current Cost: ${{current}}
-Budget Limit: ${{threshold}}
-Usage: {{percentage}}%
+Current Cost: \${current}
+Budget Limit: \${threshold}
+Usage: {percentage}%
 
-{{message}}
+{message}
 
-Time: {{timestamp}}`,
+Time: {timestamp}`,
         variables: ['title', 'current', 'threshold', 'percentage', 'message', 'timestamp'],
         channels: ['email', 'slack']
       },
@@ -939,14 +939,14 @@ Time: {{timestamp}}`,
         subject: '🚨 EMERGENCY: {{title}}',
         bodyText: `🚨 EMERGENCY COST ALERT 🚨
 
-{{message}}
+{message}
 
 IMMEDIATE ACTION REQUIRED
 
 Current Status:
-- Cost: ${{current}}
-- Threshold: ${{threshold}}
-- Time: {{timestamp}}
+- Cost: \${current}
+- Threshold: \${threshold}
+- Time: {timestamp}
 
 Emergency protocols have been activated.`,
         variables: ['title', 'message', 'current', 'threshold', 'timestamp'],

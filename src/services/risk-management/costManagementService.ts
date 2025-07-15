@@ -451,7 +451,7 @@ class CostManagementService {
 
     // Trigger notification service
     try {
-      const { CostAlertService } = await import('./costAlertService');
+      const CostAlertService = (await import('./costAlertService')).default;
       const alertService = new CostAlertService();
       await alertService.sendAlert(alert);
     } catch (error) {

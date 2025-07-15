@@ -515,15 +515,15 @@ export class AlertSystem {
         name: 'Cost Alert Email (Beta Template)',
         channel: 'email',
         betaIntegration: true,
-        subject: '💰 Cost Alert: {{title}}',
+        subject: '💰 Cost Alert: {title}',
         body: `
           <h2>Cost Management Alert</h2>
-          <p><strong>Alert:</strong> {{title}}</p>
-          <p><strong>Message:</strong> {{message}}</p>
-          <p><strong>Current Daily Cost:</strong> ${{cost.dailyCost}}</p>
-          <p><strong>Budget Remaining:</strong> ${{cost.budgetRemaining}}</p>
+          <p><strong>Alert:</strong> {title}</p>
+          <p><strong>Message:</strong> {message}</p>
+          <p><strong>Current Daily Cost:</strong> \${cost.dailyCost}</p>
+          <p><strong>Budget Remaining:</strong> \${cost.budgetRemaining}</p>
           <p><strong>Recommended Actions:</strong></p>
-          <ul>{{#each recommendedActions}}<li>{{this}}</li>{{/each}}</ul>
+          <ul>{recommendedActions}</ul>
         `,
         variables: ['title', 'message', 'cost.dailyCost', 'cost.budgetRemaining', 'recommendedActions']
       },

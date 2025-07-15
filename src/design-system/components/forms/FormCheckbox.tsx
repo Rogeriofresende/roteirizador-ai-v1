@@ -219,11 +219,17 @@ function useGroupedCheckboxState(
     isAllChecked: boolean;
   }>>({});
   
+  // Stabilize groups reference to prevent infinite re-renders
+  const stableGroups = useMemo(() => groups, [
+    groups.length,
+    groups.map(g => `${g.id}-${g.options.length}`).join(',')
+  ]);
+  
   // Update group states when checked values change
   useEffect(() => {
     const newGroupStates: typeof groupStates = {};
     
-    groups.forEach(group => {
+    stableGroups.forEach(group => {
       const groupOptionValues = group.options.map(opt => opt.value);
       const checkedInGroup = checkedValues.filter(val => groupOptionValues.includes(val));
       const totalInGroup = group.options.filter(opt => !opt.disabled).length;
@@ -237,7 +243,7 @@ function useGroupedCheckboxState(
     });
     
     setGroupStates(newGroupStates);
-  }, [checkedValues, groups]);
+  }, [checkedValues, stableGroups]);
   
   const handleValueChange = useCallback((newValues: (string | number)[]) => {
     setCheckedValues(newValues);
@@ -253,7 +259,7 @@ function useGroupedCheckboxState(
   }, [checkedValues, handleValueChange]);
   
   const toggleGroup = useCallback((groupId: string) => {
-    const group = groups.find(g => g.id === groupId);
+    const group = stableGroups.find(g => g.id === groupId);
     if (!group) return;
     
     const groupState = groupStates[groupId];
@@ -273,7 +279,7 @@ function useGroupedCheckboxState(
     }
     
     handleValueChange(newValues);
-  }, [groups, groupStates, checkedValues, handleValueChange]);
+  }, [stableGroups, groupStates, checkedValues, handleValueChange]);
   
   const checkAll = useCallback(() => {
     const allValues = options
@@ -563,10 +569,13 @@ export const FormCheckbox = forwardRef<FormCheckboxRef, FormCheckboxProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const checkboxRefs = useRef<Map<string | number, HTMLInputElement>>(new Map());
     
+    // Memoize groups to prevent infinite re-renders
+    const memoizedGroups = useMemo(() => groups, [groups]);
+    
     // Determine if we're in single or grouped mode
-    const isSingleMode = !grouped && !groups.length && options.length <= 1;
-    const workingOptions = grouped && groups.length > 0 
-      ? groups.reduce<FormCheckboxOption[]>((acc, group) => [...acc, ...group.options], [])
+    const isSingleMode = !grouped && !memoizedGroups.length && options.length <= 1;
+    const workingOptions = grouped && memoizedGroups.length > 0 
+      ? memoizedGroups.reduce<FormCheckboxOption[]>((acc, group) => [...acc, ...group.options], [])
       : options;
     
     // Hooks
@@ -579,7 +588,7 @@ export const FormCheckbox = forwardRef<FormCheckboxRef, FormCheckboxProps>(
       uncheckAll,
       toggleAll,
       setCheckedValues
-    } = useGroupedCheckboxState(workingOptions, groups, value, eventHandlers.onChange);
+    } = useGroupedCheckboxState(workingOptions, memoizedGroups, value, eventHandlers.onChange);
     
     const { validationState: currentValidationState, validateAsync } = useFormCheckboxValidation(
       checkedValues,
@@ -820,10 +829,10 @@ export const FormCheckbox = forwardRef<FormCheckboxRef, FormCheckboxProps>(
     }
     
     // Render grouped checkboxes
-    if (grouped && groups.length > 0) {
+    if (grouped && memoizedGroups.length > 0) {
       return (
         <div className={containerClasses} ref={containerRef} onKeyDown={handleKeyDown}>
-          {groups.map((group) => {
+          {memoizedGroups.map((group) => {
             const groupState = groupStates[group.id];
             
             const groupContent = (

@@ -26,14 +26,14 @@ if (globalThis.STORYBOOK_ENVIRONMENT) {
         message.includes('Firebase permissions') ||
         message.includes('quota exceeded') ||
         message.includes('The current testing environment is not configured to support act') ||
-        message.includes('Warning: The current testing environment')
+        message.includes('Warning: The current testing environment') ||
+        message.includes('Warning: An update to') ||
+        message.includes('inside a test was not wrapped in act') ||
+        message.includes('When testing, code that causes React state updates should be wrapped into act') ||
+        message.includes('This ensures that you\'re testing the behavior the user would see in the browser')
       )
     ) {
-      // Converter para log info em vez de error para debugging específicos
-      if (message.includes('act')) {
-        return; // Silenciar completamente warnings de act() no Storybook
-      }
-      console.info('ℹ️ [STORYBOOK] Expected behavior:', message.split('\n')[0]);
+      // Silenciar completamente warnings de act() no Storybook
       return;
     }
     originalError.apply(console, args);
@@ -46,7 +46,10 @@ if (globalThis.STORYBOOK_ENVIRONMENT) {
         message.includes('High memory usage detected') ||
         message.includes('The tag <hundefined>') ||
         message.includes('act(...)') ||
-        message.includes('testing environment')
+        message.includes('testing environment') ||
+        message.includes('Warning: An update to') ||
+        message.includes('inside a test was not wrapped in act') ||
+        message.includes('When testing, code that causes React state updates should be wrapped into act')
       )
     ) {
       return; // Silenciar warnings esperados no Storybook

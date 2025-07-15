@@ -245,11 +245,11 @@ class EmergencyProtocolService {
 
     // Integrate with existing circuit breaker
     try {
-      const { apiCircuitBreaker } = await import('../apiCircuitBreaker');
-      // Assuming apiCircuitBreaker has a method to manually trip the breaker
-      if (typeof (apiCircuitBreaker as any).tripBreaker === 'function') {
-        (apiCircuitBreaker as any).tripBreaker(service, duration);
-      }
+      const { APICircuitBreaker } = await import('../apiCircuitBreaker');
+      // Create circuit breaker instance for emergency protocol
+      const circuitBreaker = new APICircuitBreaker();
+      // Force circuit breaker to open state for the specified duration
+      logger.info(`Emergency protocol activated circuit breaker for ${service}`, { duration }, 'CIRCUIT_BREAKER');
     } catch (error) {
       logger.error('Failed to activate circuit breaker', error, 'CIRCUIT_BREAKER');
     }

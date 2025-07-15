@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import path from 'path';
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
@@ -26,7 +27,7 @@ const config: StorybookConfig = {
       ...config.resolve,
       alias: {
         ...config.resolve?.alias,
-        '@': '../src',
+        "@": path.resolve(__dirname, "../src"),
       },
     };
     
@@ -35,6 +36,9 @@ const config: StorybookConfig = {
       ...config.define,
       // Prevent multiple event source registration
       'process.env.STORYBOOK_MANAGER_DEBUG': 'false',
+      // Fix React act() warnings in Storybook
+      'globalThis.IS_REACT_ACT_ENVIRONMENT': 'true',
+      'process.env.NODE_ENV': '"development"',
       // Fix cross-frame communication
       'globalThis.FEATURES': JSON.stringify({
         storyStoreV7: true,

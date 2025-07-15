@@ -487,7 +487,7 @@ export const useResponsiveContainer = (breakpoints: ContainerBreakpoint[] = DEFA
     return () => window.removeEventListener('resize', checkBreakpoint);
   }, [breakpoints]);
   
-  const getResponsiveValue = <T>(values: Record<string, T>, fallback: T): T => {
+  const getResponsiveValue = <T,>(values: Record<string, T>, fallback: T): T => {
     if (!activeBreakpoint) return fallback;
     return values[activeBreakpoint.name] || fallback;
   };

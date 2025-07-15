@@ -472,7 +472,7 @@ describe('FormWizard V7.5 Enhanced', () => {
             storageKey: 'test-wizard',
             clearOnComplete: true 
           }}
-        );
+        />
       
       // Navigate to last step and submit
       const nextButton = screen.getByText('Next');
