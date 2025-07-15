@@ -1,18 +1,20 @@
 /**
- * 🧠 BANCO DE IDEIAS - MAIN COMPONENT V8.0
- * Modular component integrating all extracted components
- * Following V8.0 Unified Development methodology
+ * 🧠 BANCO DE IDEIAS - MAIN COMPONENT V8.0 BETA
+ * Professional modular component integrating all V8.0 Beta components
+ * Following V8.0 Unified Development methodology - Beta Phase Complete
  * 
- * BEFORE: 1578 lines monolithic component
- * AFTER: ~150 lines coordinator component + 32 modular files
+ * ARCHITECTURE EVOLUTION:
+ * - Alpha Phase: Basic modular structure (✅ Complete)
+ * - Beta Phase: Professional UI components (✅ Complete)
+ * - Charlie Phase: Testing & Quality (🔄 Next)
  */
 
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Layout } from '../../design-system/components/Layout';
 import { Lightbulb, Sparkles, Plus } from 'lucide-react';
 
 // V8.0 Types and Constants
-import { TabType } from './types';
+import { TabType, IdeaResponse } from './types';
 import { NAVIGATION_TABS } from './constants';
 
 // V8.0 Hooks
@@ -23,11 +25,15 @@ import { useBancoDeIdeiasLogic } from './hooks/useBancoDeIdeiasLogic';
 import { LoadingStates } from './components/shared/LoadingStates';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 
-// V8.0 Lazy Loading Implementation
-const IdeaGenerator = lazy(() => import('./components/IdeaGenerator'));
-const IdeaHistory = lazy(() => import('./components/IdeaHistory'));
+// V8.0 Professional Components - Beta Phase
+const BancoIdeiasLayout = lazy(() => import('./components/BancoIdeiasLayout'));
+const IdeaGenerationForm = lazy(() => import('./components/IdeaGenerationForm'));
+const IdeaResultsDisplay = lazy(() => import('./components/IdeaResultsDisplay'));
+const IdeaHistoryTab = lazy(() => import('./components/IdeaHistoryTab'));
+const IdeaQuickActions = lazy(() => import('./components/IdeaQuickActions'));
+const IdeaFilterSearch = lazy(() => import('./components/IdeaFilterSearch'));
 
-// Legacy components (temporary - will be replaced in Phase 2)
+// Legacy components (temporary - will be replaced in future phases)
 import { TemplateSystem } from '../../components/TemplateSystem';
 import { ExportImportSystem } from '../../components/ExportImportSystem';
 import { AnalyticsDashboard } from '../../components/AnalyticsDashboard';
@@ -35,7 +41,7 @@ import { PersonalizationPanel } from '../../components/PersonalizationPanel';
 import { PerformanceDashboard } from '../../components/PerformanceDashboard';
 
 // ============================================================================
-// MAIN BANCO DE IDEIAS COMPONENT V8.0
+// MAIN BANCO DE IDEIAS COMPONENT V8.0 BETA
 // ============================================================================
 
 export const BancoDeIdeias: React.FC = () => {
@@ -54,6 +60,14 @@ export const BancoDeIdeias: React.FC = () => {
   });
   
   // ============================================================================
+  // BETA PHASE STATE
+  // ============================================================================
+  
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [filteredIdeas, setFilteredIdeas] = useState<IdeaResponse[]>([]);
+  const [allIdeas, setAllIdeas] = useState<IdeaResponse[]>([]);
+  
+  // ============================================================================
   // HANDLERS
   // ============================================================================
   
@@ -69,100 +83,113 @@ export const BancoDeIdeias: React.FC = () => {
     }
   };
   
+  const handleQuickAdd = async (ideaData: Partial<IdeaResponse>) => {
+    try {
+      await logic.actions.handleQuickAddIdea({
+        title: ideaData.title || '',
+        description: ideaData.description,
+        category: ideaData.category,
+        tags: ideaData.keywords
+      });
+      
+      // Add to local state for immediate UI update
+      const newIdea = {
+        ...ideaData,
+        id: ideaData.id || `quick_${Date.now()}`,
+        keywords: ideaData.keywords || [],
+        savedAt: new Date().toISOString(),
+        createdAt: ideaData.createdAt || new Date().toISOString(),
+        targetAudience: ideaData.targetAudience || 'Startups',
+        contentType: ideaData.contentType || 'Posts',
+        difficulty: ideaData.difficulty || 'intermediate',
+        implementation: ideaData.implementation || '',
+        metadata: ideaData.metadata || { source: 'manual' }
+      } as IdeaResponse;
+      
+      setAllIdeas(prev => [newIdea, ...prev]);
+      
+    } catch (error) {
+      console.error('Erro ao adicionar ideia:', error);
+    }
+  };
+  
+  const handleQuickGenerate = async (formData: any) => {
+    actions.setFormData(prev => ({ ...prev, ...formData }));
+    handleGenerateIdea();
+  };
+  
+  const handleIdeaSelect = (idea: IdeaResponse) => {
+    actions.setCurrentIdea(idea);
+    actions.handleTabChange('generator');
+  };
+  
   // ============================================================================
-  // UI ADAPTATIONS (from personalization)
+  // EFFECTS
   // ============================================================================
   
   useEffect(() => {
+    // Initialize with current idea if available
+    if (logic.currentIdea && !allIdeas.find(idea => idea.id === logic.currentIdea!.id)) {
+      setAllIdeas(prev => [logic.currentIdea!, ...prev]);
+    }
+  }, [logic.currentIdea]);
+  
+  useEffect(() => {
+    // UI adaptations from personalization
     if (logic.uiAdaptations?.layout) {
       document.body.setAttribute('data-layout', logic.uiAdaptations.layout);
     }
   }, [logic.uiAdaptations]);
   
   // ============================================================================
-  // NAVIGATION RENDERING
-  // ============================================================================
-  
-  const renderNavigation = () => (
-    <Layout.Card variant="outlined" padding="md" className="mb-6">
-      <div className="flex flex-wrap gap-2">
-        {NAVIGATION_TABS.map((tab) => {
-          const isActive = state.activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => actions.handleTabChange(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                isActive
-                  ? 'bg-primary-500 text-white shadow-md'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-    </Layout.Card>
-  );
-  
-  // ============================================================================
-  // ALERTS RENDERING
-  // ============================================================================
-  
-  const renderAlerts = () => {
-    if (state.alerts.length === 0) return null;
-    
-    return (
-      <div className="space-y-2 mb-6">
-        {state.alerts.map((alert, index) => (
-          <div
-            key={index}
-            className={`p-3 rounded-lg border ${
-              alert.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : alert.type === 'error'
-                ? 'bg-red-50 border-red-200 text-red-800'
-                : 'bg-yellow-50 border-yellow-200 text-yellow-800'
-            }`}
-          >
-            {alert.message}
-          </div>
-        ))}
-      </div>
-    );
-  };
-  
-  // ============================================================================
-  // TAB CONTENT RENDERING
+  // TAB CONTENT RENDERING - BETA PHASE
   // ============================================================================
   
   const renderTabContent = () => {
     switch (state.activeTab) {
       case 'generator':
         return (
-          <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
-            <IdeaGenerator
-              formData={state.formData}
-              onFormChange={actions.handleFormChange}
-              onGenerateIdea={handleGenerateIdea}
-              isGenerating={state.isGenerating}
-              currentIdea={state.currentIdea}
-              onIdeaFeedback={logic.actions.handleIdeaFeedback}
-            />
-          </Suspense>
+          <div className="space-y-8">
+            <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
+              <IdeaGenerationForm
+                formData={state.formData}
+                onFormChange={actions.handleFormChange}
+                onGenerateIdea={handleGenerateIdea}
+                isGenerating={state.isGenerating}
+              />
+            </Suspense>
+            
+            <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
+              <IdeaResultsDisplay
+                idea={state.currentIdea}
+                onFeedback={logic.actions.handleIdeaFeedback}
+                onShare={logic.actions.handleShareIdea}
+                isGenerating={state.isGenerating}
+              />
+            </Suspense>
+          </div>
         );
         
       case 'history':
         return (
-          <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
-            <IdeaHistory
-              onQuickAdd={() => actions.openModal('quickAdd')}
-              ideas={logic.currentIdea ? [logic.currentIdea] : []} // Temporary - would come from actual history
-              loading={logic.loading.idea}
-              onIdeaSelect={(idea) => actions.setCurrentIdea(idea)}
-            />
-          </Suspense>
+          <div className="space-y-6">
+            <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
+              <IdeaFilterSearch
+                ideas={allIdeas}
+                onFilteredResults={setFilteredIdeas}
+              />
+            </Suspense>
+            
+            <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
+              <IdeaHistoryTab
+                ideas={filteredIdeas}
+                loading={logic.loading.idea}
+                onQuickAdd={() => actions.openModal('quickAdd')}
+                onIdeaSelect={handleIdeaSelect}
+                onRefresh={() => window.location.reload()}
+              />
+            </Suspense>
+          </div>
         );
         
       case 'templates':
@@ -179,7 +206,7 @@ export const BancoDeIdeias: React.FC = () => {
         return (
           <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
             <ExportImportSystem
-              ideas={logic.currentIdea ? [logic.currentIdea] : []}
+              ideas={allIdeas}
               onImport={logic.actions.handleImportIdeas}
               onExport={logic.actions.handleExportIdeas}
             />
@@ -222,96 +249,113 @@ export const BancoDeIdeias: React.FC = () => {
   };
   
   // ============================================================================
-  // MAIN RENDER V8.0
+  // SIDEBAR CONTENT
+  // ============================================================================
+  
+  const renderSidebarContent = () => (
+    <>
+      {/* Budget Status */}
+      {logic.costSummary && (
+        <Layout.Card variant="outlined" padding="md">
+          <Layout.Heading level={4} className="mb-3">
+            Status do Plano
+          </Layout.Heading>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-neutral-600">Ideias hoje:</span>
+              <span className="text-sm font-medium">
+                {logic.costSummary.ideasToday || 0} / {logic.costSummary.dailyLimit || 15}
+              </span>
+            </div>
+            <div className="w-full bg-neutral-200 rounded-full h-2">
+              <div
+                className="bg-primary-500 h-2 rounded-full transition-all"
+                style={{ 
+                  width: `${((logic.costSummary.ideasToday || 0) / (logic.costSummary.dailyLimit || 15)) * 100}%` 
+                }}
+              ></div>
+            </div>
+          </div>
+        </Layout.Card>
+      )}
+      
+      {/* Performance Stats */}
+      {logic.overallScore && (
+        <Layout.Card variant="outlined" padding="md">
+          <Layout.Heading level={4} className="mb-3">
+            Performance
+          </Layout.Heading>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary-600">
+              {Math.round(logic.overallScore)}%
+            </div>
+            <div className="text-sm text-neutral-600">
+              Score Geral
+            </div>
+          </div>
+        </Layout.Card>
+      )}
+    </>
+  );
+  
+  // ============================================================================
+  // ALERTS RENDERING
+  // ============================================================================
+  
+  const renderAlerts = () => {
+    if (state.alerts.length === 0) return null;
+    
+    return (
+      <div className="space-y-2 mb-6">
+        {state.alerts.map((alert, index) => (
+          <div
+            key={index}
+            className={`p-3 rounded-lg border ${
+              alert.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : alert.type === 'error'
+                ? 'bg-red-50 border-red-200 text-red-800'
+                : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+            }`}
+          >
+            {alert.message}
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
+  // ============================================================================
+  // MAIN RENDER V8.0 BETA
   // ============================================================================
   
   return (
     <ErrorBoundary>
-      <Layout.Page variant="dashboard" padding="responsive">
-        <Layout.Section spacing="comfortable" maxWidth="container">
-          
-          {/* V8.0 Enhanced Header */}
-          <div className="text-center mb-8 relative">
-            {/* Quick Add Button */}
-            <button
-              onClick={() => actions.openModal('quickAdd')}
-              className="absolute top-0 right-0 flex items-center gap-2 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Adicionar Ideia</span>
-            </button>
-            
-            <Layout.Heading level={1} className="mb-4 flex items-center justify-center gap-3">
-              <Lightbulb className="w-8 h-8 text-primary-600" />
-              <span>Banco de Ideias</span>
-              <Sparkles className="w-6 h-6 text-warm-500" />
-            </Layout.Heading>
-            <Layout.Text variant="subtitle" color="muted" className="max-w-2xl mx-auto">
-              Sistema inteligente de geração de ideias - Arquitetura V8.0 Modular
-            </Layout.Text>
-          </div>
-          
+      <Suspense fallback={<LoadingStates.FullPage message="Carregando Banco de Ideias..." />}>
+        <BancoIdeiasLayout
+          activeTab={state.activeTab}
+          onTabChange={actions.handleTabChange}
+          showMobileMenu={showMobileMenu}
+          onMobileMenuToggle={() => setShowMobileMenu(!showMobileMenu)}
+          sidebarContent={renderSidebarContent()}
+        >
           {/* Alerts */}
           {renderAlerts()}
           
-          {/* Navigation */}
-          {renderNavigation()}
-          
           {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Content Area */}
-            <div className="lg:col-span-3">
-              {renderTabContent()}
-            </div>
-            
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Budget Status */}
-              {logic.costSummary && (
-                <Layout.Card variant="outlined" padding="md">
-                  <Layout.Heading level={4} className="mb-3">
-                    Status do Plano
-                  </Layout.Heading>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-neutral-600">Ideias hoje:</span>
-                      <span className="text-sm font-medium">
-                        {logic.costSummary.ideasToday || 0} / {logic.costSummary.dailyLimit || 15}
-                      </span>
-                    </div>
-                    <div className="w-full bg-neutral-200 rounded-full h-2">
-                      <div
-                        className="bg-primary-500 h-2 rounded-full transition-all"
-                        style={{ 
-                          width: `${((logic.costSummary.ideasToday || 0) / (logic.costSummary.dailyLimit || 15)) * 100}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                </Layout.Card>
-              )}
-              
-              {/* Performance Stats */}
-              {logic.overallScore && (
-                <Layout.Card variant="outlined" padding="md">
-                  <Layout.Heading level={4} className="mb-3">
-                    Performance
-                  </Layout.Heading>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary-600">
-                      {Math.round(logic.overallScore)}%
-                    </div>
-                    <div className="text-sm text-neutral-600">
-                      Score Geral
-                    </div>
-                  </div>
-                </Layout.Card>
-              )}
-            </div>
-          </div>
-          
-        </Layout.Section>
-      </Layout.Page>
+          {renderTabContent()}
+        </BancoIdeiasLayout>
+      </Suspense>
+      
+      {/* Quick Actions Floating Button */}
+      <Suspense fallback={null}>
+        <IdeaQuickActions
+          onQuickAdd={handleQuickAdd}
+          onQuickGenerate={handleQuickGenerate}
+          onExport={() => logic.actions.handleExportIdeas(allIdeas)}
+          onShare={() => logic.actions.handleShareIdea(state.currentIdea!)}
+        />
+      </Suspense>
     </ErrorBoundary>
   );
 };
