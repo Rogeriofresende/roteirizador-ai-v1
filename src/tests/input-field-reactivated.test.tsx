@@ -4,7 +4,7 @@ import InputField from '../components/form/InputField';
 
 describe('InputField - Reactivated Test', () => {
   it('renders with label', () => {
-    render(<InputField id="test-input" label="Test Label" value="" onChange={() => {}} />);
+    render(<InputField id="test-input-1752598066" label="Test Label" value="" onChange={() => {}} />);
     const label = screen.getByText('Test Label');
     expect(label).toBeDefined();
   });

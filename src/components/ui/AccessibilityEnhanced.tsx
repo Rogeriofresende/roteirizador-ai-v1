@@ -279,7 +279,7 @@ export const AccessibleInput: React.FC<{
   id,
   className 
 }) => {
-  const generatedId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = id || `accessible-input-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const errorId = `${generatedId}-error`;
   const helpId = `${generatedId}-help`;
   const { keyboardNavigation } = useAccessibility();

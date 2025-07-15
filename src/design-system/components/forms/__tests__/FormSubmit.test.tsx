@@ -109,7 +109,7 @@ describe('FormSubmit V7.5 Enhanced', () => {
       render(
         <FormSubmit 
           onSubmit={mockSubmissionHandlers.success}
-          id="submit-btn"
+          id="submit-btn-1752598069"
           type="submit"
           ariaLabel="Submit form"
         >

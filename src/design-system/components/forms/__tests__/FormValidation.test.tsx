@@ -144,7 +144,7 @@ describe('FormValidation V7.5 Enhanced', () => {
           name="test-form"
           method="POST"
           action="/submit"
-          id="validation-form"
+          id={`validation-form-${Date.now()}`}
         >
           <MockFormFields />
         </FormValidation>

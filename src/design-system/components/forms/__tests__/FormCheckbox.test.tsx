@@ -519,7 +519,7 @@ describe('FormCheckbox V7.5 Enhanced', () => {
     });
     
     test('associates label with checkboxes', () => {
-      render(<FormCheckbox label="Test Label" id="test-checkbox" />);
+      render(<FormCheckbox label="Test Label" id="test-checkbox-1752598057" />);
       
       const checkbox = screen.getByRole('checkbox');
       const label = screen.getByText('Test Label');

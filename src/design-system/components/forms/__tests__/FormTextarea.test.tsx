@@ -564,7 +564,7 @@ describe('FormTextarea V7.5 Enhanced', () => {
     });
     
     test('associates label with textarea', () => {
-      render(<FormTextarea label="Test Label" id="test-textarea" />);
+      render(<FormTextarea label="Test Label" id="test-textarea-1752598062" />);
       
       const textarea = screen.getByRole('textbox');
       const label = screen.getByText('Test Label');

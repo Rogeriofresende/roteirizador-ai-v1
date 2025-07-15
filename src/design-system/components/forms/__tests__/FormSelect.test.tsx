@@ -600,7 +600,7 @@ describe('FormSelect V7.5 Enhanced', () => {
     });
     
     test('associates label with select', () => {
-      render(<FormSelect options={simpleOptions} label="Test Label" id="test-select" />);
+      render(<FormSelect options={simpleOptions} label="Test Label" id="test-select-1752598060" />);
       
       const select = screen.getByRole('combobox');
       const label = screen.getByText('Test Label');

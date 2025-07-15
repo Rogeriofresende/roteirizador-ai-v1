@@ -540,7 +540,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 
                 {/* Title */}
                 {title && (
-                  <h2 id="modal-title" style={titleStyles}>
+                  <h2 id={`modal-title-${finalId}`} style={titleStyles}>
                     {title}
                   </h2>
                 )}
@@ -561,7 +561,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
           )}
           
           {/* Content */}
-          <div id="modal-content" style={contentStyles}>
+          <div id={`modal-content-${finalId}`} style={contentStyles}>
             {/* Confirmation Icon */}
             {variant === 'confirmation' && (icon || confirmationType) && (
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing[4] }}>

@@ -1231,7 +1231,7 @@ describe('FormValidation V7.5 Enhanced', () => {
         <FormValidation 
           data-testid="input"
           name="testField"
-          id="test-input"
+          id="test-input-1752598066"
           autoComplete="email"
           inputMode="email"
           maxLength={50}

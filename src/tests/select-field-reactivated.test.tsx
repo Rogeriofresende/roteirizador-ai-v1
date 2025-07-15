@@ -9,7 +9,7 @@ describe('SelectField - Reactivated Test', () => {
   ];
   
   it('renders with label', () => {
-    render(<SelectField id="test-select" label="Test Select" value="" onChange={() => {}} options={options} />);
+    render(<SelectField id="test-select-1752598060" label="Test Select" value="" onChange={() => {}} options={options} />);
     const label = screen.getByText('Test Select');
     expect(label).toBeDefined();
   });
