@@ -91,7 +91,7 @@ export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
   const [steps, setSteps] = useState(analysisSteps);
 
   useEffect(() => {
-    if (currentStep >= steps.length) {
+    if (currentStep >= analysisSteps.length) {
       // Análise completa - simular resultado
       setTimeout(() => {
         const mockResult: AnalysisResult = {
@@ -113,7 +113,7 @@ export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
       return;
     }
 
-    const currentStepData = steps[currentStep];
+    const currentStepData = analysisSteps[currentStep];
     
     // Atualizar status para processing
     setSteps(prev => prev.map((step, index) => 
@@ -139,14 +139,17 @@ export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
       setCurrentStep(prev => prev + 1);
     }, currentStepData.duration);
 
-  }, [currentStep, steps, onComplete]);
+  }, [currentStep, onComplete]);
 
   // Atualizar progress e tempo
   useEffect(() => {
     const interval = setInterval(() => {
-      const completedSteps = steps.filter(s => s.status === 'completed').length;
-      const newProgress = (completedSteps / steps.length) * 100;
-      setProgress(newProgress);
+      setSteps(currentSteps => {
+        const completedSteps = currentSteps.filter(s => s.status === 'completed').length;
+        const newProgress = (completedSteps / currentSteps.length) * 100;
+        setProgress(newProgress);
+        return currentSteps;
+      });
       
       if (timeRemaining > 0) {
         setTimeRemaining(prev => Math.max(0, prev - 1));
@@ -154,7 +157,7 @@ export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [steps, timeRemaining]);
+  }, [timeRemaining]);
 
   const getStepStatusIcon = (step: AnalysisStep) => {
     switch (step.status) {
