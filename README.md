@@ -1,7 +1,7 @@
 # 🚀 ROTEIRAR IA - Sistema de Geração de Roteiros com IA Enterprise
 
 > **🎯 Plataforma colaborativa de geração de roteiros** com IA multi-modal e real-time collaboration  
-> **⚡ Status:** Week 8 Complete + V6.0 Enhanced Ready - Enterprise Grade  
+> **⚡ Status:** V8.0 Unified Methodology Documented + Ready for Multi-IA Execution  
 > **📱 Demo:** [http://localhost:5173](http://localhost:5173) (desenvolvimento)  
 > **🏆 Achievement:** Real-time collaboration + Risk management framework  
 
@@ -9,14 +9,18 @@
 
 ## ⚡ **PARA NOVAS IAs - START HERE (≤5 MINUTOS)**
 
-### **🚀 METODOLOGIA V6.0 ENHANCED (OBRIGATÓRIA)**
-**👉 Documento único:** [`METODOLOGIA_V6_ENHANCED_MASTER.md`](./METODOLOGIA_V6_ENHANCED_MASTER.md)
+### **🚀 METODOLOGIA V8.0 UNIFIED (ATIVA - JANEIRO 2025)**
+**👉 Navegação central:** [`INDICE_DOCUMENTACAO_V8_0_COMPLETA.md`](./INDICE_DOCUMENTACAO_V8_0_COMPLETA.md)
+**👉 Metodologia base:** [`METODOLOGIA_UNIFICADA_V8_0.md`](./METODOLOGIA_UNIFICADA_V8_0.md)
+**👉 Processo completo:** [`DOCUMENTACAO_PROCESSO_V8_0_COMPLETA.md`](./DOCUMENTACAO_PROCESSO_V8_0_COMPLETA.md)
 
-### **🎯 ONBOARDING RÁPIDO (≤5 minutos)**
-**👉 Context completo:** [`ONBOARDING_V6_ENHANCED.md`](./ONBOARDING_V6_ENHANCED.md)
+### **📊 STATUS TRACKER ATIVO**
+**👉 Coordenação Multi-IA:** [`AI_STATUS_TRACKER_V8_0_UNIFIED.json`](./AI_STATUS_TRACKER_V8_0_UNIFIED.json)
+**👉 Coordenação histórica:** [`COORDENACAO_MULTI_AI.md`](./COORDENACAO_MULTI_AI.md)
 
-### **🤝 WEEK 8 → V6.0 TRANSITION**
-**👉 Handoff crítico:** [`WEEK_8_TO_V6_HANDOFF.md`](./WEEK_8_TO_V6_HANDOFF.md)
+### **🔄 PRÓXIMA AÇÃO DEFINIDA**
+**👉 IA ALPHA:** Priority 1 Corrections (20h) - Memory Management + Performance
+**👉 STATUS:** ✅ Documentação completa + Ready for execution
 
 ### **🔍 HEALTH CHECK OBRIGATÓRIO**
 ```bash
@@ -26,7 +30,7 @@ git status       # Verificar estado ✅
 ls *.md | wc -l  # DEVE ser ≤15 ✅
 ```
 
-**⚡ V6.0 Enhanced:** Risk-First + Fix-First + collaboration preserved
+**⚡ V8.0 Unified:** Coordenação + Desenvolvimento + Qualidade Assegurada (substitui V6.4 + V7.5)
 
 ---
 
