@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { ArrowRight, ArrowLeft, Check, Sparkles, Target, Users, Zap, Gift } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Sparkles, Target, Zap, Gift, Play, Users } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { TouchGestureHandler } from '../mobile/TouchGestureHandler';
+import { analyticsService } from '../../services/analyticsService';
 
 export interface OnboardingStep {
   id: string;
@@ -13,6 +15,7 @@ export interface OnboardingStep {
   cta?: string;
   skippable?: boolean;
   timeEstimate?: string;
+  benefits?: string[];
 }
 
 interface OnboardingFlowProps {
@@ -23,48 +26,34 @@ interface OnboardingFlowProps {
   variant?: 'first-time' | 'feature-intro' | 'quick-start';
 }
 
-const DEFAULT_STEPS: OnboardingStep[] = [
+// OPTIMIZED: Reduced from 5 to 3 steps for better conversion
+const OPTIMIZED_STEPS: OnboardingStep[] = [
   {
     id: 'welcome',
-    title: 'Bem-vindo ao Roteirar IA! 🎉',
-    description: 'Vamos criar seu primeiro roteiro profissional em menos de 2 minutos. Pronto para começar?',
+    title: 'Bem-vindo! Vamos criar seu primeiro roteiro? 🚀',
+    description: 'Em menos de 60 segundos você terá um roteiro profissional. Sem API keys, sem complexidade.',
     icon: <Sparkles className="h-8 w-8 text-blue-500" />,
     cta: 'Vamos começar!',
-    timeEstimate: '2 min'
+    timeEstimate: '60s',
+    benefits: ['🤖 IA real integrada', '📱 15+ plataformas', '⚡ Resultado em segundos']
   },
   {
-    id: 'choose-topic',
-    title: 'Escolha um Assunto',
-    description: 'Sobre o que você quer criar conteúdo? Pode ser qualquer coisa: educação, entretenimento, negócios...',
+    id: 'quick-setup',
+    title: 'Conte-nos sobre seu conteúdo 🎯',
+    description: 'Quanto mais específico, melhor será seu roteiro. A IA adapta o conteúdo para seu estilo.',
     icon: <Target className="h-8 w-8 text-green-500" />,
-    action: 'subject-input',
-    cta: 'Próximo',
-    timeEstimate: '30s'
-  },
-  {
-    id: 'select-platform',
-    title: 'Selecione a Plataforma',
-    description: 'Onde você vai publicar? Cada plataforma tem suas particularidades e otimizações.',
-    icon: <Users className="h-8 w-8 text-purple-500" />,
-    action: 'platform-select',
-    cta: 'Continuar',
-    timeEstimate: '15s'
-  },
-  {
-    id: 'magic-time',
-    title: 'Momento da Mágica! ✨',
-    description: 'Agora vamos gerar seu roteiro personalizado com IA. Em segundos você terá conteúdo profissional.',
-    icon: <Zap className="h-8 w-8 text-yellow-500" />,
-    action: 'generate',
-    cta: 'Gerar Roteiro',
-    timeEstimate: '5s'
+    action: 'quick-setup',
+    cta: 'Gerar meu roteiro',
+    timeEstimate: '30s',
+    benefits: ['🎨 Tom personalizado', '👥 Público-alvo específico', '📊 Duração otimizada']
   },
   {
     id: 'success',
-    title: 'Parabéns! 🎊',
-    description: 'Seu primeiro roteiro está pronto! Agora você pode editá-lo, copiá-lo ou explorar features avançadas.',
+    title: 'Parabéns! Seu roteiro está pronto! 🎉',
+    description: 'Agora você pode editá-lo, copiá-lo ou explorar features avançadas como síntese de voz e colaboração.',
     icon: <Gift className="h-8 w-8 text-pink-500" />,
-    cta: 'Explorar Features',
+    cta: 'Explorar features',
+    benefits: ['🎙️ Síntese de voz', '🤝 Colaboração', '📊 Analytics'],
     skippable: true
   }
 ];
@@ -73,31 +62,61 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
   isOpen,
   onComplete,
   onSkip,
-  steps = DEFAULT_STEPS,
+  steps = OPTIMIZED_STEPS,
   variant = 'first-time'
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [userInputs, setUserInputs] = useState({
     subject: '',
-    platform: ''
+    platform: 'youtube-shorts',
+    tone: 'informal',
+    audience: 'geral'
   });
+  const [startTime] = useState(Date.now());
 
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
+  const progressPercentage = ((currentStep + 1) / steps.length) * 100;
 
   // Reset when modal opens
   useEffect(() => {
     if (isOpen) {
       setCurrentStep(0);
-      setUserInputs({ subject: '', platform: '' });
+      setUserInputs({ subject: '', platform: 'youtube-shorts', tone: 'informal', audience: 'geral' });
+      
+      // Track onboarding start
+      analyticsService.trackEvent('onboarding_flow_started', {
+        variant,
+        timestamp: Date.now(),
+        userAgent: navigator.userAgent
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, variant]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
+    const stepDuration = Date.now() - startTime;
+    
+    // Track step completion
+    analyticsService.trackEvent('onboarding_step_completed', {
+      stepId: currentStepData.id,
+      stepNumber: currentStep + 1,
+      duration: stepDuration,
+      variant,
+      userInputs: currentStep === 1 ? userInputs : undefined
+    });
+
     if (isLastStep) {
       onComplete();
+      
+      // Track successful completion
+      analyticsService.trackEvent('onboarding_completed_success', {
+        totalDuration: stepDuration,
+        variant,
+        conversionRate: 100,
+        userInputs
+      });
       return;
     }
 
@@ -106,205 +125,296 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
       setCurrentStep(prev => prev + 1);
       setIsAnimating(false);
     }, 200);
-  };
+  }, [currentStep, currentStepData.id, isLastStep, onComplete, startTime, userInputs, variant]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (isFirstStep) return;
+    
+    const stepDuration = Date.now() - startTime;
+    
+    // Track step back navigation
+    analyticsService.trackEvent('onboarding_step_back', {
+      stepId: currentStepData.id,
+      stepNumber: currentStep + 1,
+      duration: stepDuration,
+      variant
+    });
     
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentStep(prev => prev - 1);
       setIsAnimating(false);
     }, 200);
-  };
+  }, [currentStep, currentStepData.id, isFirstStep, startTime, variant]);
 
-  const handleSkip = () => {
-    // Track skip action for analytics
+  const handleSkip = useCallback(() => {
+    const totalDuration = Date.now() - startTime;
+    
+    // Track skip with detailed analytics
+    analyticsService.trackEvent('onboarding_skipped', {
+      stepId: currentStepData.id,
+      stepNumber: currentStep + 1,
+      totalDuration,
+      variant,
+      skipReason: 'user_initiated',
+      completionRate: (currentStep / steps.length) * 100
+    });
+    
     onSkip();
-  };
+  }, [currentStep, currentStepData.id, onSkip, startTime, steps.length, variant]);
+
+  const handleGesture = useCallback((gesture: any) => {
+    if (gesture.type === 'swipe') {
+      if (gesture.direction === 'left' && !isLastStep) {
+        handleNext();
+      } else if (gesture.direction === 'right' && !isFirstStep) {
+        handlePrevious();
+      }
+    }
+  }, [handleNext, handlePrevious, isFirstStep, isLastStep]);
 
   const renderStepContent = () => {
-    const stepData = currentStepData;
-    
-    switch (stepData.action) {
-      case 'subject-input':
+    switch (currentStepData.action) {
+      case 'quick-setup':
         return (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Ex: Como fazer café perfeito"
-              value={userInputs.subject}
-              onChange={(e) => setUserInputs(prev => ({ ...prev, subject: e.target.value }))}
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              autoFocus
-            />
-            <div className="text-sm text-gray-500 space-y-1">
-              <p>💡 <strong>Dicas:</strong></p>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Seja específico: "Como organizar home office" vs "Organização"</li>
-                <li>Pense no seu público: iniciantes ou experts?</li>
-                <li>Use palavras que você realmente falaria</li>
-              </ul>
+          <div className="space-y-6">
+            {/* Benefits Grid */}
+            {currentStepData.benefits && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                {currentStepData.benefits.map((benefit, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg"
+                  >
+                    <span className="text-sm font-medium text-gray-700">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Quick Setup Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📝 Sobre o que você quer falar?
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Como fazer café perfeito, Dicas de produtividade..."
+                  value={userInputs.subject}
+                  onChange={(e) => setUserInputs(prev => ({ ...prev, subject: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    📱 Plataforma
+                  </label>
+                  <select
+                    value={userInputs.platform}
+                    onChange={(e) => setUserInputs(prev => ({ ...prev, platform: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="youtube-shorts">YouTube Shorts</option>
+                    <option value="instagram-reels">Instagram Reels</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="youtube-long">YouTube Longo</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    🎭 Tom
+                  </label>
+                  <select
+                    value={userInputs.tone}
+                    onChange={(e) => setUserInputs(prev => ({ ...prev, tone: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="informal">Informal</option>
+                    <option value="profissional">Profissional</option>
+                    <option value="educativo">Educativo</option>
+                    <option value="humoristico">Humorístico</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         );
-        
-      case 'platform-select':
-        return (
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { id: 'youtube', name: 'YouTube', icon: '📺', description: 'Vídeos longos e detalhados' },
-              { id: 'instagram', name: 'Instagram', icon: '📸', description: 'Visual e rápido' },
-              { id: 'tiktok', name: 'TikTok', icon: '🎵', description: 'Curto e viral' },
-              { id: 'linkedin', name: 'LinkedIn', icon: '💼', description: 'Profissional' }
-            ].map((platform) => (
-              <button
-                key={platform.id}
-                onClick={() => setUserInputs(prev => ({ ...prev, platform: platform.id }))}
-                className={cn(
-                  "p-4 border rounded-lg text-left transition-all hover:shadow-md",
-                  userInputs.platform === platform.id
-                    ? "border-blue-500 bg-blue-50 shadow-md"
-                    : "border-gray-200 hover:border-gray-300"
-                )}
-              >
-                <div className="text-2xl mb-2">{platform.icon}</div>
-                <div className="font-medium">{platform.name}</div>
-                <div className="text-sm text-gray-500">{platform.description}</div>
-              </button>
-            ))}
-          </div>
-        );
-        
-      case 'generate':
-        return (
-          <div className="text-center space-y-4">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
-              <div className="text-4xl mb-3">🚀</div>
-              <p className="font-medium">Configuração completa!</p>
-              <p className="text-sm text-gray-600 mt-2">
-                <strong>Assunto:</strong> {userInputs.subject || 'Não definido'}<br/>
-                <strong>Plataforma:</strong> {userInputs.platform || 'Não definida'}
-              </p>
-            </div>
-            <p className="text-gray-600">
-              Clique em "Gerar Roteiro" para ver a mágica acontecer!
-            </p>
-          </div>
-        );
-        
+
       default:
-        return null;
+        // Welcome or Success step
+        return (
+          <div className="text-center">
+            {currentStepData.benefits && (
+              <div className="grid grid-cols-1 gap-3 mb-6">
+                {currentStepData.benefits.map((benefit, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200"
+                  >
+                    <span className="text-sm font-medium text-blue-800">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {currentStep === 0 && (
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200 mb-6">
+                <p className="text-sm text-gray-600">
+                  ✨ <strong>Novidade:</strong> IA real integrada - sem necessidade de configurar API keys!
+                </p>
+              </div>
+            )}
+          </div>
+        );
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className={cn(
-        "w-full max-w-2xl bg-white shadow-2xl transition-all duration-300",
-        isAnimating && "scale-95 opacity-50"
-      )}>
-        {/* Header with Progress */}
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              {currentStepData.icon}
-              <span className="text-sm font-medium text-gray-500">
-                Passo {currentStep + 1} de {steps.length}
-              </span>
+    <TouchGestureHandler onGesture={handleGesture}>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <Card className={cn(
+          "w-full max-w-2xl bg-white shadow-2xl transition-all duration-300",
+          isAnimating && "scale-95 opacity-50"
+        )}>
+          {/* Header with Progress */}
+          <div className="p-6 border-b">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  {currentStepData.icon}
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">
+                    Passo {currentStep + 1} de {steps.length}
+                  </span>
+                  {currentStepData.timeEstimate && (
+                    <span className="text-xs text-gray-400 block">
+                      ⏱️ {currentStepData.timeEstimate}
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                {variant === 'first-time' && (
+                  <button
+                    onClick={handleSkip}
+                    className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Pular tutorial
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              {currentStepData.timeEstimate && (
-                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                  ⏱️ {currentStepData.timeEstimate}
-                </span>
-              )}
-              {currentStepData.skippable && (
-                <button
-                  onClick={handleSkip}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+            
+            {/* Enhanced Progress Bar */}
+            <div className="relative">
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
+                  style={{ width: `${progressPercentage}%` }}
                 >
-                  Pular
-                </button>
-              )}
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
+              </div>
+              <div className="flex justify-between mt-2">
+                {steps.map((_, index) => (
+                  <div 
+                    key={index}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-colors",
+                      index <= currentStep ? "bg-blue-500" : "bg-gray-300"
+                    )}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
+
+          {/* Content */}
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              {currentStepData.title}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {currentStepData.description}
+            </p>
+            
+            {renderStepContent()}
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
-            {currentStepData.title}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {currentStepData.description}
-          </p>
-          
-          {renderStepContent()}
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t bg-gray-50 flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={isFirstStep}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Anterior</span>
-          </Button>
-          
-          <div className="flex space-x-2">
-            {!isLastStep && (
+          {/* Footer */}
+          <div className="p-6 border-t bg-gray-50">
+            <div className="flex items-center justify-between">
               <Button
                 variant="outline"
-                onClick={handleSkip}
-                className="text-gray-600"
+                onClick={handlePrevious}
+                disabled={isFirstStep}
+                className={cn(
+                  "flex items-center space-x-2",
+                  isFirstStep && "opacity-50 cursor-not-allowed"
+                )}
               >
-                Pular Tutorial
+                <ArrowLeft className="w-4 h-4" />
+                <span>Anterior</span>
               </Button>
-            )}
-            <Button
-              onClick={handleNext}
-              disabled={
-                (currentStepData.action === 'subject-input' && !userInputs.subject.trim()) ||
-                (currentStepData.action === 'platform-select' && !userInputs.platform)
-              }
-              className="flex items-center space-x-2"
-            >
-              <span>{currentStepData.cta || (isLastStep ? 'Finalizar' : 'Próximo')}</span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+
+              <div className="flex items-center space-x-3">
+                {currentStep === 1 && !userInputs.subject.trim() && (
+                  <span className="text-sm text-amber-600 bg-amber-50 px-3 py-1 rounded-lg">
+                    💡 Preencha o assunto para continuar
+                  </span>
+                )}
+                
+                <Button
+                  onClick={handleNext}
+                  disabled={currentStep === 1 && !userInputs.subject.trim()}
+                  className={cn(
+                    "flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600",
+                    currentStep === 1 && !userInputs.subject.trim() && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <span>{currentStepData.cta || 'Próximo'}</span>
+                  {isLastStep ? (
+                    <Gift className="w-4 h-4" />
+                  ) : currentStep === 1 ? (
+                    <Zap className="w-4 h-4" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </TouchGestureHandler>
   );
 };
 
-// Quick Start Mini Component for return users
+// ENHANCED: Quick Start Prompt with better CRO copy
 export const QuickStartPrompt: React.FC<{
   onStartOnboarding: () => void;
   onDismiss: () => void;
 }> = ({ onStartOnboarding, onDismiss }) => {
   return (
-    <Card className="p-4 border-l-4 border-l-blue-500 bg-blue-50 mb-6">
+    <Card className="p-4 border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 mb-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-medium text-blue-900">Primeiro acesso? 👋</h3>
-          <p className="text-sm text-blue-700">
-            Te ajudamos a criar seu primeiro roteiro em 2 minutos!
+          <h3 className="font-medium text-blue-900 flex items-center space-x-2">
+            <Sparkles className="w-4 h-4" />
+            <span>Primeiro acesso? Vamos acelerar! 🚀</span>
+          </h3>
+          <p className="text-sm text-blue-700 mt-1">
+            <strong>60 segundos</strong> para seu primeiro roteiro profissional. IA real, sem complicação.
           </p>
         </div>
         <div className="flex space-x-2">
@@ -312,16 +422,17 @@ export const QuickStartPrompt: React.FC<{
             size="sm"
             variant="outline"
             onClick={onDismiss}
-            className="text-blue-600 border-blue-300"
+            className="text-blue-600 border-blue-300 hover:bg-blue-100"
           >
-            Não, obrigado
+            Depois
           </Button>
           <Button
             size="sm"
             onClick={onStartOnboarding}
-            className="bg-blue-600 text-white"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
           >
-            🚀 Começar
+            <Play className="w-3 h-3 mr-1" />
+            Começar agora
           </Button>
         </div>
       </div>

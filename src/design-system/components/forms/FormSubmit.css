@@ -1,0 +1,998 @@
+/* ==========================================
+   🔵 IA BETA - V7.5 ENHANCED FORMSUBMIT STYLES
+   Professional form submission with validation integration & feedback
+   ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ==========================================
+   CSS CUSTOM PROPERTIES - V7.5 ENHANCED
+   ========================================== */
+
+:root {
+  /* V7.5 Enhanced Color Palette */
+  --form-submit-primary: #2563eb;
+  --form-submit-primary-hover: #1d4ed8;
+  --form-submit-primary-light: #3b82f6;
+  --form-submit-accent: #7c3aed;
+  --form-submit-accent-light: #8b5cf6;
+  --form-submit-warm: #f59e0b;
+  --form-submit-warm-light: #fbbf24;
+  
+  /* Glass-morphism Variables */
+  --form-submit-glass-bg: rgba(255, 255, 255, 0.05);
+  --form-submit-glass-border: rgba(255, 255, 255, 0.1);
+  --form-submit-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --form-submit-glass-backdrop: blur(12px);
+  
+  /* State Colors */
+  --form-submit-success: #10b981;
+  --form-submit-success-light: #34d399;
+  --form-submit-success-bg: rgba(16, 185, 129, 0.05);
+  --form-submit-warning: #f59e0b;
+  --form-submit-warning-light: #fbbf24;
+  --form-submit-warning-bg: rgba(245, 158, 11, 0.05);
+  --form-submit-error: #ef4444;
+  --form-submit-error-light: #f87171;
+  --form-submit-error-bg: rgba(239, 68, 68, 0.05);
+  --form-submit-neutral: #6b7280;
+  --form-submit-submitting: #3b82f6;
+  --form-submit-submitting-bg: rgba(59, 130, 246, 0.05);
+  
+  /* Background Colors */
+  --form-submit-bg-white: #ffffff;
+  --form-submit-bg-gray-50: #f9fafb;
+  --form-submit-bg-gray-100: #f3f4f6;
+  --form-submit-bg-gray-900: #111827;
+  
+  /* Text Colors */
+  --form-submit-text-primary: #111827;
+  --form-submit-text-secondary: #6b7280;
+  --form-submit-text-placeholder: #9ca3af;
+  --form-submit-text-white: #ffffff;
+  
+  /* Border Radius */
+  --form-submit-radius-sm: 4px;
+  --form-submit-radius-md: 6px;
+  --form-submit-radius-lg: 8px;
+  --form-submit-radius-xl: 12px;
+  --form-submit-radius-2xl: 16px;
+  
+  /* Shadows */
+  --form-submit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --form-submit-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --form-submit-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --form-submit-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --form-submit-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --form-submit-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Typography */
+  --form-submit-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  
+  /* Spacing Scale */
+  --form-submit-space-1: 0.25rem;
+  --form-submit-space-2: 0.5rem;
+  --form-submit-space-3: 0.75rem;
+  --form-submit-space-4: 1rem;
+  --form-submit-space-5: 1.25rem;
+  --form-submit-space-6: 1.5rem;
+  --form-submit-space-8: 2rem;
+  --form-submit-space-12: 3rem;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  --form-submit-glass-bg: rgba(0, 0, 0, 0.1);
+  --form-submit-glass-border: rgba(255, 255, 255, 0.08);
+  --form-submit-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  --form-submit-bg-white: #1f2937;
+  --form-submit-bg-gray-50: #374151;
+  --form-submit-bg-gray-100: #4b5563;
+  
+  --form-submit-text-primary: #f9fafb;
+  --form-submit-text-secondary: #d1d5db;
+  --form-submit-text-placeholder: #9ca3af;
+}
+
+/* ==========================================
+   BASE CONTAINER STYLES
+   ========================================== */
+
+.form-submit-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-submit-space-4);
+  font-family: var(--form-submit-font-family);
+  width: 100%;
+  position: relative;
+}
+
+.form-submit-container * {
+  box-sizing: border-box;
+}
+
+/* ==========================================
+   HEADER STYLES
+   ========================================== */
+
+.form-submit-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-submit-space-2);
+  text-align: center;
+  margin-bottom: var(--form-submit-space-2);
+}
+
+.form-submit-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--form-submit-text-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.form-submit-description {
+  font-size: 0.875rem;
+  color: var(--form-submit-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   SUBMIT BUTTON STYLES
+   ========================================== */
+
+.form-submit-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--form-submit-space-2);
+  padding: var(--form-submit-space-3) var(--form-submit-space-6);
+  border: 2px solid transparent;
+  border-radius: var(--form-submit-radius-lg);
+  font-family: var(--form-submit-font-family);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--form-submit-transition);
+  overflow: hidden;
+  min-height: 44px;
+  min-width: 120px;
+  white-space: nowrap;
+  user-select: none;
+  outline: none;
+  background: var(--form-submit-primary);
+  color: var(--form-submit-text-white);
+}
+
+.form-submit-button:hover {
+  background: var(--form-submit-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--form-submit-shadow-lg);
+}
+
+.form-submit-button:focus {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.form-submit-button:active {
+  transform: translateY(0);
+}
+
+.form-submit-button-content {
+  display: flex;
+  align-items: center;
+  gap: var(--form-submit-space-2);
+  z-index: 1;
+  position: relative;
+}
+
+.form-submit-button-text {
+  font-weight: 500;
+}
+
+.form-submit-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.form-submit-icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ==========================================
+   BUTTON SIZE VARIANTS
+   ========================================== */
+
+.form-submit-button--sm {
+  padding: var(--form-submit-space-2) var(--form-submit-space-4);
+  font-size: 0.75rem;
+  min-height: 36px;
+  min-width: 100px;
+}
+
+.form-submit-button--sm .form-submit-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.form-submit-button--lg {
+  padding: var(--form-submit-space-4) var(--form-submit-space-8);
+  font-size: 1rem;
+  min-height: 52px;
+  min-width: 140px;
+}
+
+.form-submit-button--lg .form-submit-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ==========================================
+   BUTTON VARIANT STYLES
+   ========================================== */
+
+/* Glass Variant - V7.5 Enhanced Signature */
+.form-submit-button--glass {
+  background: var(--form-submit-glass-bg);
+  backdrop-filter: var(--form-submit-glass-backdrop);
+  -webkit-backdrop-filter: var(--form-submit-glass-backdrop);
+  border: 1px solid var(--form-submit-glass-border);
+  color: var(--form-submit-text-primary);
+  box-shadow: var(--form-submit-glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-submit-button--glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  z-index: 0;
+}
+
+.form-submit-button--glass:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Glass Effect Intensity */
+.form-submit-container--glass-subtle .form-submit-button--glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.form-submit-container--glass-medium .form-submit-button--glass {
+  background: var(--form-submit-glass-bg);
+  backdrop-filter: var(--form-submit-glass-backdrop);
+  -webkit-backdrop-filter: var(--form-submit-glass-backdrop);
+}
+
+.form-submit-container--glass-strong .form-submit-button--glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Outlined Variant */
+.form-submit-button--outlined {
+  background: transparent;
+  border: 2px solid var(--form-submit-primary);
+  color: var(--form-submit-primary);
+}
+
+.form-submit-button--outlined:hover {
+  background: var(--form-submit-primary);
+  color: var(--form-submit-text-white);
+}
+
+/* Filled Variant */
+.form-submit-button--filled {
+  background: var(--form-submit-bg-gray-50);
+  border: 1px solid var(--form-submit-neutral);
+  color: var(--form-submit-text-primary);
+}
+
+.form-submit-button--filled:hover {
+  background: var(--form-submit-bg-gray-100);
+  border-color: var(--form-submit-primary);
+}
+
+/* Minimal Variant */
+.form-submit-button--minimal {
+  background: transparent;
+  border: 1px solid var(--form-submit-neutral);
+  color: var(--form-submit-text-primary);
+}
+
+.form-submit-button--minimal:hover {
+  border-color: var(--form-submit-primary);
+  color: var(--form-submit-primary);
+}
+
+/* ==========================================
+   BUTTON STATE STYLES
+   ========================================== */
+
+/* Loading State */
+.form-submit-button--loading {
+  cursor: not-allowed;
+  background: var(--form-submit-submitting);
+  position: relative;
+}
+
+.form-submit-button--loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.form-submit-button-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Success State */
+.form-submit-button--success {
+  background: var(--form-submit-success);
+  border-color: var(--form-submit-success);
+  color: var(--form-submit-text-white);
+  animation: successPulse 0.5s ease-out;
+}
+
+.form-submit-button--success:hover {
+  background: var(--form-submit-success-light);
+}
+
+/* Error State */
+.form-submit-button--error {
+  background: var(--form-submit-error);
+  border-color: var(--form-submit-error);
+  color: var(--form-submit-text-white);
+  animation: errorShake 0.5s ease-out;
+}
+
+.form-submit-button--error:hover {
+  background: var(--form-submit-error-light);
+}
+
+/* Disabled State */
+.form-submit-button--disabled {
+  background: var(--form-submit-bg-gray-100);
+  border-color: var(--form-submit-bg-gray-100);
+  color: var(--form-submit-text-placeholder);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-submit-button--disabled:hover {
+  background: var(--form-submit-bg-gray-100);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================
+   PROGRESS INDICATOR STYLES
+   ========================================== */
+
+.form-submit-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-submit-space-3);
+  padding: var(--form-submit-space-4);
+  border-radius: var(--form-submit-radius-lg);
+  background: var(--form-submit-submitting-bg);
+  border: 1px solid var(--form-submit-submitting);
+}
+
+.form-submit-progress-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-submit-space-2);
+}
+
+.form-submit-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-submit-progress-phase {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--form-submit-submitting);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-submit-progress-message {
+  font-size: 0.875rem;
+  color: var(--form-submit-text-secondary);
+}
+
+.form-submit-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: var(--form-submit-radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.form-submit-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--form-submit-submitting), var(--form-submit-primary-light));
+  border-radius: var(--form-submit-radius-sm);
+  position: relative;
+}
+
+.form-submit-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+.form-submit-progress-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-submit-progress-percentage {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--form-submit-submitting);
+}
+
+.form-submit-progress-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid var(--form-submit-error);
+  border-radius: 50%;
+  color: var(--form-submit-error);
+  cursor: pointer;
+  transition: var(--form-submit-transition);
+}
+
+.form-submit-progress-cancel:hover {
+  background: var(--form-submit-error);
+  color: var(--form-submit-text-white);
+}
+
+/* ==========================================
+   SUCCESS MESSAGE STYLES
+   ========================================== */
+
+.form-submit-success {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--form-submit-space-3);
+  padding: var(--form-submit-space-4);
+  border-radius: var(--form-submit-radius-lg);
+  background: var(--form-submit-success-bg);
+  border: 1px solid var(--form-submit-success);
+  animation: slideInUp 0.3s ease-out;
+}
+
+.form-submit-success-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--form-submit-space-3);
+  width: 100%;
+}
+
+.form-submit-success-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--form-submit-success);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.form-submit-success-text {
+  flex: 1;
+}
+
+.form-submit-success-text h4 {
+  margin: 0 0 var(--form-submit-space-1) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-submit-success);
+}
+
+.form-submit-success-text p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--form-submit-text-secondary);
+  line-height: 1.4;
+}
+
+/* ==========================================
+   ERROR MESSAGE STYLES
+   ========================================== */
+
+.form-submit-error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-submit-space-3);
+  padding: var(--form-submit-space-4);
+  border-radius: var(--form-submit-radius-lg);
+  background: var(--form-submit-error-bg);
+  border: 1px solid var(--form-submit-error);
+  animation: slideInUp 0.3s ease-out;
+}
+
+.form-submit-error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--form-submit-space-3);
+  width: 100%;
+}
+
+.form-submit-error-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--form-submit-error);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.form-submit-error-text {
+  flex: 1;
+}
+
+.form-submit-error-text h4 {
+  margin: 0 0 var(--form-submit-space-1) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-submit-error);
+}
+
+.form-submit-error-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.form-submit-error-list li {
+  font-size: 0.875rem;
+  color: var(--form-submit-text-secondary);
+  line-height: 1.4;
+  margin-bottom: var(--form-submit-space-1);
+}
+
+.form-submit-error-list li:before {
+  content: '•';
+  color: var(--form-submit-error);
+  margin-right: var(--form-submit-space-2);
+}
+
+.form-submit-retry-button {
+  display: flex;
+  align-items: center;
+  gap: var(--form-submit-space-2);
+  padding: var(--form-submit-space-2) var(--form-submit-space-3);
+  background: transparent;
+  border: 1px solid var(--form-submit-error);
+  border-radius: var(--form-submit-radius-md);
+  color: var(--form-submit-error);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--form-submit-transition);
+  margin-top: var(--form-submit-space-2);
+  align-self: flex-start;
+}
+
+.form-submit-retry-button:hover {
+  background: var(--form-submit-error);
+  color: var(--form-submit-text-white);
+}
+
+/* ==========================================
+   VALIDATION STATUS STYLES
+   ========================================== */
+
+.form-submit-validation {
+  display: flex;
+  align-items: center;
+  padding: var(--form-submit-space-2) var(--form-submit-space-3);
+  border-radius: var(--form-submit-radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.form-submit-validation-content {
+  display: flex;
+  align-items: center;
+  gap: var(--form-submit-space-2);
+  width: 100%;
+}
+
+.form-submit-validation-valid {
+  display: flex;
+  align-items: center;
+  gap: var(--form-submit-space-2);
+  color: var(--form-submit-success);
+}
+
+.form-submit-validation-invalid {
+  display: flex;
+  align-items: center;
+  gap: var(--form-submit-space-2);
+  color: var(--form-submit-error);
+}
+
+/* ==========================================
+   CONTAINER STATE STYLES
+   ========================================== */
+
+.form-submit-container--submitting {
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.form-submit-container--success {
+  animation: successGlow 0.5s ease-out;
+}
+
+.form-submit-container--error {
+  animation: errorPulse 0.5s ease-out;
+}
+
+.form-submit-container--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ==========================================
+   DEBUG INFORMATION STYLES
+   ========================================== */
+
+.form-submit-debug {
+  margin-top: var(--form-submit-space-4);
+  padding: var(--form-submit-space-3);
+  border: 1px solid var(--form-submit-text-placeholder);
+  border-radius: var(--form-submit-radius-md);
+  background: var(--form-submit-bg-gray-50);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.75rem;
+}
+
+.form-submit-debug summary {
+  font-weight: 600;
+  color: var(--form-submit-text-primary);
+  cursor: pointer;
+  padding: var(--form-submit-space-2);
+  border-radius: var(--form-submit-radius-sm);
+  transition: var(--form-submit-transition);
+}
+
+.form-submit-debug summary:hover {
+  background: var(--form-submit-bg-gray-100);
+}
+
+.form-submit-debug-content {
+  margin-top: var(--form-submit-space-3);
+  padding-top: var(--form-submit-space-3);
+  border-top: 1px solid var(--form-submit-text-placeholder);
+}
+
+.form-submit-debug-content h4 {
+  margin: var(--form-submit-space-3) 0 var(--form-submit-space-2) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-submit-text-primary);
+}
+
+.form-submit-debug-content pre {
+  background: var(--form-submit-bg-white);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--form-submit-radius-sm);
+  padding: var(--form-submit-space-3);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--form-submit-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes progressShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes errorShake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes successGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes errorPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   GLASS SHIMMER EFFECT
+   ========================================== */
+
+@keyframes glassShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.form-submit-button--glass::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: glassShimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 768px) {
+  .form-submit-container {
+    gap: var(--form-submit-space-3);
+  }
+  
+  .form-submit-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-submit-progress {
+    padding: var(--form-submit-space-3);
+  }
+  
+  .form-submit-success,
+  .form-submit-error {
+    padding: var(--form-submit-space-3);
+  }
+  
+  .form-submit-header {
+    text-align: left;
+  }
+  
+  .form-submit-title {
+    font-size: 1rem;
+  }
+  
+  .form-submit-description {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-submit-button {
+    padding: var(--form-submit-space-3) var(--form-submit-space-4);
+    font-size: 0.8125rem;
+    min-height: 48px;
+  }
+  
+  .form-submit-button--sm {
+    min-height: 40px;
+  }
+  
+  .form-submit-button--lg {
+    min-height: 56px;
+  }
+  
+  .form-submit-progress-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--form-submit-space-1);
+  }
+  
+  .form-submit-progress-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--form-submit-space-2);
+  }
+}
+
+/* ==========================================
+   HIGH CONTRAST MODE SUPPORT
+   ========================================== */
+
+@media (prefers-contrast: high) {
+  .form-submit-button--glass {
+    background: var(--form-submit-bg-white);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-width: 2px;
+  }
+  
+  .form-submit-progress {
+    border-width: 2px;
+    background: var(--form-submit-bg-white);
+  }
+  
+  .form-submit-success,
+  .form-submit-error {
+    border-width: 2px;
+    background: var(--form-submit-bg-white);
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION SUPPORT
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .form-submit-button,
+  .form-submit-progress,
+  .form-submit-success,
+  .form-submit-error,
+  .form-submit-validation {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .form-submit-button--glass::after {
+    display: none;
+  }
+  
+  .form-submit-progress-fill::after {
+    display: none;
+  }
+  
+  .form-submit-icon.spin {
+    animation: none !important;
+  }
+}
+
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+
+@media print {
+  .form-submit-container {
+    box-shadow: none !important;
+    background: white !important;
+    border: 1px solid #000 !important;
+  }
+  
+  .form-submit-debug {
+    display: none;
+  }
+  
+  .form-submit-progress {
+    display: none;
+  }
+  
+  .form-submit-button {
+    background: white !important;
+    border: 1px solid #000 !important;
+    color: #000 !important;
+  }
+} 

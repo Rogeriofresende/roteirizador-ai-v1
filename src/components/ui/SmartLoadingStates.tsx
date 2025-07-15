@@ -61,6 +61,9 @@ const SmartLoadingStatesComponent: React.FC<SmartLoadingProps> = ({
     timeThreshold: 50
   });
 
+  // 🔧 ALPHA FIX: Memoize stages to prevent infinite loops
+  const memoizedStages = useMemo(() => stages, [JSON.stringify(stages)]);
+
   // V5.1: Mensagens contextuais inteligentes
   const contextualMessageMap: Record<string, string[]> = {
     generator: [
@@ -117,7 +120,7 @@ const SmartLoadingStatesComponent: React.FC<SmartLoadingProps> = ({
       if (trackPerformance) {
         trackAction('loading', `start-${type}`, { 
           predictedDuration: predictedTime,
-          hasStages: stages.length > 0 
+          hasStages: memoizedStages.length > 0 
         });
       }
 
@@ -128,12 +131,12 @@ const SmartLoadingStatesComponent: React.FC<SmartLoadingProps> = ({
         setElapsedTime(Math.round(elapsed / 1000));
 
         // V5.1: Progress calculation with stages
-        if (stages.length > 0) {
+        if (memoizedStages.length > 0) {
           const stageProgress = Math.min((elapsed / 1000) * 25, 100);
-          const currentStageIndex = Math.floor(stageProgress / (100 / stages.length));
-          if (currentStageIndex < stages.length) {
-            setCurrentStage(stages[currentStageIndex]);
-            progress = stages[currentStageIndex].progress;
+          const currentStageIndex = Math.floor(stageProgress / (100 / memoizedStages.length));
+          if (currentStageIndex < memoizedStages.length) {
+            setCurrentStage(memoizedStages[currentStageIndex]);
+            progress = memoizedStages[currentStageIndex].progress;
           }
         } else {
           // Smooth progress without stages
@@ -175,7 +178,7 @@ const SmartLoadingStatesComponent: React.FC<SmartLoadingProps> = ({
         clearInterval(progressInterval.current);
       }
     };
-  }, [isLoading, type, trackPerformance, predictedTime, stages.length]); // ✅ STABLE: Essential dependencies only
+  }, [isLoading, type, trackPerformance, predictedTime, memoizedStages]); // 🔧 ALPHA FIX: Use memoized stages to prevent infinite loops
 
   // ✅ REMOVED: Redundant trackAction effect that was causing re-renders
 

@@ -12,10 +12,10 @@
  * - User experience preservation during failures
  */
 
-import { CostManagementService } from './costManagementService';
+import { CostManagementService } from '../risk-management/costManagementService';
 import { BudgetControlService } from './budgetControlService';
-import { EmergencyProtocolService } from './emergencyProtocolService';
-import { UsageTierService, UserTier } from './usageTierService';
+import { EmergencyProtocolService } from '../risk-management/emergencyProtocolService';
+import { UsageTierService, UserTier } from '../risk-management/usageTierService';
 
 // Service Level Types
 export type ServiceLevel = 'normal' | 'degraded' | 'minimal' | 'emergency';

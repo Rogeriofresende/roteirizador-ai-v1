@@ -47,6 +47,15 @@ import {
   Services
 } from './services';
 
+// 🔴 IA ALPHA - Performance Monitoring System Integration
+import { realTimePerformanceMonitor } from './services/performance/RealTimePerformanceMonitor';
+
+// 🔴 IA ALPHA - Advanced Analytics System Integration
+import { advancedAnalyticsService } from './services/analytics/AdvancedAnalyticsService';
+
+// 🔴 IA ALPHA - Conversion Optimization Engine Integration
+import { conversionOptimizationEngine } from './services/optimization/ConversionOptimizationEngine';
+
 // =============================================================================
 // LAZY LOADED PAGES - CODE SPLITTING
 // =============================================================================
@@ -149,6 +158,57 @@ const OptimizationDashboard = React.lazy(() =>
   )
 );
 
+// 🔴 IA ALPHA - Performance Dashboard
+const PerformanceDashboard = React.lazy(() => 
+  performanceService.measureFunction('load_PerformanceDashboard', () => 
+    import('./components/performance/PerformanceDashboard').then(module => {
+      // Preload related performance services
+      import('./services/performance/RealTimePerformanceMonitor');
+      logger.log('debug', 'PerformanceDashboard lazy loaded with performance monitoring preloaded', {}, 'CODE_SPLITTING');
+      return module;
+    })
+  )
+);
+
+// 🔴 IA ALPHA - Analytics Dashboard Lazy Loading
+const AnalyticsDashboard = React.lazy(() => 
+  performanceService.measureFunction('load_AnalyticsDashboard', () => 
+    import('./components/analytics/AnalyticsDashboard').then(module => {
+      // 🚀 IA Alpha: Preload analytics-related services
+      import('./services/analytics/AdvancedAnalyticsService');
+      import('./services/performance/RealTimePerformanceMonitor');
+      logger.log('debug', 'AnalyticsDashboard lazy loaded with analytics services preloaded', {}, 'CODE_SPLITTING');
+      return module;
+    })
+  )
+);
+
+// 🔴 IA ALPHA - Conversion Dashboard Lazy Loading
+const ConversionDashboard = React.lazy(() => 
+  performanceService.measureFunction("load_ConversionDashboard", () => 
+    import("./components/optimization/ConversionDashboard").then(module => {
+      // 🚀 IA Alpha: Preload conversion optimization services
+      import("./services/optimization/ConversionOptimizationEngine");
+      import("./services/analytics/AdvancedAnalyticsService");
+      import("./services/performance/RealTimePerformanceMonitor");
+      logger.log("debug", "ConversionDashboard lazy loaded with conversion optimization services preloaded", {}, "CODE_SPLITTING");
+      return module;
+    })
+  )
+);
+
+// 🎨 IA BETA - Content Analyzer V7.5 Enhanced
+const ContentAnalyzer = React.lazy(() => 
+  performanceService.measureFunction("load_ContentAnalyzer", () => 
+    import("./components/ContentAnalyzer").then(module => {
+      // 🚀 V7.5: Preload content analysis services
+      import("./services/analyticsService");
+      logger.log("debug", "ContentAnalyzer V7.5 Enhanced lazy loaded with content analysis services preloaded", {}, "CODE_SPLITTING");
+      return module;
+    })
+  )
+);
+
 // =============================================================================
 // PRELOADING STRATEGY
 // =============================================================================
@@ -240,22 +300,60 @@ const preloadPages = () => {
 
 import './App.css';
 import './styles/BancoDeIdeias.css';
+import { EnhancedPWAInstall } from './components/mobile/EnhancedPWAInstall';
+import { MobilePerformanceOptimizer } from './components/mobile/MobilePerformanceOptimizer';
 
 const App: React.FC = () => {
   const initialized = useRef(false);
 
   useEffect(() => {
-    // Prevent double initialization in React Strict Mode
+    // CRITICAL FIX: Prevent double initialization in React Strict Mode
     if (initialized.current) {
+      console.log('🛑 App initialization already completed, skipping duplicate');
       logger.log('debug', 'App already initialized, skipping...', {}, 'APP');
       return;
     }
     
+    console.log('🚀 App initialization starting (first time only)');
     initialized.current = true;
     
     // 🔍 V6.4: Initialize Error Capture System FIRST - FIX: Usar systemLog
     initializeErrorCapture();
     logger.log('info', 'Error Capture System V6.4 initialized - Enhanced with whitelist', {}, 'APP');
+    
+    // 🔴 IA ALPHA: Initialize Real-Time Performance Monitoring
+    try {
+      realTimePerformanceMonitor.initializeMonitoring();
+      logger.log('info', 'Alpha Performance Monitoring System initialized successfully', {
+        features: ['Core Web Vitals', 'Memory Monitoring', 'User Interactions', 'Real-time Alerts']
+      }, 'APP');
+    } catch (error) {
+      logger.log('warn', 'Performance monitoring initialization failed', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, 'APP');
+    }
+
+    // 🔴 IA ALPHA: Initialize Advanced Analytics System
+    advancedAnalyticsService.initializeAnalytics().then(() => {
+      logger.log('info', 'Alpha Advanced Analytics System initialized successfully', {
+        features: ['Google Analytics 4', 'Hotjar', 'Microsoft Clarity', 'User Journey Tracking', 'Conversion Funnels']
+      }, 'APP');
+    }).catch(error => {
+      logger.log('warn', 'Advanced Analytics initialization failed', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, 'APP');
+    });
+
+    // 🔴 IA ALPHA: Initialize Conversion Optimization Engine
+    conversionOptimizationEngine.initialize().then(() => {
+      logger.log('info', 'Alpha Conversion Optimization Engine initialized successfully', {
+        features: ['Conversion Funnel Analysis', 'A/B Testing', 'Landing Page Optimization', 'User Journey Tracking']
+      }, 'APP');
+    }).catch(error => {
+      logger.log('warn', 'Conversion Optimization Engine initialization failed', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, 'APP');
+    });
     
     // 🛡️ THIRD-PARTY ERROR SUPPRESSION
     // Initialize global error suppression for scripts like Microsoft Clarity
@@ -292,6 +390,26 @@ const App: React.FC = () => {
         let diResult;
         try {
           diResult = await initializeServiceSystem();
+          
+          // 🧠 BANCO DE IDEIAS: Initialize services after DI system
+          if (diResult.success) {
+            try {
+              const application = await import('./architecture/ServiceArchitecture');
+              const initializer = await import('./architecture/ServiceInitializer');
+              
+              const app = application.getApplication();
+              const container = app.getService('ServiceContainer');
+              
+              if (container) {
+                await initializer.initializeBancoDeIdeiasServices(container);
+                logger.log('info', 'Banco de Ideias services initialized successfully', {}, 'APP');
+              }
+            } catch (bankError) {
+              logger.log('warn', 'Banco de Ideias services initialization failed', {
+                error: bankError instanceof Error ? bankError.message : 'Unknown error'
+              }, 'APP');
+            }
+          }
         } catch (diError) {
           // FALLBACK: Se DI System falhar, continuar com sistema legado
           logger.log('warn', 'DI System initialization failed, using legacy fallback', {
@@ -542,11 +660,18 @@ const App: React.FC = () => {
   }, []); // Empty dependency array for one-time initialization
 
   return (
-    <ErrorBoundary>
+    <MobilePerformanceOptimizer
+      onMetricsUpdate={(metrics) => {
+        console.log('📱 Mobile Performance Metrics:', metrics);
+      }}
+      onCapabilitiesDetected={(capabilities) => {
+        console.log('📱 Device Capabilities:', capabilities);
+      }}
+    >
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <div className="min-h-screen bg-background text-foreground">
-            <ErrorBoundary isolateErrors>
+            <ErrorBoundary>
               <Suspense fallback={<PageLoadingSpinner message="Carregando aplicação..." />}>
                 <Routes>
                   {/* V5.1 CRITICAL: Direct access to main functionality - NO AUTH REQUIRED */}
@@ -607,6 +732,42 @@ const App: React.FC = () => {
                       </ProtectedRoute>
                     } 
                   />
+                  {/* 🔴 IA Alpha: Performance Monitoring Dashboard */}
+                  <Route 
+                    path="/performance" 
+                    element={
+                      <ProtectedRoute>
+                        <PerformanceDashboard showAdvanced={true} />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* 🔴 IA Alpha: Advanced Analytics Dashboard */}
+                  <Route 
+                    path="/analytics" 
+                    element={
+                      <ProtectedRoute>
+                        <AnalyticsDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* 🔴 IA Alpha: Conversion Optimization Dashboard */}
+                  <Route 
+                    path="/conversion" 
+                    element={
+                      <ProtectedRoute>
+                        <ConversionDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* 🎨 IA Beta: Content Analyzer V7.5 Enhanced */}
+                  <Route 
+                    path="/content-analyzer" 
+                    element={
+                      <ProtectedRoute>
+                        <ContentAnalyzer />
+                      </ProtectedRoute>
+                    } 
+                  />
                   <Route 
                     path="/error-capture-test" 
                     element={<ErrorCaptureTest />} 
@@ -623,6 +784,15 @@ const App: React.FC = () => {
               </Suspense>
             </ErrorBoundary>
             
+            {/* Enhanced PWA Install Experience */}
+            <EnhancedPWAInstall 
+              variant="minimal"
+              showBenefits={true}
+              showInstructions={true}
+              autoShow={true}
+              triggerDelay={5000}
+            />
+
             <PWAInstall variant="banner" />
             
             <Toaster 
@@ -635,7 +805,7 @@ const App: React.FC = () => {
           </div>
         </AuthProvider>
       </Router>
-    </ErrorBoundary>
+    </MobilePerformanceOptimizer>
   );
 };
 

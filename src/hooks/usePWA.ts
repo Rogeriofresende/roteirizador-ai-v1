@@ -3,233 +3,350 @@
  * Week 7 Day 5: React hook for PWA features and installation management
  */
 
-import { useEffect, useState, useCallback } from 'react';
-import { PWAInstallManager } from '../services/pwaInstallManager';
-import { logger } from '../utils/logger';
+import { useState, useEffect, useCallback } from 'react';
 
-// =============================================================================
-// TYPES & INTERFACES
-// =============================================================================
-
-interface UsePWAReturn {
-  isInstalled: boolean;
-  canInstall: boolean;
-  isStandalone: boolean;
-  capabilities: any;
-  metrics: any;
-  installReadinessScore: number;
-  promptInstall: () => Promise<boolean>;
-  showInstallInstructions: () => void;
-  isSupported: boolean;
-  isOnline: boolean;
-  updateAvailable: boolean;
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-// =============================================================================
-// MAIN HOOK
-// =============================================================================
+interface PWAStatus {
+  isInstalled: boolean;
+  isStandalone: boolean;
+  isOnline: boolean;
+  canInstall: boolean;
+  installPromptEvent: BeforeInstallPromptEvent | null;
+  swRegistration: ServiceWorkerRegistration | null;
+  swUpdateAvailable: boolean;
+}
 
-export function usePWA(): UsePWAReturn {
+interface PWAActions {
+  showInstallPrompt: () => Promise<boolean>;
+  updateServiceWorker: () => Promise<void>;
+  unregisterServiceWorker: () => Promise<void>;
+  clearCache: (cacheType?: string) => Promise<void>;
+  getCacheStatus: () => Promise<any>;
+  cacheIdea: (idea: any) => Promise<void>;
+  getCachedIdeas: () => Promise<any[]>;
+  requestNotificationPermission: () => Promise<NotificationPermission>;
+  showNotification: (title: string, options?: NotificationOptions) => Promise<void>;
+  registerBackgroundSync: (tag: string) => Promise<void>;
+}
+
+export const usePWA = (): PWAStatus & PWAActions => {
   const [isInstalled, setIsInstalled] = useState(false);
-  const [canInstall, setCanInstall] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [capabilities, setCapabilities] = useState<any>(null);
-  const [metrics, setMetrics] = useState<any>(null);
-  const [installReadinessScore, setInstallReadinessScore] = useState(0);
-  const [isSupported, setIsSupported] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [canInstall, setCanInstall] = useState(false);
+  const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
 
-  // ✅ PERFORMANCE OPTIMIZATION: Stable updatePWAState with useCallback
-  const updatePWAState = useCallback(() => {
-    try {
-      setIsInstalled(PWAInstallManager.isInstalled());
-      setCanInstall(PWAInstallManager.canInstall());
-      setCapabilities(PWAInstallManager.getCapabilities());
-      setMetrics(PWAInstallManager.getMetrics());
-      setInstallReadinessScore(PWAInstallManager.getInstallReadinessScore());
-      
-      const caps = PWAInstallManager.getCapabilities();
-      setIsStandalone(caps.isStandalone);
-    } catch (error) {
-      logger.error('Failed to update PWA state', { error }, 'PWA');
-    }
-  }, []); // ✅ FIXED: Empty dependency array to prevent loops
-
-  // Initialize PWA manager
+  // Verificar se app está instalado
   useEffect(() => {
-    const initializePWA = async () => {
-      try {
-        const success = await PWAInstallManager.initialize();
-        if (success) {
-          updatePWAState();
-          setIsSupported(true);
-          
-          logger.info('PWA hook initialized', {}, 'PWA');
-        }
-      } catch (error) {
-        logger.error('Failed to initialize PWA', { error }, 'PWA');
-      }
+    const checkIfInstalled = () => {
+      const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
+                               (window.navigator as any).standalone === true;
+      setIsStandalone(isStandaloneMode);
+      setIsInstalled(isStandaloneMode);
     };
 
-    initializePWA();
+    checkIfInstalled();
+    
+    // Listener para mudanças no display mode
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', checkIfInstalled);
+    
+    return () => mediaQuery.removeEventListener('change', checkIfInstalled);
+  }, []);
 
-    // Cleanup on unmount
-    return () => {
-      PWAInstallManager.cleanup();
-    };
-  }, []); // ✅ FIXED: Empty dependency array
-
-  // ✅ OPTIMIZATION: Separate effect for event listeners to prevent cleanup issues
+  // Monitorar status de conexão
   useEffect(() => {
-    // Online/offline detection
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
-    // App installation detection
-    const handleAppInstalled = () => {
-      updatePWAState();
-    };
-    
-    // Before install prompt detection
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      updatePWAState();
-    };
 
-    // Service worker update detection
-    const handleServiceWorkerUpdate = () => {
-      setUpdateAvailable(true);
-    };
-
-    // Display mode changes
-    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
-    const handleDisplayModeChange = (e: MediaQueryListEvent) => {
-      setIsStandalone(e.matches);
-      updatePWAState();
-    };
-
-    // Add all event listeners
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    window.addEventListener('appinstalled', handleAppInstalled);
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerUpdate);
-    }
-    
-    standaloneQuery.addEventListener('change', handleDisplayModeChange);
 
-    // ✅ PERFORMANCE FIX: Reduce polling frequency to prevent performance issues
-    const updateInterval = setInterval(updatePWAState, 60000); // Every 60 seconds instead of 30
-
-    // ✅ IMPROVED CLEANUP: Comprehensive cleanup function
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.removeEventListener('controllerchange', handleServiceWorkerUpdate);
-      }
-      
-      standaloneQuery.removeEventListener('change', handleDisplayModeChange);
-      clearInterval(updateInterval);
     };
-  }, [updatePWAState]); // ✅ STABLE: updatePWAState is now stable
-
-  // Prompt installation
-  const promptInstall = useCallback(async (): Promise<boolean> => {
-    try {
-      const result = await PWAInstallManager.forceShowInstallPrompt();
-      updatePWAState();
-      return result;
-    } catch (error) {
-      logger.error('Failed to prompt install', { error }, 'PWA');
-      return false;
-    }
-  }, [updatePWAState]);
-
-  // Show install instructions
-  const showInstallInstructions = useCallback(() => {
-    PWAInstallManager.showInstallInstructions();
   }, []);
 
-  return {
-    isInstalled,
-    canInstall,
-    isStandalone,
-    capabilities,
-    metrics,
-    installReadinessScore,
-    promptInstall,
-    showInstallInstructions,
-    isSupported,
-    isOnline,
-    updateAvailable
-  };
-}
-
-/**
- * Hook for PWA install button
- */
-export function usePWAInstallButton() {
-  const { canInstall, promptInstall, installReadinessScore } = usePWA();
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastPromptResult, setLastPromptResult] = useState<boolean | null>(null);
-
-  const handleInstallClick = useCallback(async () => {
-    if (!canInstall) return;
-    
-    setIsLoading(true);
-    try {
-      const result = await promptInstall();
-      setLastPromptResult(result);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [canInstall, promptInstall]);
-
-  return {
-    canInstall,
-    isLoading,
-    lastPromptResult,
-    installReadinessScore,
-    handleInstallClick
-  };
-}
-
-/**
- * Hook for offline detection and handling
- */
-export function useOfflineDetection() {
-  const { isOnline } = usePWA();
-  const [wasOffline, setWasOffline] = useState(false);
-
+  // Gerenciar install prompt
   useEffect(() => {
-    if (!isOnline) {
-      setWasOffline(true);
-    } else if (wasOffline) {
-      // Coming back online
-      setWasOffline(false);
-      
-      logger.info('Connection restored', {}, 'PWA');
-      
-      // Trigger any background sync or data refresh
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'SYNC_WHEN_ONLINE'
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      setInstallPromptEvent(e);
+      setCanInstall(true);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPromptEvent(null);
+      setCanInstall(false);
+      setIsInstalled(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  // Registrar e gerenciar Service Worker
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          setSwRegistration(registration);
+          
+          // Verificar se há atualização disponível
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  setSwUpdateAvailable(true);
+                }
+              });
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Service Worker registration failed:', error);
         });
-      }
+
+      // Listener para mensagens do Service Worker
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data.type === 'CACHE_UPDATED') {
+          // Cache foi atualizado
+          console.log('Cache updated:', event.data.payload);
+        }
+      });
     }
-  }, [isOnline, wasOffline]);
+  }, []);
+
+  // Mostrar prompt de instalação
+  const showInstallPrompt = useCallback(async (): Promise<boolean> => {
+    if (!installPromptEvent) return false;
+
+    try {
+      await installPromptEvent.prompt();
+      const { outcome } = await installPromptEvent.userChoice;
+      
+      if (outcome === 'accepted') {
+        setCanInstall(false);
+        setInstallPromptEvent(null);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error showing install prompt:', error);
+      return false;
+    }
+  }, [installPromptEvent]);
+
+  // Atualizar Service Worker
+  const updateServiceWorker = useCallback(async (): Promise<void> => {
+    if (!swRegistration) return;
+
+    try {
+      await swRegistration.update();
+      
+      if (swRegistration.waiting) {
+        swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        window.location.reload();
+      }
+      
+      setSwUpdateAvailable(false);
+    } catch (error) {
+      console.error('Error updating service worker:', error);
+    }
+  }, [swRegistration]);
+
+  // Desregistrar Service Worker
+  const unregisterServiceWorker = useCallback(async (): Promise<void> => {
+    if (!swRegistration) return;
+
+    try {
+      await swRegistration.unregister();
+      setSwRegistration(null);
+    } catch (error) {
+      console.error('Error unregistering service worker:', error);
+    }
+  }, [swRegistration]);
+
+  // Limpar cache
+  const clearCache = useCallback(async (cacheType?: string): Promise<void> => {
+    if (!swRegistration) return;
+
+    try {
+      const channel = new MessageChannel();
+      swRegistration.active?.postMessage({
+        type: 'CLEAR_CACHE',
+        cacheType: cacheType || 'all'
+      }, [channel.port2]);
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  }, [swRegistration]);
+
+  // Obter status do cache
+  const getCacheStatus = useCallback(async (): Promise<any> => {
+    if (!swRegistration) return null;
+
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (event) => {
+        resolve(event.data.status);
+      };
+      
+      swRegistration.active?.postMessage({
+        type: 'GET_CACHE_STATUS'
+      }, [channel.port2]);
+    });
+  }, [swRegistration]);
+
+  // Cachear ideia
+  const cacheIdea = useCallback(async (idea: any): Promise<void> => {
+    if (!swRegistration) return;
+
+    try {
+      swRegistration.active?.postMessage({
+        type: 'CACHE_IDEA',
+        payload: idea
+      });
+    } catch (error) {
+      console.error('Error caching idea:', error);
+    }
+  }, [swRegistration]);
+
+  // Obter ideias em cache
+  const getCachedIdeas = useCallback(async (): Promise<any[]> => {
+    if (!swRegistration) return [];
+
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (event) => {
+        resolve(event.data.ideas || []);
+      };
+      
+      swRegistration.active?.postMessage({
+        type: 'GET_CACHED_IDEAS'
+      }, [channel.port2]);
+    });
+  }, [swRegistration]);
+
+  // Solicitar permissão para notificações
+  const requestNotificationPermission = useCallback(async (): Promise<NotificationPermission> => {
+    if (!('Notification' in window)) {
+      return 'denied';
+    }
+
+    if (Notification.permission === 'granted') {
+      return 'granted';
+    }
+
+    if (Notification.permission === 'denied') {
+      return 'denied';
+    }
+
+    const permission = await Notification.requestPermission();
+    return permission;
+  }, []);
+
+  // Mostrar notificação
+  const showNotification = useCallback(async (title: string, options?: NotificationOptions): Promise<void> => {
+    const permission = await requestNotificationPermission();
+    
+    if (permission !== 'granted') {
+      console.warn('Notification permission denied');
+      return;
+    }
+
+    if (swRegistration) {
+      // Usar Service Worker para notificações
+      swRegistration.showNotification(title, {
+        icon: '/icons/android-chrome-192x192.png',
+        badge: '/icons/badge-72x72.png',
+        ...options
+      });
+    } else {
+      // Fallback para notificação direta
+      new Notification(title, {
+        icon: '/icons/android-chrome-192x192.png',
+        ...options
+      });
+    }
+  }, [swRegistration, requestNotificationPermission]);
+
+  // Registrar background sync
+  const registerBackgroundSync = useCallback(async (tag: string): Promise<void> => {
+    if (!swRegistration) return;
+
+    try {
+      await swRegistration.sync.register(tag);
+    } catch (error) {
+      console.error('Error registering background sync:', error);
+    }
+  }, [swRegistration]);
+
+  // Utilitários adicionais
+  const isPWASupported = useCallback((): boolean => {
+    return 'serviceWorker' in navigator && 'caches' in window;
+  }, []);
+
+  const isIOSDevice = useCallback((): boolean => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  }, []);
+
+  const isAndroidDevice = useCallback((): boolean => {
+    return /Android/.test(navigator.userAgent);
+  }, []);
+
+  const getInstallInstructions = useCallback((): string => {
+    if (isIOSDevice()) {
+      return 'Para instalar: Toque no botão de compartilhamento e selecione "Adicionar à Tela Inicial"';
+    }
+    if (isAndroidDevice()) {
+      return 'Para instalar: Toque no menu do navegador e selecione "Instalar app"';
+    }
+    return 'Para instalar: Procure pelo ícone de instalação na barra de endereços';
+  }, [isIOSDevice, isAndroidDevice]);
 
   return {
+    // Status
+    isInstalled,
+    isStandalone,
     isOnline,
-    wasOffline,
-    isOffline: !isOnline
+    canInstall,
+    installPromptEvent,
+    swRegistration,
+    swUpdateAvailable,
+
+    // Actions
+    showInstallPrompt,
+    updateServiceWorker,
+    unregisterServiceWorker,
+    clearCache,
+    getCacheStatus,
+    cacheIdea,
+    getCachedIdeas,
+    requestNotificationPermission,
+    showNotification,
+    registerBackgroundSync,
+
+    // Utilities
+    isPWASupported,
+    isIOSDevice,
+    isAndroidDevice,
+    getInstallInstructions
   };
-} 
+};
+
+export default usePWA; 

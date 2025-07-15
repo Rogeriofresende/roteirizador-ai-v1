@@ -132,7 +132,7 @@ Siga [`COORDENACAO_SIMPLES.md`](./COORDENACAO_SIMPLES.md) - protocolo de 3 passo
 ## 📚 **DOCUMENTAÇÃO ESSENCIAL**
 
 ### **🎯 Start Here (obrigatório)**
-1. [`ROTEIRAR_IA_STATUS_ATUAL_2025.md`](./ROTEIRAR_IA_STATUS_ATUAL_2025.md) - **Context completo**
+1. [`METODOLOGIA_UNIFICADA_V8_0.md`](./METODOLOGIA_UNIFICADA_V8_0.md) - **✅ METODOLOGIA OFICIAL ATIVA**
 2. [`COORDENACAO_SIMPLES.md`](./COORDENACAO_SIMPLES.md) - **Coordenação multi-IA**
 3. [`WEEK1_TECHNICAL_REPORT.md`](./WEEK1_TECHNICAL_REPORT.md) - **✅ NEW: Relatório técnico oficial**
 
@@ -140,6 +140,9 @@ Siga [`COORDENACAO_SIMPLES.md`](./COORDENACAO_SIMPLES.md) - protocolo de 3 passo
 4. `src/App.tsx` - Estrutura principal da aplicação
 5. `src/pages/GeneratorPage.tsx` - Funcionalidade principal (✅ STABLE)
 6. `package.json` - Dependencies e scripts
+
+### **🎨 Wireframes & Prototyping**
+7. [`docs/development/WIREFRAME_PROTOTYPING_METHODOLOGY.md`](./docs/development/WIREFRAME_PROTOTYPING_METHODOLOGY.md) - **✅ NEW: Metodologia V8.0 Unified - Wireframes**
 
 ### **📊 Análise Técnica**
 7. `logs/health-report.json` - **✅ UPDATED: Métricas reais V6.4**

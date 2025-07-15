@@ -895,4 +895,5 @@ class EmergencyProtocolService {
 // =============================================================================
 
 export const emergencyProtocolService = new EmergencyProtocolService();
+export { EmergencyProtocolService };
 export default EmergencyProtocolService; 

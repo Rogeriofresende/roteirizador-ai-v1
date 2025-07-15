@@ -30,11 +30,33 @@ const AuthContext = createContext<AuthContextType>({
   hasRole: () => false,
   hasPermission: () => false,
   
-  // Auth actions
-  checkPermissions: () => DEFAULT_USER_PERMISSIONS,
+  // User management
+  createExtendedUser: () => null,
+  updateExtendedUser: () => {},
   refreshUserData: async () => {},
   updateUserPreferences: async () => {},
+  checkPermissions: () => DEFAULT_USER_PERMISSIONS,
+  
+  // Admin functions
+  getUserList: async () => [],
+  updateUserRole: async () => {},
+  updateUserPermissions: async () => {},
+  deleteUser: async () => {},
+  getUserById: async () => null,
+  
+  // Authentication state
+  signIn: async () => {},
+  signOut: async () => {},
+  signUp: async () => {},
+  resetPassword: async () => {},
+  
+  // Error handling
+  error: null,
+  clearError: () => {}
 });
+
+// Export the context for use in stories and testing
+export { AuthContext };
 
 export const useAuth = () => {
   return useContext(AuthContext);

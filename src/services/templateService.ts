@@ -7,7 +7,7 @@ import {
   where, 
   getDocs, 
   orderBy, 
-  limit,
+  limit as firestoreLimit,
   updateDoc,
   deleteDoc,
   Timestamp,
@@ -119,10 +119,18 @@ export class TemplateService {
   }
 
   static async getFeaturedTemplates(limitCount = 6): Promise<ScriptTemplate[]> {
+    const isStorybook = globalThis.STORYBOOK_ENVIRONMENT || 
+                       typeof window !== 'undefined' && window.location.hostname.includes('localhost') && 
+                       window.location.port === '6006';
+    
     try {
       // V6.4: Fallback para evitar erros em development
-      if (!db) {
-        console.warn('Firestore não disponível, retornando templates mock');
+      if (!db || isStorybook) {
+        if (isStorybook) {
+          // Não fazer logs no Storybook para evitar noise
+          return this.getMockFeaturedTemplates(limitCount);
+        }
+        console.log('ℹ️ [TEMPLATE] Firestore não disponível, retornando templates mock');
         return this.getMockFeaturedTemplates(limitCount);
       }
 
@@ -131,7 +139,7 @@ export class TemplateService {
         where('isPublic', '==', true),
         orderBy('rating', 'desc'),
         orderBy('usage', 'desc'),
-        limit(limitCount)
+        firestoreLimit(limitCount)
       );
 
       const snapshot = await getDocs(featuredQuery);
@@ -142,17 +150,38 @@ export class TemplateService {
 
       // Se não há templates no Firestore, retornar mock
       if (templates.length === 0) {
+        console.log('ℹ️ [TEMPLATE] Nenhum template no Firestore, usando mock templates');
         return this.getMockFeaturedTemplates(limitCount);
       }
 
       return templates;
 
     } catch (error: unknown) {
+      // Suprimir completamente logs em ambiente Storybook
+      if (isStorybook) {
+        return this.getMockFeaturedTemplates(limitCount);
+      }
+      
       // Handle specific Firebase permission errors
       if (error?.toString().includes('Missing or insufficient permissions')) {
-        console.warn('🔒 Firebase permissions issue - using mock templates for development');
+        console.log('ℹ️ [TEMPLATE] Firebase permissions issue - using mock templates for development');
+      } else if (error?.toString().includes('quota exceeded') || error?.toString().includes('billing')) {
+        console.log('ℹ️ [TEMPLATE] Firebase quota/billing issue - using mock templates');
       } else {
-        console.warn('Erro ao obter templates em destaque, usando fallback:', error);
+        // Only log actual errors, not expected fallbacks
+        const isExpectedError = 
+          !db || 
+          error?.toString().includes('network') || 
+          error?.toString().includes('offline');
+        
+        if (isExpectedError) {
+          console.log('ℹ️ [TEMPLATE] Using mock templates due to expected network/config issue');
+        } else {
+          console.warn('⚠️ [TEMPLATE] Unexpected error, falling back to mock templates:', {
+            error: error?.message || 'Unknown error',
+            timestamp: new Date().toISOString()
+          });
+        }
       }
       // Retornar templates mock em caso de erro
       return this.getMockFeaturedTemplates(limitCount);
@@ -296,7 +325,7 @@ export class TemplateService {
         collection(db, 'script_templates'),
         where('isPublic', '==', true),
         orderBy('popularity', 'desc'),
-        limit(limit)
+        firestoreLimit(limit)
       );
 
       if (category) {

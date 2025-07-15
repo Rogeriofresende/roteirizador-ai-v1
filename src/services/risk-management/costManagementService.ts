@@ -719,4 +719,5 @@ class CostManagementService {
 // =============================================================================
 
 export const costManagementService = new CostManagementService();
+export { CostManagementService };
 export default CostManagementService; 

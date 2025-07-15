@@ -1,0 +1,998 @@
+/* ==========================================
+   🔵 IA BETA - V7.5 ENHANCED FORMSELECT STYLES
+   Professional dropdown with virtual scrolling & multi-select
+   ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ==========================================
+   CSS CUSTOM PROPERTIES - V7.5 ENHANCED
+   ========================================== */
+
+:root {
+  /* V7.5 Enhanced Color Palette */
+  --form-select-primary: #2563eb;
+  --form-select-primary-hover: #1d4ed8;
+  --form-select-primary-light: #3b82f6;
+  --form-select-accent: #7c3aed;
+  --form-select-accent-light: #8b5cf6;
+  --form-select-warm: #f59e0b;
+  --form-select-warm-light: #fbbf24;
+  
+  /* Glass-morphism Variables */
+  --form-select-glass-bg: rgba(255, 255, 255, 0.05);
+  --form-select-glass-border: rgba(255, 255, 255, 0.1);
+  --form-select-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --form-select-glass-backdrop: blur(12px);
+  
+  /* Dropdown Variables */
+  --form-select-dropdown-bg: #ffffff;
+  --form-select-dropdown-border: rgba(0, 0, 0, 0.1);
+  --form-select-dropdown-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --form-select-dropdown-radius: 12px;
+  
+  /* State Colors */
+  --form-select-success: #10b981;
+  --form-select-warning: #f59e0b;
+  --form-select-error: #ef4444;
+  --form-select-neutral: #6b7280;
+  
+  /* Background Colors */
+  --form-select-bg-white: #ffffff;
+  --form-select-bg-gray-50: #f9fafb;
+  --form-select-bg-gray-100: #f3f4f6;
+  --form-select-bg-gray-900: #111827;
+  
+  /* Text Colors */
+  --form-select-text-primary: #111827;
+  --form-select-text-secondary: #6b7280;
+  --form-select-text-placeholder: #9ca3af;
+  --form-select-text-white: #ffffff;
+  
+  /* Border Radius */
+  --form-select-radius-sm: 6px;
+  --form-select-radius-md: 8px;
+  --form-select-radius-lg: 12px;
+  
+  /* Shadows */
+  --form-select-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --form-select-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --form-select-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --form-select-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --form-select-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --form-select-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Typography */
+  --form-select-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  
+  /* Spacing Scale */
+  --form-select-space-1: 0.25rem;
+  --form-select-space-2: 0.5rem;
+  --form-select-space-3: 0.75rem;
+  --form-select-space-4: 1rem;
+  --form-select-space-5: 1.25rem;
+  --form-select-space-6: 1.5rem;
+  --form-select-space-8: 2rem;
+  --form-select-space-12: 3rem;
+  
+  /* Z-index Scale */
+  --form-select-z-dropdown: 1000;
+  --form-select-z-overlay: 999;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  --form-select-glass-bg: rgba(0, 0, 0, 0.1);
+  --form-select-glass-border: rgba(255, 255, 255, 0.08);
+  --form-select-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  --form-select-dropdown-bg: #1f2937;
+  --form-select-dropdown-border: rgba(255, 255, 255, 0.1);
+  
+  --form-select-bg-white: #1f2937;
+  --form-select-bg-gray-50: #374151;
+  --form-select-bg-gray-100: #4b5563;
+  
+  --form-select-text-primary: #f9fafb;
+  --form-select-text-secondary: #d1d5db;
+  --form-select-text-placeholder: #9ca3af;
+}
+
+/* ==========================================
+   BASE CONTAINER STYLES
+   ========================================== */
+
+.form-select-container {
+  position: relative;
+  width: 100%;
+  font-family: var(--form-select-font-family);
+}
+
+.form-select-container * {
+  box-sizing: border-box;
+}
+
+/* ==========================================
+   LABEL STYLES
+   ========================================== */
+
+.form-select-label {
+  display: block;
+  margin-bottom: var(--form-select-space-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--form-select-text-primary);
+  transition: var(--form-select-transition);
+}
+
+.form-select-required {
+  color: var(--form-select-error);
+  margin-left: var(--form-select-space-1);
+}
+
+/* ==========================================
+   TRIGGER STYLES
+   ========================================== */
+
+.form-select-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: var(--form-select-transition);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--form-select-text-primary);
+}
+
+.form-select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-select-leading-icon {
+  position: absolute;
+  left: var(--form-select-space-3);
+  z-index: 10;
+  color: var(--form-select-text-secondary);
+  transition: var(--form-select-transition);
+  pointer-events: none;
+}
+
+.form-select-value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: inherit;
+  padding: var(--form-select-space-3) var(--form-select-space-4);
+  padding-right: var(--form-select-space-12);
+}
+
+.form-select-container--sm .form-select-value {
+  padding: var(--form-select-space-2) var(--form-select-space-3);
+  padding-right: var(--form-select-space-8);
+  font-size: 0.875rem;
+}
+
+.form-select-container--lg .form-select-value {
+  padding: var(--form-select-space-4) var(--form-select-space-5);
+  padding-right: var(--form-select-space-12);
+  font-size: 1.125rem;
+}
+
+.form-select-placeholder {
+  color: var(--form-select-text-placeholder);
+}
+
+.form-select-selected {
+  color: var(--form-select-text-primary);
+  font-weight: 500;
+}
+
+.form-select-actions {
+  position: absolute;
+  right: var(--form-select-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--form-select-space-2);
+  z-index: 10;
+}
+
+.form-select-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  color: var(--form-select-text-secondary);
+  cursor: pointer;
+  transition: var(--form-select-transition);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.form-select-clear:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--form-select-text-primary);
+}
+
+.form-select-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--form-select-text-secondary);
+  transition: var(--form-select-transition);
+  transform-origin: center;
+}
+
+.form-select-arrow--open {
+  transform: rotate(180deg);
+}
+
+/* ==========================================
+   CHIPS STYLES (MULTI-SELECT)
+   ========================================== */
+
+.form-select-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--form-select-space-1);
+  max-width: 100%;
+}
+
+.form-select-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--form-select-space-1);
+  padding: var(--form-select-space-1) var(--form-select-space-2);
+  border-radius: var(--form-select-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-select-chip--default {
+  background-color: var(--form-select-primary);
+  color: white;
+}
+
+.form-select-chip--outlined {
+  background-color: transparent;
+  border: 1px solid var(--form-select-primary);
+  color: var(--form-select-primary);
+}
+
+.form-select-chip--filled {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--form-select-primary);
+}
+
+.form-select-chip-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-select-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: currentColor;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: var(--form-select-transition);
+}
+
+.form-select-chip-remove:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ==========================================
+   SIZE VARIANTS
+   ========================================== */
+
+/* Small Size */
+.form-select-container--sm .form-select-trigger {
+  min-height: 32px;
+  border-radius: var(--form-select-radius-sm);
+}
+
+.form-select-container--sm .form-select-leading-icon {
+  left: var(--form-select-space-2);
+}
+
+.form-select-container--sm .form-select-actions {
+  right: var(--form-select-space-2);
+}
+
+/* Medium Size (Default) */
+.form-select-container--md .form-select-trigger {
+  min-height: 40px;
+  border-radius: var(--form-select-radius-md);
+}
+
+/* Large Size */
+.form-select-container--lg .form-select-trigger {
+  min-height: 48px;
+  border-radius: var(--form-select-radius-lg);
+}
+
+.form-select-container--lg .form-select-leading-icon {
+  left: var(--form-select-space-4);
+}
+
+.form-select-container--lg .form-select-actions {
+  right: var(--form-select-space-4);
+}
+
+/* ==========================================
+   GLASS VARIANT - V7.5 ENHANCED SIGNATURE
+   ========================================== */
+
+.form-select-container--glass .form-select-trigger {
+  position: relative;
+  background: var(--form-select-glass-bg);
+  backdrop-filter: var(--form-select-glass-backdrop);
+  -webkit-backdrop-filter: var(--form-select-glass-backdrop);
+  border: 1px solid var(--form-select-glass-border);
+  box-shadow: var(--form-select-glass-shadow);
+  overflow: hidden;
+}
+
+.form-select-container--glass .form-select-trigger::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  z-index: 0;
+}
+
+.form-select-container--glass.form-select-container--focused .form-select-trigger,
+.form-select-container--glass.form-select-container--open .form-select-trigger {
+  border-color: var(--form-select-primary);
+  box-shadow: 
+    var(--form-select-glass-shadow),
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+  background: rgba(37, 99, 235, 0.02);
+}
+
+/* Glass Effect Intensity */
+.form-select-container--glass-subtle .form-select-trigger {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.form-select-container--glass-medium .form-select-trigger {
+  background: var(--form-select-glass-bg);
+  backdrop-filter: var(--form-select-glass-backdrop);
+  -webkit-backdrop-filter: var(--form-select-glass-backdrop);
+}
+
+.form-select-container--glass-strong .form-select-trigger {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ==========================================
+   OUTLINED VARIANT - PROFESSIONAL
+   ========================================== */
+
+.form-select-container--outlined .form-select-trigger {
+  border: 2px solid var(--form-select-text-placeholder);
+  background-color: var(--form-select-bg-white);
+  transition: var(--form-select-transition);
+}
+
+.form-select-container--outlined:hover .form-select-trigger {
+  border-color: var(--form-select-text-secondary);
+  box-shadow: var(--form-select-shadow-sm);
+}
+
+.form-select-container--outlined.form-select-container--focused .form-select-trigger,
+.form-select-container--outlined.form-select-container--open .form-select-trigger {
+  border-color: var(--form-select-primary);
+  box-shadow: 
+    var(--form-select-shadow-md),
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================================
+   FILLED VARIANT - SOFT BACKGROUND
+   ========================================== */
+
+.form-select-container--filled .form-select-trigger {
+  background-color: var(--form-select-bg-gray-50);
+  border: 1px solid transparent;
+  transition: var(--form-select-transition);
+}
+
+.form-select-container--filled:hover .form-select-trigger {
+  background-color: var(--form-select-bg-gray-100);
+  box-shadow: var(--form-select-shadow-sm);
+}
+
+.form-select-container--filled.form-select-container--focused .form-select-trigger,
+.form-select-container--filled.form-select-container--open .form-select-trigger {
+  background-color: var(--form-select-bg-white);
+  border-color: var(--form-select-primary);
+  box-shadow: 
+    var(--form-select-shadow-md),
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================================
+   MINIMAL VARIANT - CLEAN UNDERLINE
+   ========================================== */
+
+.form-select-container--minimal .form-select-trigger {
+  border-bottom: 2px solid var(--form-select-text-placeholder);
+  border-radius: 0;
+  background-color: transparent;
+  transition: var(--form-select-transition);
+}
+
+.form-select-container--minimal:hover .form-select-trigger {
+  border-bottom-color: var(--form-select-text-secondary);
+}
+
+.form-select-container--minimal.form-select-container--focused .form-select-trigger,
+.form-select-container--minimal.form-select-container--open .form-select-trigger {
+  border-bottom-color: var(--form-select-primary);
+  box-shadow: 0 2px 0 0 rgba(37, 99, 235, 0.2);
+}
+
+/* ==========================================
+   FLOATING VARIANT - ELEVATED DESIGN
+   ========================================== */
+
+.form-select-container--floating .form-select-trigger {
+  background-color: var(--form-select-bg-white);
+  border: 1px solid var(--form-select-text-placeholder);
+  box-shadow: var(--form-select-shadow-lg);
+  transition: var(--form-select-transition);
+}
+
+.form-select-container--floating:hover .form-select-trigger {
+  transform: translateY(-1px);
+  box-shadow: var(--form-select-shadow-xl);
+}
+
+.form-select-container--floating.form-select-container--focused .form-select-trigger,
+.form-select-container--floating.form-select-container--open .form-select-trigger {
+  border-color: var(--form-select-primary);
+  transform: translateY(-2px);
+  box-shadow: 
+    var(--form-select-shadow-xl),
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================================
+   VALIDATION STATES
+   ========================================== */
+
+/* Success State */
+.form-select-container--success .form-select-trigger {
+  border-color: var(--form-select-success);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-select-container--success .form-select-leading-icon {
+  color: var(--form-select-success);
+}
+
+/* Warning State */
+.form-select-container--warning .form-select-trigger {
+  border-color: var(--form-select-warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.form-select-container--warning .form-select-leading-icon {
+  color: var(--form-select-warning);
+}
+
+/* Error State */
+.form-select-container--error .form-select-trigger {
+  border-color: var(--form-select-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-select-container--error .form-select-leading-icon {
+  color: var(--form-select-error);
+}
+
+/* ==========================================
+   DROPDOWN STYLES
+   ========================================== */
+
+.form-select-dropdown {
+  background: var(--form-select-dropdown-bg);
+  border: 1px solid var(--form-select-dropdown-border);
+  border-radius: var(--form-select-dropdown-radius);
+  box-shadow: var(--form-select-dropdown-shadow);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Search Input */
+.form-select-search {
+  padding: var(--form-select-space-3);
+  border-bottom: 1px solid var(--form-select-dropdown-border);
+}
+
+.form-select-search-input {
+  width: 100%;
+  padding: var(--form-select-space-2) var(--form-select-space-3);
+  border: 1px solid var(--form-select-dropdown-border);
+  border-radius: var(--form-select-radius-sm);
+  background: var(--form-select-bg-gray-50);
+  font-size: 0.875rem;
+  transition: var(--form-select-transition);
+  outline: none;
+}
+
+.form-select-search-input:focus {
+  border-color: var(--form-select-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.form-select-search-input::placeholder {
+  color: var(--form-select-text-placeholder);
+}
+
+/* Options Container */
+.form-select-options {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--form-select-text-placeholder) transparent;
+}
+
+.form-select-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-select-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.form-select-options::-webkit-scrollbar-thumb {
+  background: var(--form-select-text-placeholder);
+  border-radius: 3px;
+}
+
+.form-select-options::-webkit-scrollbar-thumb:hover {
+  background: var(--form-select-text-secondary);
+}
+
+/* Individual Option */
+.form-select-option {
+  display: flex;
+  align-items: center;
+  gap: var(--form-select-space-3);
+  padding: var(--form-select-space-3) var(--form-select-space-4);
+  cursor: pointer;
+  transition: var(--form-select-transition);
+  border-bottom: 1px solid transparent;
+}
+
+.form-select-option:hover {
+  background-color: var(--form-select-bg-gray-50);
+}
+
+.form-select-option--highlighted {
+  background-color: rgba(37, 99, 235, 0.05);
+  border-bottom-color: rgba(37, 99, 235, 0.1);
+}
+
+.form-select-option--selected {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--form-select-primary);
+  font-weight: 500;
+}
+
+.form-select-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-select-option-icon {
+  flex-shrink: 0;
+  color: var(--form-select-text-secondary);
+}
+
+.form-select-option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-select-option-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-select-option-description {
+  font-size: 0.75rem;
+  color: var(--form-select-text-secondary);
+  line-height: 1.3;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-select-option-check {
+  flex-shrink: 0;
+  color: var(--form-select-primary);
+}
+
+/* Loading States */
+.form-select-loading {
+  padding: var(--form-select-space-4);
+  text-align: center;
+}
+
+.form-select-loading-text {
+  color: var(--form-select-text-secondary);
+  font-size: 0.875rem;
+}
+
+.form-select-option-skeleton {
+  height: 40px;
+  background: linear-gradient(
+    90deg,
+    var(--form-select-bg-gray-100) 25%,
+    var(--form-select-bg-gray-50) 50%,
+    var(--form-select-bg-gray-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  margin-bottom: 1px;
+  border-radius: var(--form-select-radius-sm);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty State */
+.form-select-empty {
+  padding: var(--form-select-space-6) var(--form-select-space-4);
+  text-align: center;
+  color: var(--form-select-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Multi-select Actions */
+.form-select-multi-actions {
+  display: flex;
+  gap: var(--form-select-space-2);
+  padding: var(--form-select-space-3);
+  border-top: 1px solid var(--form-select-dropdown-border);
+  background: var(--form-select-bg-gray-50);
+}
+
+.form-select-multi-action {
+  flex: 1;
+  padding: var(--form-select-space-2) var(--form-select-space-3);
+  border: 1px solid var(--form-select-dropdown-border);
+  border-radius: var(--form-select-radius-sm);
+  background: var(--form-select-bg-white);
+  color: var(--form-select-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--form-select-transition);
+}
+
+.form-select-multi-action:hover {
+  border-color: var(--form-select-primary);
+  color: var(--form-select-primary);
+}
+
+/* ==========================================
+   HELPER AND ERROR TEXT STYLES
+   ========================================== */
+
+.form-select-helper-text {
+  margin-top: var(--form-select-space-2);
+  font-size: 0.875rem;
+  color: var(--form-select-text-secondary);
+  line-height: 1.4;
+}
+
+.form-select-error-text {
+  margin-top: var(--form-select-space-2);
+  font-size: 0.875rem;
+  color: var(--form-select-error);
+  font-weight: 500;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: var(--form-select-space-1);
+}
+
+.form-select-error-text::before {
+  content: '⚠';
+  font-size: 1rem;
+}
+
+/* ==========================================
+   DISABLED STATES
+   ========================================== */
+
+.form-select-container--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.form-select-container--disabled .form-select-trigger {
+  background-color: var(--form-select-bg-gray-50);
+  border-color: var(--form-select-text-placeholder);
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   SCREEN READER ONLY
+   ========================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 768px) {
+  .form-select-dropdown {
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    min-width: auto !important;
+  }
+  
+  .form-select-chips {
+    max-width: 100%;
+  }
+  
+  .form-select-chip {
+    max-width: 120px;
+    font-size: 0.7rem;
+  }
+  
+  .form-select-container--lg .form-select-trigger {
+    min-height: 44px; /* Touch target */
+  }
+}
+
+@media (max-width: 480px) {
+  .form-select-container--md .form-select-trigger,
+  .form-select-container--lg .form-select-trigger {
+    min-height: 44px; /* Touch target */
+  }
+  
+  .form-select-value {
+    padding-left: var(--form-select-space-3);
+    padding-right: var(--form-select-space-8);
+  }
+  
+  .form-select-chip {
+    max-width: 100px;
+    font-size: 0.65rem;
+  }
+  
+  .form-select-dropdown {
+    margin: 4px;
+    left: 4px !important;
+    right: 4px !important;
+  }
+}
+
+/* ==========================================
+   ANIMATION ENHANCEMENTS
+   ========================================== */
+
+.form-select-trigger {
+  transform: translateZ(0);
+  will-change: border-color, box-shadow, background-color;
+}
+
+.form-select-dropdown {
+  will-change: opacity, transform;
+}
+
+/* Focus ring animation */
+@keyframes focusRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+.form-select-container--focused .form-select-trigger {
+  animation: focusRing 0.6s ease-out;
+}
+
+/* Chip entrance animation */
+@keyframes chipEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.form-select-chip {
+  animation: chipEnter 0.2s ease-out;
+}
+
+/* Dropdown entrance animation */
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-select-dropdown {
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+/* Option hover effect */
+.form-select-option {
+  position: relative;
+  overflow: hidden;
+}
+
+.form-select-option::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(37, 99, 235, 0.05),
+    transparent
+  );
+  transition: width 0.3s ease;
+}
+
+.form-select-option:hover::before {
+  width: 100%;
+}
+
+/* Glass shimmer effect */
+@keyframes glassShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.form-select-container--glass .form-select-trigger::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: glassShimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ==========================================
+   HIGH CONTRAST MODE SUPPORT
+   ========================================== */
+
+@media (prefers-contrast: high) {
+  .form-select-trigger {
+    border-width: 2px;
+  }
+  
+  .form-select-container--glass .form-select-trigger {
+    background: var(--form-select-bg-white);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .form-select-dropdown {
+    border-width: 2px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .form-select-option--highlighted {
+    background-color: var(--form-select-primary);
+    color: white;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION SUPPORT
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .form-select-trigger,
+  .form-select-dropdown,
+  .form-select-option,
+  .form-select-chip,
+  .form-select-arrow {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .form-select-container--floating .form-select-trigger:hover {
+    transform: none;
+  }
+} 

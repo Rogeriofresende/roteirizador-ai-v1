@@ -8,7 +8,7 @@
  * Integration: IdeaBankService + AnalyticsService + PersonalizationService
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { getApplication } from '../architecture/ServiceArchitecture';
 
 // ============================================================================
@@ -75,6 +75,15 @@ export interface IdeaPagination {
 // HOOK IMPLEMENTATION
 // ============================================================================
 
+// Create fallback services when container is not available
+const createFallbackServices = () => {
+  return {
+    ideaBankService: null,
+    personalizationService: null,
+    analyticsService: null
+  };
+};
+
 export const useIdeaGeneration = () => {
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState<IdeaGenerationResponse['idea'][]>([]);
@@ -84,15 +93,38 @@ export const useIdeaGeneration = () => {
   
   const abortControllerRef = useRef<AbortController | null>(null);
   
+  // Debug: Monitor currentIdea changes
+  useEffect(() => {
+    console.log('🔍 currentIdea mudou para:', currentIdea);
+  }, [currentIdea]);
+  
   // Get services from container
-  const getServices = useCallback(() => {
-    const app = getApplication();
-    return {
-      ideaBankService: app.getService('IdeaBankService'),
-      analyticsService: app.getService('AnalyticsService'),
-      personalizationService: app.getService('PersonalizationService')
-    };
-  }, []);
+  const getServices = async () => {
+    try {
+      const app = getApplication();
+      // Get container through service resolution (now properly registered)
+      const container = app.getService('ServiceContainer');
+      
+      if (!container) {
+        console.warn('Container not available, using fallback services');
+        return createFallbackServices();
+      }
+      
+      return {
+        ideaBankService: await container.resolveAsync('IdeaBankService'),
+        analyticsService: await container.resolveAsync('AnalyticsService'),
+        personalizationService: await container.resolveAsync('PersonalizationService')
+      };
+    } catch (error) {
+      // Fallback para serviços mock/default em caso de erro
+      console.warn('Failed to resolve idea generation services, using fallbacks:', error);
+      return {
+        ideaBankService: null,
+        analyticsService: null,
+        personalizationService: null
+      };
+    }
+  };
   
   // Generate new idea
   const generateIdea = useCallback(async (request: IdeaGenerationRequest): Promise<IdeaGenerationResponse | null> => {
@@ -106,91 +138,91 @@ export const useIdeaGeneration = () => {
     setError(null);
     
     try {
-      const { ideaBankService, analyticsService, personalizationService } = getServices();
+      const { ideaBankService, analyticsService, personalizationService } = await getServices();
       
-      // Get personalized recommendations
-      const recommendations = await personalizationService.generatePersonalizedRecommendations({
-        userId: request.userId,
-        context: {
-          currentPreferences: {},
-          recentInteractions: [],
-          sessionData: {}
+      // Check if required services are available
+      if (!ideaBankService) {
+        const errorMsg = 'IdeaBankService não disponível';
+        setError(errorMsg);
+        console.warn('IdeaBankService not available, cannot generate idea');
+        return null;
+      }
+      
+      // Get personalized recommendations (optional)
+      let recommendations = null;
+      if (personalizationService) {
+        try {
+          recommendations = await personalizationService.generatePersonalizedRecommendations({
+            userId: request.userId,
+            context: {
+              currentPreferences: {},
+              recentInteractions: [],
+              sessionData: {}
+            }
+          });
+        } catch (err) {
+          console.warn('Failed to get personalized recommendations:', err);
         }
-      });
+      }
       
       // Apply personalization to request
       const personalizedRequest = {
         ...request,
-        personalizedContext: recommendations.personalizedContent
+        personalizedContext: recommendations?.personalizedContent || null
       };
       
       // Generate idea with backend service
       const result = await ideaBankService.generateIdea(personalizedRequest);
       
-      if (result.success) {
-        setCurrentIdea(result.idea);
+      if (result.success && result.idea) {
+        const newIdea = result.idea;
+        
+        console.log('🔄 Atualizando currentIdea com:', newIdea);
+        setCurrentIdea(newIdea);
+        setIdeas(prev => [newIdea, ...prev].slice(0, 10)); // Keep last 10 ideas
         setMetadata(result.metadata);
-        setIdeas(prev => [result.idea, ...prev]);
         
-        // Track successful generation
-        await analyticsService.track({
-          userId: request.userId,
-          eventType: 'user_action',
-          category: 'idea_generation',
-          action: 'generate_idea',
-          label: result.idea.category,
-          value: 1,
-          metadata: {
-            category: result.idea.category,
-            personalizationApplied: result.metadata.personalizationApplied,
-            cost: result.metadata.cost,
-            processingTime: result.metadata.processingTime
-          }
-        });
+        console.log('✅ States atualizados - currentIdea deveria ser:', newIdea.title);
         
-        // Track business metric
-        await analyticsService.track({
-          userId: request.userId,
-          eventType: 'business_metric',
-          category: 'idea_generation',
-          action: 'idea_generated',
-          value: 1,
-          metadata: {
-            category: result.idea.category,
-            serviceLevel: result.metadata.serviceLevel,
-            tierInfo: result.metadata.tierInfo
-          }
-        });
+        // Track successful generation (optional)
+        if (analyticsService) {
+          await analyticsService.trackEvent('idea_generated', {
+            userId: request.userId,
+            ideaId: newIdea.id,
+            category: newIdea.category,
+            difficulty: newIdea.difficulty,
+            hasPersonalization: !!recommendations,
+            generationTime: result.metadata?.generationTime
+          });
+        }
+        
+        return result;
+      } else {
+        const errorMsg = result.error || 'Erro ao gerar ideia.';
+        console.log('❌ Erro na geração:', errorMsg);
+        setError(errorMsg);
+        return null;
       }
-      
-      return result;
       
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        return null; // Request was cancelled
-      }
-      
-      const errorMessage = err.message || 'Erro ao gerar ideia. Tente novamente.';
+      const errorMessage = err.message || 'Erro inesperado ao gerar ideia.';
       setError(errorMessage);
       
-      // Track error
-      const { analyticsService } = getServices();
-      await analyticsService.track({
-        userId: request.userId,
-        eventType: 'error_event',
-        category: 'idea_generation',
-        action: 'generation_error',
-        metadata: { 
-          error: errorMessage, 
-          context: 'idea_generation' 
-        }
-      });
+      // Track error (optional)
+      const { analyticsService } = await getServices();
+      if (analyticsService) {
+        await analyticsService.trackError('idea_generation_error', {
+          userId: request.userId,
+          error: errorMessage,
+          context: 'idea_generation',
+          category: request.category
+        });
+      }
       
       return null;
       
     } finally {
       setLoading(false);
-      abortControllerRef.current = null;
     }
   }, [getServices]);
   
@@ -200,7 +232,13 @@ export const useIdeaGeneration = () => {
     feedback: IdeaFeedback
   ): Promise<boolean> => {
     try {
-      const { ideaBankService, analyticsService, personalizationService } = getServices();
+      const { ideaBankService, analyticsService, personalizationService } = await getServices();
+      
+      // Check if required service is available
+      if (!ideaBankService) {
+        console.warn('IdeaBankService not available, cannot process feedback');
+        return false;
+      }
       
       // Process feedback with backend service
       const result = await ideaBankService.processIdeaFeedback({
@@ -212,30 +250,32 @@ export const useIdeaGeneration = () => {
       });
       
       if (result.success) {
-        // Update personalization based on feedback
-        await personalizationService.updateUserPreferences(
-          userId,
-          {
-            type: 'idea_feedback',
-            data: feedback,
-            timestamp: new Date().toISOString()
+        // Update personalization based on feedback (optional)
+        if (personalizationService) {
+          try {
+            await personalizationService.updateUserPreferences(
+              userId,
+              {
+                type: 'idea_feedback',
+                data: feedback,
+                timestamp: new Date().toISOString()
+              }
+            );
+          } catch (err) {
+            console.warn('Failed to update personalization preferences:', err);
           }
-        );
+        }
         
-        // Track feedback
-        await analyticsService.track({
-          userId,
-          eventType: 'user_action',
-          category: 'idea_interaction',
-          action: `idea_${feedback.interactionType}`,
-          label: feedback.ideaId,
-          value: feedback.rating || 1,
-          metadata: {
+        // Track feedback (optional)
+        if (analyticsService) {
+          await analyticsService.trackEvent(`idea_${feedback.interactionType}`, {
+            userId,
+            ideaId: feedback.ideaId,
+            rating: feedback.rating || 1,
             interactionType: feedback.interactionType,
-            rating: feedback.rating,
             hasTextFeedback: !!feedback.feedback
-          }
-        });
+          });
+        }
         
         return true;
       }
@@ -245,19 +285,16 @@ export const useIdeaGeneration = () => {
     } catch (err: any) {
       console.error('Error processing feedback:', err);
       
-      // Track feedback error
-      const { analyticsService } = getServices();
-      await analyticsService.track({
-        userId,
-        eventType: 'error_event',
-        category: 'idea_interaction',
-        action: 'feedback_error',
-        metadata: { 
-          error: err.message, 
+      // Track feedback error (optional)
+      const { analyticsService } = await getServices();
+      if (analyticsService) {
+        await analyticsService.trackError('feedback_error', {
+          userId,
+          error: err.message,
           context: 'feedback_processing',
           ideaId: feedback.ideaId
-        }
-      });
+        });
+      }
       
       return false;
     }
@@ -274,22 +311,26 @@ export const useIdeaGeneration = () => {
       setLoading(true);
       setError(null);
       
-      const { ideaBankService } = getServices();
+      const { ideaBankService } = await getServices();
+      
+      if (!ideaBankService) {
+        console.warn('IdeaBankService not available, cannot get user ideas');
+        setError('Serviço não disponível para carregar ideias.');
+        return;
+      }
       
       const result = await ideaBankService.getUserIdeas({
         userId,
-        filters,
-        pagination,
-        sort
+        limit: 50,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
       });
       
       if (result.success) {
-        setIdeas(result.ideas);
-        return result;
+        setIdeas(result.ideas || []);
+      } else {
+        setError(result.error || 'Erro ao carregar ideias do usuário.');
       }
-      
-      setError('Erro ao carregar ideias.');
-      return null;
       
     } catch (err: any) {
       const errorMessage = err.message || 'Erro ao carregar ideias.';
@@ -320,6 +361,161 @@ export const useIdeaGeneration = () => {
     }
   }, []);
   
+  // P0.1 - Save idea functionality
+  const saveIdea = useCallback(async (idea: IdeaGenerationResponse['idea']): Promise<boolean> => {
+    try {
+      const { ideaBankService } = await getServices();
+      
+      if (!ideaBankService) {
+        console.warn('IdeaBankService not available, cannot save idea');
+        return false;
+      }
+      
+      const result = await ideaBankService.saveIdea({
+        userId: idea.userId || '',
+        idea: idea,
+        metadata: {
+          source: 'generated',
+          cost: metadata?.cost || 0,
+          tokensUsed: metadata?.tokensUsed || 0
+        }
+      });
+      
+      return result.success;
+    } catch (error) {
+      console.error('Error saving idea:', error);
+      return false;
+    }
+  }, [getServices, metadata]);
+
+  // P0.2 - Get ideas history
+  const getIdeasHistory = useCallback(async (
+    userId: string,
+    options?: { page?: number; limit?: number; filters?: IdeaFilters }
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { ideaBankService } = await getServices();
+      
+      if (!ideaBankService) {
+        console.warn('IdeaBankService not available, cannot get ideas history');
+        setError('Serviço não disponível para carregar histórico.');
+        return;
+      }
+      
+      const result = await ideaBankService.getUserIdeasHistory({
+        userId,
+        filters: options?.filters,
+        pagination: {
+          page: options?.page || 1,
+          limit: options?.limit || 20
+        },
+        sort: { field: 'savedAt', order: 'desc' }
+      });
+      
+      if (result.success) {
+        setIdeas(result.ideas || []);
+        return result;
+      } else {
+        setError(result.error || 'Erro ao carregar histórico de ideias.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error getting ideas history:', error);
+      setError('Erro ao carregar histórico de ideias.');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [getServices]);
+
+  // P0.3 - Quick add idea
+  const quickAddIdea = useCallback(async (data: {
+    title: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+  }): Promise<IdeaGenerationResponse['idea'] | null> => {
+    try {
+      const { ideaBankService } = await getServices();
+      
+      if (!ideaBankService) {
+        console.warn('IdeaBankService not available, cannot quick add idea');
+        return null;
+      }
+      
+      const result = await ideaBankService.quickAddIdea({
+        userId: data.userId || '',
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        tags: data.tags
+      });
+      
+      if (result.success && result.idea) {
+        // Update local state
+        setIdeas(prev => [result.idea, ...prev]);
+        return result.idea;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error quick adding idea:', error);
+      return null;
+    }
+  }, [getServices]);
+
+  // P0.4 - Search ideas
+  const searchIdeas = useCallback(async (
+    userId: string,
+    searchTerm: string,
+    filters?: {
+      category?: string;
+      tags?: string[];
+      dateRange?: { start: Date; end: Date };
+    },
+    pagination?: { page?: number; limit?: number }
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { ideaBankService } = await getServices();
+      
+      if (!ideaBankService) {
+        console.warn('IdeaBankService not available, cannot search ideas');
+        setError('Serviço não disponível para busca.');
+        return null;
+      }
+      
+      const result = await ideaBankService.searchIdeas({
+        userId,
+        searchTerm,
+        filters,
+        pagination: {
+          page: pagination?.page || 1,
+          limit: pagination?.limit || 20
+        }
+      });
+      
+      if (result.success) {
+        setIdeas(result.ideas);
+        return result;
+      } else {
+        setError(result.error || 'Erro ao buscar ideias.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error searching ideas:', error);
+      setError('Erro ao buscar ideias.');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [getServices]);
+
   return {
     // State
     loading,
@@ -334,7 +530,13 @@ export const useIdeaGeneration = () => {
     getUserIdeas,
     clearCurrentIdea,
     clearError,
-    cancelGeneration
+    cancelGeneration,
+    
+    // P0 New Features
+    saveIdea,
+    getIdeasHistory,
+    quickAddIdea,
+    searchIdeas
   };
 };
 

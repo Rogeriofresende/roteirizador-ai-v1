@@ -46,21 +46,23 @@ export class GeminiService {
   }
 
   private getApiKey(): string | null {
-    // Prioridade: localStorage -> environment variable
+    // 🔧 ALPHA FIX: Enhanced API key detection with development fallback
     const localStorageKey = localStorage.getItem('GEMINI_API_KEY');
-    if (localStorageKey && localStorageKey.trim()) {
+    if (localStorageKey && localStorageKey.trim() && localStorageKey !== 'desenvolvimento_api_key_placeholder') {
       console.log('🔑 Using API key from localStorage');
       return localStorageKey.trim();
     }
 
     const envKey = import.meta.env.VITE_GOOGLE_GEMINI_API_KEY;
-    if (envKey && envKey.trim()) {
+    if (envKey && envKey.trim() && envKey !== 'desenvolvimento_api_key_placeholder') {
       console.log('🔑 Using API key from environment variable');
       console.log('🔍 API key prefix:', envKey.substring(0, 10) + '...');
       return envKey.trim();
     }
 
-    console.warn('❌ No API key found in localStorage or environment');
+    // 🔧 ALPHA FIX: Development mode fallback
+    console.warn('⚠️ No valid API key found. Using development mode with mock responses.');
+    console.warn('💡 To configure API key: https://aistudio.google.com/app/apikey');
     return null;
   }
 
@@ -69,7 +71,8 @@ export class GeminiService {
       const apiKey = this.getApiKey();
       
       if (!apiKey) {
-        console.warn('⚠️ API key do Gemini não configurada. Configure através do localStorage ou variável de ambiente VITE_GOOGLE_GEMINI_API_KEY');
+        console.warn('⚠️ API key do Gemini não configurada. Sistema rodando em modo de desenvolvimento com respostas simuladas.');
+        console.info('💡 Para configurar: localStorage.setItem("GEMINI_API_KEY", "sua_api_key_aqui")');
         this.genAI = null;
         this.model = null;
         this.authManager = null;
@@ -124,16 +127,16 @@ export class GeminiService {
       analyticsService.trackConversionFunnel('form_complete', params);
       
       if (!this.isConfigured()) {
-        const error = 'Gemini API não configurado. Configure sua API key primeiro.';
-        console.error('❌', error);
+        console.log('🔧 API key não configurada - usando modo de desenvolvimento');
         
-        // Track erro de configuração
-        analyticsService.trackError('API Key Not Configured', {
+        // Track modo de desenvolvimento
+        analyticsService.trackEvent('development_mode_script_generation', {
           context: 'script_generation',
-          platform: params.platform
+          platform: params.platform,
+          subject: params.subject.substring(0, 50) + '...'
         });
         
-        throw new Error(error);
+        return await this.generateMockResponse(params);
       }
 
       // ✅ VALIDAÇÃO: Parâmetros obrigatórios
@@ -317,6 +320,274 @@ export class GeminiService {
         'gemini_api_call'
       );
     });
+  }
+
+  // ✅ NOVO: Função generateIdea para o Banco de Ideias
+  async generateIdea(params: {
+    userId: string;
+    category: string;
+    style: string;
+    targetAudience: string;
+    contentType: string;
+    keywords?: string[];
+    personalizedContext?: any;
+  }): Promise<{
+    id: string;
+    content: string;
+    metadata: {
+      category: string;
+      style: string;
+      targetAudience: string;
+      contentType: string;
+      keywords?: string[];
+      generatedAt: Date;
+      userId: string;
+    };
+  }> {
+    const startTime = Date.now();
+    
+    try {
+      console.log('🚀 Iniciando geração de ideia...', params);
+      
+      if (!this.isConfigured()) {
+        console.log('🔧 API key não configurada - usando modo de desenvolvimento');
+        
+        // Track modo de desenvolvimento
+        analyticsService.trackEvent('development_mode_idea_generation', {
+          context: 'idea_generation',
+          category: params.category,
+          contentType: params.contentType
+        });
+        
+        return await this.generateMockIdea(params);
+      }
+
+      // ✅ VALIDAÇÃO: Parâmetros obrigatórios
+      if (!params.category?.trim() || !params.contentType?.trim()) {
+        throw new Error('Parâmetros obrigatórios ausentes (category ou contentType)');
+      }
+
+      // Cache key para ideias
+      const cacheKey = `idea_${JSON.stringify(params)}`;
+      
+      // ✅ IMPLEMENTADO: Usar fallback manager para operação principal
+      const result = await this.fallbackManager.executeWithFallbacks(
+        () => this.generateIdeaWithResilience(params),
+        'idea_generation'
+      );
+      
+      const generationTime = Date.now() - startTime;
+      
+      // Cache successful result
+      try {
+        localStorage.setItem('last_generated_idea', JSON.stringify({
+          idea: result,
+          timestamp: Date.now(),
+          params
+        }));
+      } catch (cacheError) {
+        console.warn('Failed to cache idea:', cacheError);
+      }
+      
+      console.log('✅ Ideia gerada com sucesso! Tamanho:', result.content.length, 'caracteres');
+      
+      // Track sucesso da geração
+      analyticsService.trackEvent('idea_generation_success', {
+        category: params.category,
+        contentType: params.contentType,
+        userId: params.userId,
+        generation_time: generationTime,
+        idea_length: result.content.length
+      });
+      
+      return result;
+
+    } catch (error: unknown) {
+      console.error('❌ Erro ao gerar ideia:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao gerar ideia';
+      
+      analyticsService.trackError('Idea Generation Failed', {
+        context: 'idea_generation',
+        category: params.category,
+        contentType: params.contentType,
+        error: errorMessage,
+        configured: this.isConfigured()
+      });
+      
+      // ✅ FALLBACK: Mensagem mais amigável para usuário
+      if (errorMessage.includes('400') || errorMessage.includes('Bad Request')) {
+        throw new Error('Configuração da API Gemini inválida. Verifique sua API key.');
+      } else if (errorMessage.includes('429') || errorMessage.includes('quota')) {
+        throw new Error('Limite de uso da API atingido. Tente novamente mais tarde.');
+      } else if (errorMessage.includes('não configurado')) {
+        throw new Error(errorMessage);
+      } else if (errorMessage.includes('Circuit breaker is OPEN')) {
+        throw new Error('Serviço temporariamente indisponível devido a múltiplas falhas. Tente novamente em alguns minutos.');
+      } else {
+        throw new Error('Erro temporário na geração. Tente novamente em alguns instantes.');
+      }
+    }
+  }
+
+  // ✅ NOVO: Método principal com resiliência completa para ideias
+  private async generateIdeaWithResilience(params: {
+    userId: string;
+    category: string;
+    style: string;
+    targetAudience: string;
+    contentType: string;
+    keywords?: string[];
+    personalizedContext?: any;
+  }): Promise<{
+    id: string;
+    content: string;
+    metadata: {
+      category: string;
+      style: string;
+      targetAudience: string;
+      contentType: string;
+      keywords?: string[];
+      generatedAt: Date;
+      userId: string;
+    };
+  }> {
+    // Use circuit breaker para evitar chamadas desnecessárias
+    return await this.circuitBreaker.execute(async () => {
+      // Use network resilience manager para retry automático
+      return await this.networkManager.executeWithRetry(
+        async () => {
+          if (!this.model) {
+            throw new Error('Modelo Gemini não inicializado');
+          }
+
+          // Criar prompt para geração de ideia
+          const keywordsText = params.keywords?.join(', ') || '';
+          const personalizedContext = params.personalizedContext ? 
+            `\n\nContexto personalizado: ${JSON.stringify(params.personalizedContext)}` : '';
+
+          const prompt = `
+Você é um especialista em criação de conteúdo e geração de ideias criativas. 
+Gere uma ideia detalhada e criativa para:
+
+**Categoria:** ${params.category}
+**Tipo de conteúdo:** ${params.contentType}
+**Estilo:** ${params.style}
+**Público-alvo:** ${params.targetAudience}
+**Palavras-chave:** ${keywordsText}${personalizedContext}
+
+Forneça uma ideia completa e detalhada que:
+- Seja original e criativa
+- Esteja alinhada com o público-alvo
+- Incorpore as palavras-chave naturalmente
+- Seja executável e prática
+- Tenha potencial viral ou engajamento
+
+Formato da resposta:
+**Título:** [Título cativante]
+**Descrição:** [Descrição detalhada da ideia]
+**Execução:** [Como executar esta ideia]
+**Elementos-chave:** [Pontos principais para o sucesso]
+**Call-to-action:** [Sugestão de chamada para ação]
+
+Seja criativo, mas mantenha a praticidade!
+`;
+
+          const result = await this.model.generateContent(prompt);
+          const response = result.response;
+          const text = response.text();
+
+          if (!text || text.trim().length === 0) {
+            throw new Error('Resposta vazia da API Gemini');
+          }
+
+          // Gerar ID único para a ideia
+          const ideaId = `idea_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+          return {
+            id: ideaId,
+            content: text.trim(),
+            metadata: {
+              category: params.category,
+              style: params.style,
+              targetAudience: params.targetAudience,
+              contentType: params.contentType,
+              keywords: params.keywords,
+              generatedAt: new Date(),
+              userId: params.userId
+            }
+          };
+        },
+        'idea_generation'
+      );
+    });
+  }
+
+  // ✅ NOVO: Mock para desenvolvimento - geração de ideias
+  private async generateMockIdea(params: {
+    userId: string;
+    category: string;
+    style: string;
+    targetAudience: string;
+    contentType: string;
+    keywords?: string[];
+    personalizedContext?: any;
+  }): Promise<{
+    id: string;
+    content: string;
+    metadata: {
+      category: string;
+      style: string;
+      targetAudience: string;
+      contentType: string;
+      keywords?: string[];
+      generatedAt: Date;
+      userId: string;
+    };
+  }> {
+    // Simular delay da API
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    
+    const keywordsText = params.keywords?.join(', ') || '';
+    const ideaId = `mock_idea_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const mockContent = `
+**Título:** Ideia Criativa para ${params.contentType} - ${params.category}
+
+**Descrição:** Esta é uma ideia inovadora para ${params.contentType} focada em ${params.category}, desenvolvida especificamente para ${params.targetAudience} com um estilo ${params.style}.
+
+**Execução:** 
+1. Comece definindo o conceito principal
+2. Desenvolva o conteúdo seguindo o estilo ${params.style}
+3. Adapte a linguagem para ${params.targetAudience}
+4. Incorpore as palavras-chave: ${keywordsText}
+5. Teste e refine baseado no feedback
+
+**Elementos-chave:**
+- Originalidade e criatividade
+- Alinhamento com o público-alvo
+- Uso estratégico de palavras-chave
+- Potencial de engajamento
+- Execução prática
+
+**Call-to-action:** "Transforme esta ideia em realidade! Comece hoje mesmo e veja os resultados."
+
+⚠️ **Modo de desenvolvimento ativo** - Para usar a API Gemini real, configure sua API key.
+`;
+
+    return {
+      id: ideaId,
+      content: mockContent.trim(),
+      metadata: {
+        category: params.category,
+        style: params.style,
+        targetAudience: params.targetAudience,
+        contentType: params.contentType,
+        keywords: params.keywords,
+        generatedAt: new Date(),
+        userId: params.userId
+      }
+    };
   }
 
   async refineText(selectedText: string, refinementInstruction: string): Promise<string> {
@@ -1133,6 +1404,97 @@ Gere um roteiro completo, criativo e pronto para produção:
         });
       }
     }, 300000);
+  }
+
+  // 🔧 ALPHA FIX: Mock response generator for development mode
+  private async generateMockResponse(params: {
+    subject: string;
+    platform: string;
+    duration: string;
+    tone: string;
+    audience: string;
+    objective?: string;
+  }): Promise<string> {
+    console.log('🎭 Gerando resposta simulada para desenvolvimento...');
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+    
+    const mockScripts = {
+      'YouTube Shorts': `🎬 **ROTEIRO SIMULADO - ${params.subject}**
+
+**HOOK (0-3s):**
+"Você sabia que ${params.subject.toLowerCase()} pode revolucionar sua vida em apenas ${params.duration}?"
+
+**CONTEÚDO PRINCIPAL (3-45s):**
+• Dica 1: Use técnicas comprovadas
+• Dica 2: Aplique diariamente 
+• Dica 3: Monitore os resultados
+
+**CALL TO ACTION (45-60s):**
+"Salve este vídeo e comece HOJE! 
+👇 Comente 'QUERO' para mais dicas!"
+
+---
+⚠️ **Este é um roteiro simulado para desenvolvimento.**
+Configure sua API key do Gemini para roteiros reais:
+localStorage.setItem("GEMINI_API_KEY", "sua_api_key_aqui")`,
+
+      'Instagram Reels': `🎥 **ROTEIRO SIMULADO - ${params.subject}**
+
+**ABERTURA VISUAL (0-2s):**
+Texto na tela: "${params.subject} em ${params.duration}"
+
+**DESENVOLVIMENTO (2-25s):**
+✨ Passo 1: Comece devagar
+🚀 Passo 2: Aumente o ritmo
+💪 Passo 3: Mantenha a constância
+
+**FINALIZAÇÃO (25-30s):**
+"Gostou? Segue para mais!
+#${params.subject.replace(/\s+/g, '').toLowerCase()}"
+
+---
+⚠️ **Roteiro de desenvolvimento.** Para conteúdo real, configure a API do Gemini.`,
+
+      'TikTok': `📱 **ROTEIRO SIMULADO - ${params.subject}**
+
+**GANCHO (0-3s):**
+"POV: Você descobre ${params.subject}"
+
+**CONTEÚDO (3-12s):**
+🎯 Informação chocante
+🤯 Plot twist inesperado
+💡 Solução genial
+
+**ENGAJAMENTO (12-15s):**
+"Qual você já sabia? Comenta aí! 👇"
+
+---
+⚠️ **Conteúdo simulado para testes.**`
+    };
+
+    const defaultScript = `📝 **ROTEIRO SIMULADO - ${params.subject}**
+
+**Tom:** ${params.tone}
+**Audiência:** ${params.audience}
+**Plataforma:** ${params.platform}
+
+Este é um roteiro de exemplo gerado em modo de desenvolvimento.
+
+**Conteúdo principal:**
+Sobre ${params.subject}, é importante destacar que este é apenas um exemplo de como o sistema funcionaria com uma API key real do Gemini configurada.
+
+**Para usar roteiros reais:**
+1. Acesse: https://aistudio.google.com/app/apikey
+2. Obtenha sua API key gratuita
+3. Configure: localStorage.setItem("GEMINI_API_KEY", "sua_api_key_aqui")
+4. Recarregue a página
+
+---
+⚠️ **Roteiro simulado para desenvolvimento.** Configure a API do Gemini para conteúdo real.`;
+
+    return mockScripts[params.platform as keyof typeof mockScripts] || defaultScript;
   }
 }
 

@@ -88,6 +88,14 @@ export interface InteractionData {
 // HOOK IMPLEMENTATION
 // ============================================================================
 
+// Create fallback services when container is not available
+const createFallbackServices = () => {
+  return {
+    personalizationService: null,
+    analyticsService: null
+  };
+};
+
 export const usePersonalization = (userId: string) => {
   const [insights, setInsights] = useState<PersonalizationInsights | null>(null);
   const [recommendations, setRecommendations] = useState<PersonalizationRecommendations | null>(null);
@@ -96,13 +104,30 @@ export const usePersonalization = (userId: string) => {
   const [error, setError] = useState<string | null>(null);
   
   // Get services from container
-  const getServices = useCallback(() => {
-    const app = getApplication();
-    return {
-      personalizationService: app.getService('PersonalizationService'),
-      analyticsService: app.getService('AnalyticsService')
-    };
-  }, []);
+  const getServices = async () => {
+    try {
+      const app = getApplication();
+      // Get container through service resolution (now properly registered)
+      const container = app.getService('ServiceContainer');
+      
+      if (!container) {
+        console.warn('Container not available, using fallback services');
+        return createFallbackServices();
+      }
+      
+      return {
+        personalizationService: await container.resolveAsync('PersonalizationService'),
+        analyticsService: await container.resolveAsync('AnalyticsService')
+      };
+    } catch (error) {
+      // Fallback para serviços mock/default em caso de erro
+      console.warn('Failed to resolve personalization services, using fallbacks:', error);
+      return {
+        personalizationService: null,
+        analyticsService: null
+      };
+    }
+  };
   
   // Load personalization insights
   const loadInsights = useCallback(async () => {
@@ -112,7 +137,13 @@ export const usePersonalization = (userId: string) => {
       setLoading(true);
       setError(null);
       
-      const { personalizationService } = getServices();
+      const { personalizationService } = await getServices();
+      
+      if (!personalizationService) {
+        console.warn('PersonalizationService not available, skipping insights load');
+        setError('Serviço de personalização não disponível.');
+        return null;
+      }
       
       const result = await personalizationService.getPersonalizationInsights(userId);
       
@@ -129,14 +160,16 @@ export const usePersonalization = (userId: string) => {
       setError(errorMessage);
       
       // Track error
-      const { analyticsService } = getServices();
-      await analyticsService.track({
-        userId,
-        eventType: 'error_event',
-        category: 'personalization',
-        action: 'insights_load_error',
-        metadata: { error: errorMessage }
-      });
+      const { analyticsService } = await getServices();
+      if (analyticsService) {
+        await analyticsService.track({
+          userId,
+          eventType: 'error_event',
+          category: 'personalization',
+          action: 'insights_load_error',
+          metadata: { error: errorMessage }
+        });
+      }
       
       return null;
       
@@ -154,7 +187,12 @@ export const usePersonalization = (userId: string) => {
     if (!userId) return null;
     
     try {
-      const { personalizationService } = getServices();
+      const { personalizationService } = await getServices();
+      
+      if (!personalizationService) {
+        console.warn('PersonalizationService not available, skipping recommendations');
+        return null;
+      }
       
       const result = await personalizationService.generatePersonalizedRecommendations({
         userId,
@@ -179,7 +217,12 @@ export const usePersonalization = (userId: string) => {
     if (!userId) return false;
     
     try {
-      const { personalizationService, analyticsService } = getServices();
+      const { personalizationService, analyticsService } = await getServices();
+      
+      if (!personalizationService) {
+        console.warn('PersonalizationService not available, skipping preferences update');
+        return false;
+      }
       
       // Update preferences
       const result = await personalizationService.updateUserPreferences(
@@ -189,16 +232,18 @@ export const usePersonalization = (userId: string) => {
       
       if (result.success) {
         // Track preference update
-        await analyticsService.track({
-          userId,
-          eventType: 'user_action',
-          category: 'personalization',
-          action: 'preference_updated',
-          metadata: {
-            interactionType: interaction.type,
-            dataPoints: result.updatedPreferences?.dataPoints || 0
-          }
-        });
+        if (analyticsService) {
+          await analyticsService.track({
+            userId,
+            eventType: 'user_action',
+            category: 'personalization',
+            action: 'preference_updated',
+            metadata: {
+              interactionType: interaction.type,
+              dataPoints: result.updatedPreferences?.dataPoints || 0
+            }
+          });
+        }
         
         // Reload insights to reflect changes
         await loadInsights();
@@ -222,7 +267,12 @@ export const usePersonalization = (userId: string) => {
     if (!userId) return null;
     
     try {
-      const { personalizationService } = getServices();
+      const { personalizationService } = await getServices();
+      
+      if (!personalizationService) {
+        console.warn('PersonalizationService not available, skipping A/B test setup');
+        return null;
+      }
       
       const config = await personalizationService.runPersonalizationABTest(
         userId,
@@ -291,19 +341,21 @@ export const usePersonalization = (userId: string) => {
     if (!userId) return;
     
     try {
-      const { analyticsService } = getServices();
+      const { analyticsService } = await getServices();
       
-      await analyticsService.track({
-        userId,
-        eventType: 'user_action',
-        category: 'personalization',
-        action,
-        metadata: {
-          ...metadata,
-          timestamp: new Date().toISOString(),
-          learningStage: insights?.progress?.learningStage || 'initial'
-        }
-      });
+      if (analyticsService) {
+        await analyticsService.track({
+          userId,
+          eventType: 'user_action',
+          category: 'personalization',
+          action,
+          metadata: {
+            ...metadata,
+            timestamp: new Date().toISOString(),
+            learningStage: insights?.progress?.learningStage || 'initial'
+          }
+        });
+      }
       
     } catch (err: any) {
       console.error('Error tracking personalization interaction:', err);

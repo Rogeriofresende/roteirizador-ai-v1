@@ -1,100 +1,203 @@
 {
-  "name": "Roteirar IA Pro",
-  "short_name": "Roteirar",
-  "description": "Gerador de Roteiros com Inteligência Artificial - Crie roteiros profissionais para YouTube, Instagram, TikTok e LinkedIn usando Google Gemini AI",
+  "name": "Roteirar IA - Banco de Ideias",
+  "short_name": "Roteirar IA",
+  "description": "Sistema inteligente de geração de ideias para criadores de conteúdo",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay"],
-  "theme_color": "#8B5CF6",
-  "background_color": "#4338CA",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-BR",
   "dir": "ltr",
-  "categories": ["productivity", "entertainment", "business"],
-  "iarc_rating_id": "",
-  "edge_side_panel": {},
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
+  
   "icons": [
     {
-      "src": "icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-192x192.png",
+      "src": "/icons/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-512x512.png",
+      "src": "/icons/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
+  
   "screenshots": [
     {
-      "src": "screenshots/desktop-1.png",
+      "src": "/screenshots/desktop-1.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Interface desktop do Roteirar IA"
+      "label": "Tela principal do gerador de ideias"
     },
     {
-      "src": "screenshots/mobile-1.png",
+      "src": "/screenshots/mobile-1.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Interface mobile do Roteirar IA"
+      "label": "Versão mobile do banco de ideias"
     }
   ],
+  
+  "categories": [
+    "productivity",
+    "business",
+    "education",
+    "utilities"
+  ],
+  
   "shortcuts": [
     {
-      "name": "Gerar Roteiro",
+      "name": "Gerar Nova Ideia",
       "short_name": "Gerar",
-      "description": "Criar novo roteiro rapidamente",
+      "description": "Gerar uma nova ideia rapidamente",
       "url": "/?action=generate",
       "icons": [
         {
-          "src": "icons/shortcut-generate.png",
-          "sizes": "96x96"
+          "src": "/icons/shortcut-generate.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Histórico de Ideias",
+      "short_name": "Histórico",
+      "description": "Ver histórico de ideias salvas",
+      "url": "/?tab=history",
+      "icons": [
+        {
+          "src": "/icons/shortcut-history.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Templates",
+      "short_name": "Templates",
+      "description": "Acessar templates de ideias",
+      "url": "/?tab=templates",
+      "icons": [
+        {
+          "src": "/icons/shortcut-templates.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Performance",
+      "short_name": "Performance",
+      "description": "Monitorar performance da aplicação",
+      "url": "/?tab=performance",
+      "icons": [
+        {
+          "src": "/icons/shortcut-performance.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     }
+  ],
+  
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://roteirar-ia.vercel.app/manifest.json"
+    }
+  ],
+  
+  "prefer_related_applications": false,
+  
+  "protocol_handlers": [
+    {
+      "protocol": "web+roteirar",
+      "url": "/?idea=%s"
+    }
+  ],
+  
+  "file_handlers": [
+    {
+      "action": "/import",
+      "accept": {
+        "application/json": [".json"],
+        "text/csv": [".csv"],
+        "text/plain": [".txt"],
+        "text/markdown": [".md"]
+      }
+    }
+  ],
+  
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/json", "text/csv", "text/plain", "text/markdown"]
+        }
+      ]
+    }
+  },
+  
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "navigate-new"]
+  },
+  
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  
+  "handle_links": "preferred",
+  
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  
+  "gcm_sender_id": "103953800507",
+  
+  "offline_enabled": true,
+  
+  "features": [
+    "background-sync",
+    "push-notifications",
+    "offline-capability",
+    "install-prompt",
+    "share-target",
+    "web-share",
+    "file-handling",
+    "shortcuts"
   ]
 } 

@@ -237,8 +237,9 @@ export const ProgressiveDisclosure = forwardRef<HTMLDivElement, ProgressiveDiscl
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const observerRef = useRef<IntersectionObserver | null>(null);
     
-    // Sort phases by order
-    const sortedPhases = [...phases].sort((a, b) => a.order - b.order);
+    // 🔧 ALPHA FIX: Sort phases by order with safety check
+    const safePhases = Array.isArray(phases) ? phases : [];
+    const sortedPhases = [...safePhases].sort((a, b) => a.order - b.order);
     
     // Start disclosure
     const startDisclosure = () => {

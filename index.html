@@ -63,45 +63,56 @@
 <body>
   <div id="root"></div>
   
-  <!-- Force unregister Service Worker in development -->
+  <!-- Force unregister Service Worker in development - FIXED: Prevent infinite reload loop -->
   <script>
     if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
-      console.log('🚨 DEVELOPMENT MODE: Forcing Service Worker cleanup...');
+      // CRITICAL FIX: Check if cleanup already happened to prevent infinite reload
+      const cleanupKey = 'sw_cleanup_completed';
+      const hasCleanedUp = sessionStorage.getItem(cleanupKey);
       
-      // Clear all caches
-      if ('caches' in window) {
-        caches.keys().then(function(cacheNames) {
-          cacheNames.forEach(function(cacheName) {
-            console.log('Deleting cache:', cacheName);
-            caches.delete(cacheName);
-          });
-        });
-      }
-      
-      // Unregister all service workers
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          console.log('🗑️ Unregistering service worker:', registration.scope);
-          registration.unregister().then(function(boolean) {
-            console.log('✅ Service worker unregistered:', boolean);
+      if (!hasCleanedUp) {
+        console.log('🚨 DEVELOPMENT MODE: Forcing Service Worker cleanup (one-time only)...');
+        
+        // Mark cleanup as started
+        sessionStorage.setItem(cleanupKey, 'true');
+        
+        // Clear all caches
+        if ('caches' in window) {
+          caches.keys().then(function(cacheNames) {
+            cacheNames.forEach(function(cacheName) {
+              console.log('Deleting cache:', cacheName);
+              caches.delete(cacheName);
+            });
           });
         }
-      });
-      
-      // Clear storage
-      if ('localStorage' in window) {
-        Object.keys(localStorage).forEach(key => {
-          if (key.includes('pwa') || key.includes('cache') || key.includes('sw')) {
-            localStorage.removeItem(key);
+        
+        // Unregister all service workers
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            console.log('🗑️ Unregistering service worker:', registration.scope);
+            registration.unregister().then(function(boolean) {
+              console.log('✅ Service worker unregistered:', boolean);
+            });
           }
         });
+        
+        // Clear storage (but preserve our cleanup flag)
+        if ('localStorage' in window) {
+          Object.keys(localStorage).forEach(key => {
+            if (key.includes('pwa') || key.includes('cache') || key.includes('sw')) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
+        
+        // Force reload after cleanup ONLY ONCE
+        setTimeout(() => {
+          console.log('🔄 Reloading page to complete cleanup (final reload)...');
+          window.location.reload(true);
+        }, 1000);
+      } else {
+        console.log('✅ DEVELOPMENT MODE: Service Worker cleanup already completed, skipping...');
       }
-      
-      // Force reload after cleanup
-      setTimeout(() => {
-        console.log('🔄 Reloading page to complete cleanup...');
-        window.location.reload(true);
-      }, 1000);
     }
   </script>
   

@@ -1,0 +1,809 @@
+/* ==========================================
+   🔵 IA BETA - V7.5 ENHANCED FORMVALIDATION STYLES
+   Professional form-level validation with status visualization & error management
+   ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ==========================================
+   CSS CUSTOM PROPERTIES - V7.5 ENHANCED
+   ========================================== */
+
+:root {
+  /* V7.5 Enhanced Color Palette */
+  --form-validation-primary: #2563eb;
+  --form-validation-primary-hover: #1d4ed8;
+  --form-validation-primary-light: #3b82f6;
+  --form-validation-accent: #7c3aed;
+  --form-validation-accent-light: #8b5cf6;
+  --form-validation-warm: #f59e0b;
+  --form-validation-warm-light: #fbbf24;
+  
+  /* Glass-morphism Variables */
+  --form-validation-glass-bg: rgba(255, 255, 255, 0.05);
+  --form-validation-glass-border: rgba(255, 255, 255, 0.1);
+  --form-validation-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --form-validation-glass-backdrop: blur(12px);
+  
+  /* State Colors */
+  --form-validation-success: #10b981;
+  --form-validation-success-light: #34d399;
+  --form-validation-warning: #f59e0b;
+  --form-validation-warning-light: #fbbf24;
+  --form-validation-error: #ef4444;
+  --form-validation-error-light: #f87171;
+  --form-validation-neutral: #6b7280;
+  --form-validation-validating: #3b82f6;
+  
+  /* Background Colors */
+  --form-validation-bg-white: #ffffff;
+  --form-validation-bg-gray-50: #f9fafb;
+  --form-validation-bg-gray-100: #f3f4f6;
+  --form-validation-bg-gray-900: #111827;
+  
+  /* Text Colors */
+  --form-validation-text-primary: #111827;
+  --form-validation-text-secondary: #6b7280;
+  --form-validation-text-placeholder: #9ca3af;
+  --form-validation-text-white: #ffffff;
+  
+  /* Border Radius */
+  --form-validation-radius-sm: 4px;
+  --form-validation-radius-md: 6px;
+  --form-validation-radius-lg: 8px;
+  --form-validation-radius-xl: 12px;
+  --form-validation-radius-2xl: 16px;
+  
+  /* Shadows */
+  --form-validation-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --form-validation-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --form-validation-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --form-validation-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --form-validation-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --form-validation-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Typography */
+  --form-validation-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  
+  /* Spacing Scale */
+  --form-validation-space-1: 0.25rem;
+  --form-validation-space-2: 0.5rem;
+  --form-validation-space-3: 0.75rem;
+  --form-validation-space-4: 1rem;
+  --form-validation-space-5: 1.25rem;
+  --form-validation-space-6: 1.5rem;
+  --form-validation-space-8: 2rem;
+  --form-validation-space-12: 3rem;
+  
+  /* Form Validation Specific */
+  --form-validation-error-bg: rgba(239, 68, 68, 0.05);
+  --form-validation-success-bg: rgba(16, 185, 129, 0.05);
+  --form-validation-warning-bg: rgba(245, 158, 11, 0.05);
+  --form-validation-validating-bg: rgba(59, 130, 246, 0.05);
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  --form-validation-glass-bg: rgba(0, 0, 0, 0.1);
+  --form-validation-glass-border: rgba(255, 255, 255, 0.08);
+  --form-validation-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  --form-validation-bg-white: #1f2937;
+  --form-validation-bg-gray-50: #374151;
+  --form-validation-bg-gray-100: #4b5563;
+  
+  --form-validation-text-primary: #f9fafb;
+  --form-validation-text-secondary: #d1d5db;
+  --form-validation-text-placeholder: #9ca3af;
+}
+
+/* ==========================================
+   BASE CONTAINER STYLES
+   ========================================== */
+
+.form-validation-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-4);
+  font-family: var(--form-validation-font-family);
+  width: 100%;
+  position: relative;
+}
+
+.form-validation-container * {
+  box-sizing: border-box;
+}
+
+/* ==========================================
+   SIZE VARIANTS
+   ========================================== */
+
+.form-validation-container--sm {
+  gap: var(--form-validation-space-3);
+  font-size: 0.875rem;
+}
+
+.form-validation-container--sm .form-validation-header {
+  gap: var(--form-validation-space-2);
+}
+
+.form-validation-container--lg {
+  gap: var(--form-validation-space-6);
+  font-size: 1.125rem;
+}
+
+.form-validation-container--lg .form-validation-header {
+  gap: var(--form-validation-space-4);
+}
+
+/* ==========================================
+   GLASS VARIANT - V7.5 ENHANCED SIGNATURE
+   ========================================== */
+
+.form-validation-container--glass {
+  background: var(--form-validation-glass-bg);
+  backdrop-filter: var(--form-validation-glass-backdrop);
+  -webkit-backdrop-filter: var(--form-validation-glass-backdrop);
+  border: 1px solid var(--form-validation-glass-border);
+  border-radius: var(--form-validation-radius-xl);
+  padding: var(--form-validation-space-6);
+  box-shadow: var(--form-validation-glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-validation-container--glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  z-index: 0;
+}
+
+/* Glass Effect Intensity */
+.form-validation-container--glass-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.form-validation-container--glass-medium {
+  background: var(--form-validation-glass-bg);
+  backdrop-filter: var(--form-validation-glass-backdrop);
+  -webkit-backdrop-filter: var(--form-validation-glass-backdrop);
+}
+
+.form-validation-container--glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ==========================================
+   OUTLINED VARIANT - PROFESSIONAL
+   ========================================== */
+
+.form-validation-container--outlined {
+  border: 2px solid var(--form-validation-neutral);
+  border-radius: var(--form-validation-radius-lg);
+  padding: var(--form-validation-space-6);
+  background-color: var(--form-validation-bg-white);
+  transition: var(--form-validation-transition);
+}
+
+.form-validation-container--outlined:hover {
+  border-color: var(--form-validation-primary);
+  box-shadow: var(--form-validation-shadow-md);
+}
+
+/* ==========================================
+   FILLED VARIANT - SOFT BACKGROUND
+   ========================================== */
+
+.form-validation-container--filled {
+  background-color: var(--form-validation-bg-gray-50);
+  border: 1px solid transparent;
+  border-radius: var(--form-validation-radius-lg);
+  padding: var(--form-validation-space-6);
+  transition: var(--form-validation-transition);
+}
+
+.form-validation-container--filled:hover {
+  background-color: var(--form-validation-bg-gray-100);
+  box-shadow: var(--form-validation-shadow-sm);
+}
+
+/* ==========================================
+   MINIMAL VARIANT - CLEAN DESIGN
+   ========================================== */
+
+.form-validation-container--minimal {
+  border: 1px solid var(--form-validation-neutral);
+  border-radius: var(--form-validation-radius-md);
+  padding: var(--form-validation-space-4);
+  background-color: transparent;
+  transition: var(--form-validation-transition);
+}
+
+.form-validation-container--minimal:hover {
+  border-color: var(--form-validation-text-secondary);
+}
+
+/* ==========================================
+   VALIDATION STATES
+   ========================================== */
+
+/* Neutral State */
+.form-validation-container--neutral {
+  border-color: var(--form-validation-neutral);
+}
+
+/* Validating State */
+.form-validation-container--validating {
+  border-color: var(--form-validation-validating);
+  background: linear-gradient(135deg, var(--form-validation-validating-bg), transparent);
+}
+
+.form-validation-container--validating::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--form-validation-validating),
+    transparent
+  );
+  animation: validationProgress 2s ease-in-out infinite;
+}
+
+/* Success State */
+.form-validation-container--success {
+  border-color: var(--form-validation-success);
+  background: linear-gradient(135deg, var(--form-validation-success-bg), transparent);
+}
+
+/* Warning State */
+.form-validation-container--warning {
+  border-color: var(--form-validation-warning);
+  background: linear-gradient(135deg, var(--form-validation-warning-bg), transparent);
+}
+
+/* Error State */
+.form-validation-container--error {
+  border-color: var(--form-validation-error);
+  background: linear-gradient(135deg, var(--form-validation-error-bg), transparent);
+}
+
+/* ==========================================
+   HEADER STYLES
+   ========================================== */
+
+.form-validation-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-3);
+  padding-bottom: var(--form-validation-space-4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.form-validation-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--form-validation-text-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.form-validation-description {
+  font-size: 1rem;
+  color: var(--form-validation-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   FORM STYLES
+   ========================================== */
+
+.form-validation-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-4);
+  width: 100%;
+}
+
+.form-validation-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-4);
+}
+
+/* ==========================================
+   ERROR DISPLAY STYLES
+   ========================================== */
+
+.form-validation-errors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-3);
+  padding: var(--form-validation-space-4);
+  border-radius: var(--form-validation-radius-lg);
+  background: var(--form-validation-error-bg);
+  border: 1px solid var(--form-validation-error);
+  position: relative;
+}
+
+.form-validation-errors--top {
+  order: -1;
+}
+
+.form-validation-errors--bottom {
+  order: 1;
+}
+
+.form-validation-error-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-2);
+}
+
+.form-validation-error-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-validation-error);
+  margin-bottom: var(--form-validation-space-2);
+  padding-bottom: var(--form-validation-space-2);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.form-validation-error-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--form-validation-space-2);
+  padding: var(--form-validation-space-2);
+  border-radius: var(--form-validation-radius-md);
+  background: rgba(239, 68, 68, 0.02);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.form-validation-error-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: var(--form-validation-error);
+  margin-top: 2px;
+}
+
+.form-validation-error-text {
+  color: var(--form-validation-error);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   FIELD-LEVEL ERROR STYLES
+   ========================================== */
+
+.form-validation-field-errors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-3);
+}
+
+.form-validation-field-error {
+  padding: var(--form-validation-space-3);
+  border-radius: var(--form-validation-radius-md);
+  background: var(--form-validation-error-bg);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.form-validation-field-error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--form-validation-space-2);
+  padding-bottom: var(--form-validation-space-2);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.form-validation-field-name {
+  font-weight: 600;
+  color: var(--form-validation-error);
+  font-size: 0.875rem;
+}
+
+.form-validation-field-error-count {
+  font-size: 0.75rem;
+  color: var(--form-validation-error);
+  background: rgba(239, 68, 68, 0.1);
+  padding: var(--form-validation-space-1) var(--form-validation-space-2);
+  border-radius: var(--form-validation-radius-sm);
+}
+
+.form-validation-field-error-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-validation-space-1);
+}
+
+.form-validation-field-error-item {
+  font-size: 0.875rem;
+  color: var(--form-validation-error);
+  line-height: 1.4;
+  padding: var(--form-validation-space-1) 0;
+}
+
+.form-validation-field-error-item::before {
+  content: '•';
+  margin-right: var(--form-validation-space-2);
+  color: var(--form-validation-error);
+}
+
+/* ==========================================
+   STATUS INDICATOR STYLES
+   ========================================== */
+
+.form-validation-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--form-validation-space-4);
+  border-radius: var(--form-validation-radius-lg);
+  background: var(--form-validation-validating-bg);
+  border: 1px solid var(--form-validation-validating);
+}
+
+.form-validation-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--form-validation-space-3);
+  color: var(--form-validation-validating);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-validation-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-top: 2px solid var(--form-validation-validating);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ==========================================
+   SUCCESS INDICATOR STYLES
+   ========================================== */
+
+.form-validation-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--form-validation-space-4);
+  border-radius: var(--form-validation-radius-lg);
+  background: var(--form-validation-success-bg);
+  border: 1px solid var(--form-validation-success);
+}
+
+.form-validation-success-content {
+  display: flex;
+  align-items: center;
+  gap: var(--form-validation-space-3);
+  color: var(--form-validation-success);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-validation-success-icon {
+  font-size: 1.125rem;
+  color: var(--form-validation-success);
+}
+
+.form-validation-success-text {
+  color: var(--form-validation-success);
+}
+
+/* ==========================================
+   DISABLED AND READONLY STATES
+   ========================================== */
+
+.form-validation-container--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.form-validation-container--readonly {
+  background-color: var(--form-validation-bg-gray-50);
+  border-color: var(--form-validation-text-placeholder);
+}
+
+.form-validation-container--submitting {
+  position: relative;
+  pointer-events: none;
+}
+
+.form-validation-container--submitting::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ==========================================
+   DEBUG INFORMATION STYLES
+   ========================================== */
+
+.form-validation-debug {
+  margin-top: var(--form-validation-space-6);
+  padding: var(--form-validation-space-4);
+  border: 1px solid var(--form-validation-text-placeholder);
+  border-radius: var(--form-validation-radius-md);
+  background: var(--form-validation-bg-gray-50);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.75rem;
+}
+
+.form-validation-debug summary {
+  font-weight: 600;
+  color: var(--form-validation-text-primary);
+  cursor: pointer;
+  padding: var(--form-validation-space-2);
+  border-radius: var(--form-validation-radius-sm);
+  transition: var(--form-validation-transition);
+}
+
+.form-validation-debug summary:hover {
+  background: var(--form-validation-bg-gray-100);
+}
+
+.form-validation-debug-content {
+  margin-top: var(--form-validation-space-3);
+  padding-top: var(--form-validation-space-3);
+  border-top: 1px solid var(--form-validation-text-placeholder);
+}
+
+.form-validation-debug-content h4 {
+  margin: var(--form-validation-space-3) 0 var(--form-validation-space-2) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-validation-text-primary);
+}
+
+.form-validation-debug-content pre {
+  background: var(--form-validation-bg-white);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--form-validation-radius-sm);
+  padding: var(--form-validation-space-3);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--form-validation-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes validationProgress {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes errorPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes successGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Apply animations to states */
+.form-validation-container--error {
+  animation: errorPulse 2s ease-in-out;
+}
+
+.form-validation-container--success {
+  animation: successGlow 2s ease-in-out;
+}
+
+/* ==========================================
+   GLASS SHIMMER EFFECT
+   ========================================== */
+
+@keyframes glassShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.form-validation-container--glass::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: glassShimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 768px) {
+  .form-validation-container {
+    gap: var(--form-validation-space-3);
+  }
+  
+  .form-validation-container--glass,
+  .form-validation-container--outlined,
+  .form-validation-container--filled {
+    padding: var(--form-validation-space-4);
+  }
+  
+  .form-validation-title {
+    font-size: 1.25rem;
+  }
+  
+  .form-validation-description {
+    font-size: 0.875rem;
+  }
+  
+  .form-validation-errors {
+    padding: var(--form-validation-space-3);
+  }
+  
+  .form-validation-field-error {
+    padding: var(--form-validation-space-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-validation-container {
+    gap: var(--form-validation-space-2);
+  }
+  
+  .form-validation-container--glass,
+  .form-validation-container--outlined,
+  .form-validation-container--filled {
+    padding: var(--form-validation-space-3);
+  }
+  
+  .form-validation-header {
+    gap: var(--form-validation-space-2);
+  }
+  
+  .form-validation-title {
+    font-size: 1.125rem;
+  }
+  
+  .form-validation-errors {
+    padding: var(--form-validation-space-2);
+  }
+}
+
+/* ==========================================
+   HIGH CONTRAST MODE SUPPORT
+   ========================================== */
+
+@media (prefers-contrast: high) {
+  .form-validation-container--glass {
+    background: var(--form-validation-bg-white);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-width: 2px;
+  }
+  
+  .form-validation-error-item {
+    border-width: 2px;
+    background: var(--form-validation-bg-white);
+  }
+  
+  .form-validation-success {
+    border-width: 2px;
+    background: var(--form-validation-bg-white);
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION SUPPORT
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .form-validation-container,
+  .form-validation-errors,
+  .form-validation-status,
+  .form-validation-success,
+  .form-validation-spinner {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .form-validation-container--glass::after {
+    display: none;
+  }
+}
+
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+
+@media print {
+  .form-validation-container {
+    box-shadow: none !important;
+    background: white !important;
+    border: 1px solid #000 !important;
+  }
+  
+  .form-validation-debug {
+    display: none;
+  }
+  
+  .form-validation-spinner {
+    display: none;
+  }
+} 

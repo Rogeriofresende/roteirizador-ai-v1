@@ -172,6 +172,11 @@ export class ErrorCollectionAdapter {
    * Coletar erro (com fallback automático)
    */
   static async collectError(errorData: any): Promise<any> {
+    // In development, always use mock to avoid 404 errors
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      return mockErrorCollection.collectError(errorData);
+    }
+
     // Verificar se deve usar mock (apenas uma vez por sessão)
     if (this.useMock === null) {
       this.useMock = await MockErrorCollectionService.shouldUseMock(this.endpoint.replace('/api/errors', ''));
@@ -199,7 +204,10 @@ export class ErrorCollectionAdapter {
 
       return await response.json();
     } catch (error) {
-      console.warn('🔄 [ERROR COLLECTION] Fallback para mock service:', error);
+      // Don't log this error in development to avoid console pollution
+      if (typeof window === 'undefined' || window.location.hostname !== 'localhost') {
+        console.warn('🔄 [ERROR COLLECTION] Fallback para mock service:', error);
+      }
       this.useMock = true;
       return mockErrorCollection.collectError(errorData);
     }

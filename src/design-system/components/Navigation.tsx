@@ -379,7 +379,7 @@ export const HeaderNavigation = forwardRef<HTMLElement, NavigationProps>(
           </span>
         )}
         
-        <style jsx>{`
+        <style>{`
           @media (max-width: 768px) {
             .desktop-nav { display: none !important; }
             .mobile-menu-button { display: flex !important; }

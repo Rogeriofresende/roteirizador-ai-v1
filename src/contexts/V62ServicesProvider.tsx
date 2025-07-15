@@ -42,7 +42,7 @@ export const V62ServicesProvider: React.FC<V62ServicesProviderProps> = ({
   children, 
   config = defaultConfig 
 }) => {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
   const [servicesStatus, setServicesStatus] = useState<V62Context['services']>({
     predictiveUX: false,
     multiAI: false,
@@ -148,21 +148,21 @@ export const V62ServicesProvider: React.FC<V62ServicesProviderProps> = ({
 
   // Personalizar services para o usuário logado
   useEffect(() => {
-    if (user?.uid && servicesStatus.directAccess) {
+    if (currentUser?.uid && servicesStatus.directAccess) {
       import('../services/directAccessService').then(({ DirectAccessService }) => {
-        DirectAccessService.initializeForUser(user.uid).catch(error => {
+        DirectAccessService.initializeForUser(currentUser.uid).catch(error => {
           logger.error('Erro ao personalizar DirectAccess', error);
         });
       });
     }
 
-    if (user?.uid && servicesStatus.predictiveUX) {
+    if (currentUser?.uid && servicesStatus.predictiveUX) {
       import('../services/predictiveUXService').then(({ PredictiveUXService }) => {
         // O service já se auto-inicializa com o userId
-        logger.info('PredictiveUX personalizado para usuário', { userId: user.uid });
+        logger.info('PredictiveUX personalizado para usuário', { userId: currentUser.uid });
       });
     }
-  }, [user?.uid, servicesStatus]);
+  }, [currentUser?.uid, servicesStatus]);
 
   // Verificar saúde dos services
   const checkHealth = useCallback(() => {
@@ -174,10 +174,10 @@ export const V62ServicesProvider: React.FC<V62ServicesProviderProps> = ({
   // Context value
   const contextValue: V62Context = {
     services: servicesStatus,
-    user: user ? {
-      id: user.uid,
-      preferences: user.preferences || {},
-      subscription: user.subscription || 'free'
+    user: currentUser ? {
+      id: currentUser.uid,
+      preferences: currentUser.preferences || {},
+      subscription: currentUser.subscription || 'free'
     } : null,
     config: { ...defaultConfig, ...config },
     performance

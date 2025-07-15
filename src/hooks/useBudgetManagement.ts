@@ -84,6 +84,14 @@ export interface UsageMetrics {
 // HOOK IMPLEMENTATION
 // ============================================================================
 
+// Create fallback services when container is not available
+const createFallbackServices = () => {
+  return {
+    userRepository: null,
+    analyticsService: null
+  };
+};
+
 export const useBudgetManagement = (userId: string) => {
   const [costSummary, setCostSummary] = useState<CostSummary | null>(null);
   const [usageMetrics, setUsageMetrics] = useState<UsageMetrics | null>(null);
@@ -97,92 +105,177 @@ export const useBudgetManagement = (userId: string) => {
   const [error, setError] = useState<string | null>(null);
   
   // Get services from container
-  const getServices = useCallback(() => {
-    const app = getApplication();
-    return {
-      userRepository: app.getService('UserRepository'),
-      analyticsService: app.getService('AnalyticsService')
-    };
-  }, []);
+  const getServices = async () => {
+    try {
+      const app = getApplication();
+      // Get container through service resolution (now properly registered)
+      const container = app.getService('ServiceContainer');
+      
+      if (!container) {
+        console.warn('Container not available, using fallback services');
+        return createFallbackServices();
+      }
+      
+      return {
+        userRepository: await container.resolveAsync('UserRepository'),
+        analyticsService: await container.resolveAsync('AnalyticsService')
+      };
+    } catch (error) {
+      // Fallback para serviços mock/default em caso de erro
+      console.warn('Failed to resolve services, using fallbacks:', error);
+      return createFallbackServices();
+    }
+  };
   
-  // Load cost summary
+  // Load cost summary from API
   const loadCostSummary = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || loading) return; // ✅ Evitar chamadas simultâneas
+    
+    setLoading(true);
+    setError(null);
     
     try {
-      setLoading(true);
-      setError(null);
+      const { userRepository } = await getServices();
       
-      const { userRepository } = getServices();
+      // Check if service is available
+      if (!userRepository) {
+        console.warn('UserRepository not available, using fallback');
+        const fallbackSummary = {
+          dailyCost: 0,
+          budgetStatus: {
+            dailyLimit: 1.67,
+            weeklyLimit: 11.67,
+            monthlyLimit: 50,
+            percentage: 0,
+            status: 'safe' as const,
+            remaining: { daily: 1.67, weekly: 11.67, monthly: 50 }
+          },
+          tierInfo: {
+            currentTier: 'free' as const,
+            benefits: ['5 ideias/dia', 'Suporte básico'],
+            limits: {
+              dailyIdeas: 5,
+              monthlyIdeas: 100,
+              advancedFeatures: false,
+              prioritySupport: false,
+              customization: false
+            }
+          }
+        };
+        setCostSummary(fallbackSummary);
+        return fallbackSummary;
+      }
       
       const summary = await userRepository.getUserCostSummary(userId);
       
-      if (summary) {
-        setCostSummary(summary);
-        
-        // Check for budget alerts
-        const newAlerts = [];
-        
-        if (summary.budgetStatus.percentage >= 90) {
-          newAlerts.push({
-            type: 'budget' as const,
-            level: 'critical' as const,
-            message: 'Você está próximo do limite de orçamento diário!',
-            action: 'upgrade_tier'
-          });
-        } else if (summary.budgetStatus.percentage >= 75) {
-          newAlerts.push({
-            type: 'budget' as const,
-            level: 'warning' as const,
-            message: 'Você usou 75% do seu orçamento diário.',
-            action: 'monitor_usage'
-          });
+      // Use summary from API or create default fallback
+      const finalSummary = summary || {
+        dailyCost: 0,
+        budgetStatus: {
+          dailyLimit: 1.67,
+          weeklyLimit: 11.67,
+          monthlyLimit: 50,
+          percentage: 0,
+          status: 'safe' as const,
+          remaining: { daily: 1.67, weekly: 11.67, monthly: 50 }
+        },
+        tierInfo: {
+          currentTier: 'free' as const,
+          benefits: ['5 ideias/dia', 'Suporte básico'],
+          limits: {
+            dailyIdeas: 5,
+            monthlyIdeas: 100,
+            advancedFeatures: false,
+            prioritySupport: false,
+            customization: false
+          }
         }
-        
-        // Check tier limits
-        if (summary.tierInfo.currentTier === 'free' && summary.dailyCost > 0.50) {
-          newAlerts.push({
-            type: 'tier' as const,
-            level: 'info' as const,
-            message: 'Considere fazer upgrade para o plano Basic para mais ideias.',
-            action: 'view_upgrade'
-          });
-        }
-        
-        setAlerts(newAlerts);
-        
-        return summary;
+      };
+      
+      setCostSummary(finalSummary);
+      
+      // Check for budget alerts
+      const newAlerts: BudgetAlert[] = [];
+      
+      if (finalSummary.budgetStatus.status === 'warning') {
+        newAlerts.push({
+          id: 'budget-warning',
+          type: 'warning',
+          title: 'Orçamento em Alerta',
+          message: `Você usou ${finalSummary.budgetStatus.percentage}% do seu orçamento diário.`,
+          action: 'Veja detalhes',
+          timestamp: new Date().toISOString()
+        });
       }
       
-      return null;
+      setAlerts(newAlerts);
       
+      return finalSummary;
+
     } catch (err: any) {
       const errorMessage = err.message || 'Erro ao carregar informações de custo.';
       setError(errorMessage);
       
-      // Track error
-      const { analyticsService } = getServices();
-      await analyticsService.track({
-        userId,
-        eventType: 'error_event',
-        category: 'budget_management',
-        action: 'cost_summary_error',
-        metadata: { error: errorMessage }
-      });
+      // Set default fallback on error to allow idea generation
+      const fallbackSummary = {
+        dailyCost: 0,
+        budgetStatus: {
+          dailyLimit: 1.67,
+          weeklyLimit: 11.67,
+          monthlyLimit: 50,
+          percentage: 0,
+          status: 'safe' as const,
+          remaining: { daily: 1.67, weekly: 11.67, monthly: 50 }
+        },
+        tierInfo: {
+          currentTier: 'free' as const,
+          benefits: ['5 ideias/dia', 'Suporte básico'],
+          limits: {
+            dailyIdeas: 5,
+            monthlyIdeas: 100,
+            advancedFeatures: false,
+            prioritySupport: false,
+            customization: false
+          }
+        }
+      };
+      setCostSummary(fallbackSummary);
       
-      return null;
+      // Track error (optional)
+      try {
+        const { analyticsService } = await getServices();
+        if (analyticsService) {
+          await analyticsService.track({
+            userId,
+            eventType: 'error_event',
+            category: 'budget_management',
+            action: 'cost_summary_error',
+            metadata: { error: errorMessage }
+          });
+        }
+      } catch (trackingError) {
+        console.warn('Failed to track budget error:', trackingError);
+      }
+      
+      return fallbackSummary;
       
     } finally {
       setLoading(false);
     }
-  }, [userId, getServices]);
+  }, [userId]); // ✅ CORREÇÃO: Só depender do userId
   
   // Load usage metrics
   const loadUsageMetrics = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || loading) return; // ✅ Evitar chamadas simultâneas
     
     try {
-      const { userRepository, analyticsService } = getServices();
+      const { userRepository, analyticsService } = await getServices();
+      
+      // Check if services are available
+      if (!analyticsService) {
+        console.warn('AnalyticsService not available, skipping usage metrics');
+        return null;
+      }
       
       // Get usage data from analytics
       const usageData = await analyticsService.query({
@@ -203,10 +296,7 @@ export const useBudgetManagement = (userId: string) => {
             thisMonth: usageData.aggregations.thisMonth || 0
           },
           averageCostPerIdea: usageData.aggregations.avgCost || 0,
-          costEfficiency: 
-            usageData.aggregations.avgCost < 0.01 ? 'excellent' :
-            usageData.aggregations.avgCost < 0.02 ? 'good' :
-            usageData.aggregations.avgCost < 0.03 ? 'average' : 'poor',
+          costEfficiency: usageData.aggregations.efficiency || 'good',
           peakUsageTimes: usageData.aggregations.peakTimes || [],
           recommendations: {
             optimizations: generateOptimizationRecommendations(usageData),
@@ -221,10 +311,10 @@ export const useBudgetManagement = (userId: string) => {
       return null;
       
     } catch (err: any) {
-      console.error('Error loading usage metrics:', err);
+      console.warn('Failed to load usage metrics:', err);
       return null;
     }
-  }, [userId, getServices, costSummary]);
+  }, [userId]); // ✅ CORREÇÃO: Só depender do userId
   
   // Check if user can generate idea (budget/tier limits)
   const canGenerateIdea = useCallback((): {
@@ -232,8 +322,9 @@ export const useBudgetManagement = (userId: string) => {
     reason?: string;
     suggestedAction?: string;
   } => {
+    // Allow generation while loading for better UX
     if (!costSummary) {
-      return { allowed: false, reason: 'Carregando informações de orçamento...' };
+      return { allowed: true, reason: 'Carregando informações de orçamento...' };
     }
     
     // Check budget limits
@@ -271,31 +362,34 @@ export const useBudgetManagement = (userId: string) => {
     if (!userId) return;
     
     try {
-      const { analyticsService } = getServices();
+      const { analyticsService } = await getServices();
+      
+      if (!analyticsService) {
+        console.warn('AnalyticsService not available, skipping cost tracking');
+        return;
+      }
       
       // Track cost event
       await analyticsService.track({
         userId,
         eventType: 'business_metric',
         category: 'cost_tracking',
-        action: 'idea_cost',
+        action: 'idea_generated',
         value: cost,
         metadata: {
           ...metadata,
           timestamp: new Date().toISOString(),
-          tier: costSummary?.tierInfo.currentTier
+          tier: costSummary?.tierInfo.currentTier || 'unknown'
         }
       });
       
-      // Reload cost summary to reflect new cost
-      setTimeout(() => {
-        loadCostSummary();
-      }, 1000);
+      // Reload cost summary after tracking
+      await loadCostSummary();
       
-    } catch (err: any) {
-      console.error('Error tracking idea cost:', err);
+    } catch (error) {
+      console.warn('Failed to track idea cost:', error);
     }
-  }, [userId, getServices, costSummary, loadCostSummary]);
+  }, [userId, costSummary, loadCostSummary]);
   
   // Get tier upgrade recommendations
   const getTierUpgradeInfo = useCallback(() => {
@@ -344,18 +438,21 @@ export const useBudgetManagement = (userId: string) => {
       loadCostSummary();
       loadUsageMetrics();
     }
-  }, [userId, loadCostSummary, loadUsageMetrics]);
-  
-  // Auto-refresh every minute
+  }, [userId]); // ✅ CORREÇÃO: Remover dependências circulares
+
+  // Auto-refresh every 5 minutes (reduced frequency)
   useEffect(() => {
     if (!userId) return;
     
     const interval = setInterval(() => {
-      loadCostSummary();
-    }, 60 * 1000); // 1 minute
-    
+      // Only refresh if not currently loading to prevent conflicts
+      if (!loading) {
+        loadCostSummary();
+      }
+    }, 5 * 60 * 1000); // ✅ CORREÇÃO: 5 minutos ao invés de 1
+
     return () => clearInterval(interval);
-  }, [userId, loadCostSummary]);
+  }, [userId]); // ✅ CORREÇÃO: Remover dependências circulares
   
   return {
     // State

@@ -1,20 +1,20 @@
 /**
- * Budget Control Service - IA Alpha Task 2 Implementation
- * Comprehensive budget enforcement and spending control system
- * Integrates with Cost Management, Usage Tiers, and Emergency Protocols
+ * 💰 BUDGET CONTROL SERVICE - ENHANCED COST MANAGEMENT
+ * Advanced budget monitoring and control with automatic interventions
  * 
- * Features:
- * - Real-time budget tracking and enforcement
- * - Multi-tier budget management (Free/Premium/Enterprise)
- * - Automatic service degradation on budget approach
+ * FEATURES:
+ * - Real-time budget monitoring per user and globally
+ * - Automatic tier-based budget controls
+ * - Smart intervention system (rate limiting, service degradation)
+ * - Budget forecasting and analytics
  * - Integration with Emergency Protocol Service
  * - Budget analytics and forecasting
  * - User notification and communication
  */
 
-import { CostManagementService } from './costManagementService';
-import { UsageTierService, UserTier } from './usageTierService';
-import { EmergencyProtocolService } from './emergencyProtocolService';
+import CostManagementService from '../risk-management/costManagementService';
+import { UsageTierService, UserTier } from '../risk-management/usageTierService';
+import EmergencyProtocolService from '../risk-management/emergencyProtocolService';
 
 // Budget Configuration Types
 export interface BudgetConfig {

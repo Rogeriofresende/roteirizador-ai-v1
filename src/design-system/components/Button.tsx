@@ -79,6 +79,12 @@ const getButtonStyles = ({
   costTier = 'free'
 }: ButtonStyleProps): React.CSSProperties => {
   
+  // Validate inputs to prevent undefined access
+  const safeVariant = variant || 'primary';
+  const safeSize = size || 'medium';
+  const safeMigrationMode = migrationMode || 'enhanced';
+  const safeCostTier = costTier || 'free';
+  
   // Base styles
   const baseStyles: React.CSSProperties = {
     display: 'inline-flex',
@@ -86,7 +92,7 @@ const getButtonStyles = ({
     justifyContent: 'center',
     gap: spacing[2],
     border: 'none',
-    borderRadius: migrationMode === 'familiar' ? borderRadius.md : borderRadius.lg,
+    borderRadius: safeMigrationMode === 'familiar' ? borderRadius.md : borderRadius.lg,
     fontFamily: typography.fontFamily.sans,
     fontWeight: typography.fontWeight.medium,
     textDecoration: 'none',
@@ -132,7 +138,7 @@ const getButtonStyles = ({
         boxShadow: 'none'
       },
       enhanced: {
-        backgroundColor: costTier === 'premium' ? colors.costTier.premium.primary : colors.primary[500],
+        backgroundColor: safeCostTier === 'premium' ? colors.costTier.premium.primary : colors.primary[500],
         color: 'white',
         boxShadow: shadows.sm
       }
@@ -145,8 +151,8 @@ const getButtonStyles = ({
       },
       enhanced: {
         backgroundColor: 'transparent',
-        color: costTier === 'premium' ? colors.costTier.premium.primary : colors.primary[500],
-        border: `1px solid ${costTier === 'premium' ? colors.costTier.premium.border : colors.primary[500]}`
+        color: safeCostTier === 'premium' ? colors.costTier.premium.primary : colors.primary[500],
+        border: `1px solid ${safeCostTier === 'premium' ? colors.costTier.premium.border : colors.primary[500]}`
       }
     },
     ghost: {
@@ -175,10 +181,14 @@ const getButtonStyles = ({
     }
   };
 
+  // Safe access to variant styles with fallback
+  const safeVariantStyles = variantStyles[safeVariant] || variantStyles.primary;
+  const modeStyles = safeVariantStyles[safeMigrationMode] || safeVariantStyles.enhanced || {};
+
   return {
     ...baseStyles,
-    ...sizeStyles[size],
-    ...variantStyles[variant][migrationMode]
+    ...sizeStyles[safeSize],
+    ...modeStyles
   };
 };
 

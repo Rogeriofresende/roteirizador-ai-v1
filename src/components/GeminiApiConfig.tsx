@@ -1,15 +1,20 @@
 /**
- * 🔧 GEMINI API CONFIGURATION COMPONENT
- * Componente profissional para configuração segura da API Gemini
+ * 🔧 GEMINI API CONFIGURATION COMPONENT - V7.5 Enhanced
+ * Componente profissional para configuração segura da API Gemini - Professional Interface
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { geminiService } from '../services/geminiService';
 import { analyticsService } from '../services/analyticsService';
-import { Button } from './ui/Button';
+
+// Design System Imports - Using Available Components
+import { Layout } from '../design-system/components/Layout';
+import { Card } from '../design-system/components/Card';
+import { Button } from '../design-system/components/Button';
+
+// UI Components (maintaining existing for complex forms)
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
-import { Card } from './ui/Card';
 import { Alert } from './ui/Alert';
 import { Badge } from './ui/Badge';
 import { ExternalLink, Key, CheckCircle, AlertCircle, Globe, Shield, RefreshCw } from 'lucide-react';
@@ -296,232 +301,272 @@ export const GeminiApiConfig: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center space-x-2">
-          <Key className="w-8 h-8 text-blue-600" />
-          <h1 className="text-3xl font-bold">Configuração API Gemini</h1>
-        </div>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Configure sua API key do Google Gemini para ativar a geração inteligente de roteiros com IA.
-          Sistema profissional com validação, testes automáticos e monitoramento.
-        </p>
-      </div>
-
-      {/* Status Overview */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Status da Configuração</h2>
-          <div className="flex space-x-2">
-            <Badge variant={status.isConfigured ? 'success' : 'secondary'}>
-              {status.isConfigured ? 'Configurado' : 'Não Configurado'}
-            </Badge>
-            <Badge variant={status.isConnected ? 'success' : 'destructive'}>
-              {status.isConnected ? 'Conectado' : 'Desconectado'}
-            </Badge>
+    <Layout.Page variant="dashboard" className="max-w-6xl mx-auto">
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center space-x-3">
+            <Key className="w-10 h-10 text-blue-600" />
+            <h1 className="text-4xl font-bold text-gray-900">
+              Configuração API Gemini
+            </h1>
           </div>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Configure sua API key do Google Gemini para ativar a geração inteligente de roteiros com IA.
+            Sistema profissional com validação, testes automáticos e monitoramento de segurança.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="flex items-center space-x-3">
-            <Shield className={`w-5 h-5 ${status.isValid ? 'text-green-500' : 'text-gray-400'}`} />
-            <div>
-              <p className="font-medium">API Key</p>
-              <p className="text-sm text-gray-600">
-                {status.isValid ? 'Válida' : 'Não configurada'}
-              </p>
+        {/* Status Overview Card */}
+        <Card variant="elevated" className="border-2">
+          <div className="p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900">Status da Configuração</h2>
+              <div className="flex space-x-3">
+                <Badge variant={status.isConfigured ? 'success' : 'secondary'}>
+                  {status.isConfigured ? 'Configurado' : 'Não Configurado'}
+                </Badge>
+                <Badge variant={status.isConnected ? 'success' : 'destructive'}>
+                  {status.isConnected ? 'Conectado' : 'Desconectado'}
+                </Badge>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Globe className={`w-5 h-5 ${status.isConnected ? 'text-green-500' : 'text-gray-400'}`} />
-            <div>
-              <p className="font-medium">Conectividade</p>
-              <p className="text-sm text-gray-600">
-                {status.isConnected ? 'Online' : 'Offline'}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <RefreshCw className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="font-medium">Último Teste</p>
-              <p className="text-sm text-gray-600">
-                {formatLastTested(status.lastTested)}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {status.errorMessage && (
-          <Alert variant="destructive">
-            <AlertCircle className="w-4 h-4" />
-            <div>
-              <p className="font-medium">Erro de Configuração</p>
-              <p className="text-sm">{status.errorMessage}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="flex items-center space-x-4">
+                <Shield className={`w-8 h-8 ${status.isValid ? 'text-green-500' : 'text-gray-400'}`} />
+                <div>
+                  <p className="text-lg font-medium text-gray-900">API Key</p>
+                  <p className="text-sm text-gray-600">
+                    {status.isValid ? 'Válida e segura' : 'Não configurada'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Globe className={`w-8 h-8 ${status.isConnected ? 'text-green-500' : 'text-gray-400'}`} />
+                <div>
+                  <p className="text-lg font-medium text-gray-900">Conectividade</p>
+                  <p className="text-sm text-gray-600">
+                    {status.isConnected ? 'Online e funcional' : 'Offline ou com erro'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <RefreshCw className="w-8 h-8 text-gray-400" />
+                <div>
+                  <p className="text-lg font-medium text-gray-900">Último Teste</p>
+                  <p className="text-sm text-gray-600">
+                    {formatLastTested(status.lastTested)}
+                  </p>
+                </div>
+              </div>
             </div>
-          </Alert>
+
+            {status.errorMessage && (
+              <Alert variant="destructive" className="border-2">
+                <AlertCircle className="w-5 h-5" />
+                <div>
+                  <p className="font-medium">Erro de Configuração</p>
+                  <p className="text-sm">{status.errorMessage}</p>
+                </div>
+              </Alert>
+            )}
+          </div>
+        </Card>
+
+        {/* Configuration Progress Card */}
+        <Card variant="outlined" className="hover:shadow-lg transition-shadow">
+          <div className="p-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Progresso da Configuração</h2>
+            <div className="space-y-6">
+              {configSteps.map((step, index) => (
+                <div key={step.id} className="flex items-center space-x-6 p-4 rounded-lg bg-gray-50">
+                  <div className="flex-shrink-0">
+                    {getStatusIcon(step.status)}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-gray-900">{step.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{step.description}</p>
+                  </div>
+                  <div className="text-sm font-medium text-gray-500 bg-white px-3 py-1 rounded-full">
+                    {index + 1}/{configSteps.length}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Configuration Form */}
+        {!status.isConfigured && (
+          <Card variant="elevated" className="border-2">
+            <div className="p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Configurar API Key</h2>
+              
+              {/* Instructions */}
+              <Alert className="mb-8 border-2">
+                <Key className="w-5 h-5" />
+                <div>
+                  <p className="font-medium text-lg">Como obter sua API Key</p>
+                  <ol className="text-sm mt-4 space-y-2 list-decimal list-inside">
+                    <li>Acesse <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center font-medium">Google AI Studio <ExternalLink className="w-3 h-3 ml-1" /></a></li>
+                    <li>Faça login com sua conta Google</li>
+                    <li>Clique em "Get API Key" → "Create API Key"</li>
+                    <li>Copie a chave gerada e cole no campo abaixo</li>
+                  </ol>
+                </div>
+              </Alert>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <Label htmlFor="apiKey" className="text-lg font-medium">API Key do Gemini</Label>
+                  <Input
+                    id="apiKey"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="AIza... (cole sua API key aqui)"
+                    className="font-mono text-lg p-4 mt-2"
+                    disabled={isLoading}
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Sua API key será armazenada localmente e criptografada para máxima segurança
+                  </p>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={isLoading || !apiKey.trim()}
+                  variant="primary"
+                  size="large"
+                  className="w-full"
+                >
+                  {isLoading ? (
+                    <>
+                      <LoadingSpinner className="w-5 h-5 mr-3" />
+                      Configurando API Key...
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-5 h-5 mr-3" />
+                      Configurar API Key
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          </Card>
         )}
-      </Card>
 
-      {/* Configuration Steps */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Progresso da Configuração</h2>
-        <div className="space-y-4">
-          {configSteps.map((step, index) => (
-            <div key={step.id} className="flex items-center space-x-4">
-              <div className="flex-shrink-0">
-                {getStatusIcon(step.status)}
+        {/* Configured Management Actions */}
+        {status.isConfigured && (
+          <Card variant="elevated" className="border-2">
+            <div className="p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Gerenciar Configuração</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Button 
+                  onClick={testConnection}
+                  disabled={isTestingConnection}
+                  variant="secondary"
+                  size="large"
+                  className="w-full"
+                >
+                  {isTestingConnection ? (
+                    <>
+                      <LoadingSpinner className="w-5 h-5 mr-3" />
+                      Testando...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-5 h-5 mr-3" />
+                      Testar Conexão
+                    </>
+                  )}
+                </Button>
+
+                <Button 
+                  onClick={removeApiKey}
+                  variant="danger"
+                  size="large"
+                  className="w-full"
+                >
+                  <AlertCircle className="w-5 h-5 mr-3" />
+                  Remover API Key
+                </Button>
+
+                <Button 
+                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  variant="ghost"
+                  size="large"
+                  className="w-full"
+                >
+                  Opções Avançadas
+                </Button>
               </div>
-              <div className="flex-1">
-                <h3 className="font-medium">{step.title}</h3>
-                <p className="text-sm text-gray-600">{step.description}</p>
-              </div>
-              <div className="text-sm text-gray-500">
-                {index + 1}/{configSteps.length}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
 
-      {/* Configuration Form */}
-      {!status.isConfigured && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Configurar API Key</h2>
-          
-          {/* Instructions */}
-          <Alert className="mb-6">
-            <Key className="w-4 h-4" />
-            <div>
-              <p className="font-medium">Como obter sua API Key</p>
-              <ol className="text-sm mt-2 space-y-1 list-decimal list-inside">
-                <li>Acesse <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">Google AI Studio <ExternalLink className="w-3 h-3 ml-1" /></a></li>
-                <li>Faça login com sua conta Google</li>
-                <li>Clique em "Get API Key" → "Create API Key"</li>
-                <li>Copie a chave gerada e cole abaixo</li>
-              </ol>
-            </div>
-          </Alert>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="apiKey">API Key do Gemini</Label>
-              <Input
-                id="apiKey"
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="AIza... (cole sua API key aqui)"
-                className="font-mono"
-                disabled={isLoading}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Sua API key será armazenada localmente e criptografada
-              </p>
-            </div>
-
-            <Button 
-              type="submit" 
-              disabled={isLoading || !apiKey.trim()}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <LoadingSpinner className="w-4 h-4 mr-2" />
-                  Configurando...
-                </>
-              ) : (
-                'Configurar API Key'
+              {/* Advanced Options */}
+              {showAdvancedOptions && (
+                <Card variant="subtle" className="mt-8 bg-gray-50 border-gray-200">
+                  <div className="p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Configurações Avançadas</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900">Modelo Utilizado</p>
+                        <p className="text-gray-600">gemini-1.5-flash-latest</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900">Limite de Tokens</p>
+                        <p className="text-gray-600">~3,000 tokens por roteiro</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900">Cache Local</p>
+                        <p className="text-gray-600">API key em localStorage</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900">Última Sincronização</p>
+                        <p className="text-gray-600">{formatLastTested(status.lastTested)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               )}
-            </Button>
-          </form>
-        </Card>
-      )}
+            </div>
+          </Card>
+        )}
 
-      {/* Configured Actions */}
-      {status.isConfigured && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Gerenciar Configuração</h2>
-          
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <Button 
-              onClick={testConnection}
-              disabled={isTestingConnection}
-              variant="outline"
-            >
-              {isTestingConnection ? (
-                <>
-                  <LoadingSpinner className="w-4 h-4 mr-2" />
-                  Testando...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Testar Conexão
-                </>
-              )}
-            </Button>
-
-            <Button 
-              onClick={removeApiKey}
-              variant="destructive"
-            >
-              Remover API Key
-            </Button>
-
-            <Button 
-              onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-              variant="ghost"
-            >
-              Opções Avançadas
-            </Button>
-          </div>
-
-          {/* Advanced Options */}
-          {showAdvancedOptions && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="font-medium mb-3">Configurações Avançadas</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="font-medium">Modelo Utilizado</p>
-                  <p className="text-gray-600">gemini-1.5-flash-latest</p>
-                </div>
-                <div>
-                  <p className="font-medium">Limite de Tokens</p>
-                  <p className="text-gray-600">~3,000 tokens por roteiro</p>
-                </div>
-                <div>
-                  <p className="font-medium">Cache Local</p>
-                  <p className="text-gray-600">API key em localStorage</p>
-                </div>
-                <div>
-                  <p className="font-medium">Última Sincronização</p>
-                  <p className="text-gray-600">{formatLastTested(status.lastTested)}</p>
-                </div>
+        {/* Security & Privacy Information */}
+        <Card variant="subtle" className="bg-blue-50 border-blue-200">
+          <div className="p-8">
+            <div className="flex items-start space-x-4">
+              <Shield className="w-8 h-8 text-blue-600 mt-1" />
+              <div>
+                <h3 className="text-xl font-medium text-blue-900 mb-3">Segurança & Privacidade</h3>
+                <ul className="text-sm text-blue-800 space-y-2">
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>API key armazenada apenas no seu navegador (localStorage)</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Comunicação direta com Google AI (sem intermediários)</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Dados não são compartilhados com terceiros</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 text-blue-600" />
+                    <span>Remova a chave a qualquer momento com um clique</span>
+                  </li>
+                </ul>
               </div>
             </div>
-          )}
-        </Card>
-      )}
-
-      {/* Security Notes */}
-      <Card className="p-6 bg-blue-50 border-blue-200">
-        <div className="flex items-start space-x-3">
-          <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-blue-900">Segurança & Privacidade</h3>
-            <ul className="text-sm text-blue-800 mt-2 space-y-1">
-              <li>• API key armazenada apenas no seu navegador (localStorage)</li>
-              <li>• Comunicação direta com Google AI (sem intermediários)</li>
-              <li>• Dados não são compartilhados com terceiros</li>
-              <li>• Remova a chave a qualquer momento</li>
-            </ul>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </Layout.Page>
   );
 }; 

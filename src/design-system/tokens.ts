@@ -13,24 +13,24 @@
 // ============================================================================
 
 export const colors = {
-  // Primary Brand Colors - Enhanced but familiar
+  // Primary Brand Colors - V7.0 Enhanced Modern Palette
   primary: {
-    50: '#eff6ff',   // Ultra light - subtle backgrounds
-    100: '#dbeafe',  // Light - hover states
-    200: '#bfdbfe',  // Light - disabled states
-    300: '#93c5fd',  // Medium light - secondary actions
-    400: '#60a5fa',  // Medium - interactive elements
-    500: '#3b82f6',  // Main brand - primary buttons
-    600: '#2563eb',  // Dark - hover states
-    700: '#1d4ed8',  // Darker - active states
-    800: '#1e40af',  // Very dark - text on light
-    900: '#1e3a8a'   // Darkest - emphasis
+    50: '#f0f9ff',   // Ultra light - subtle backgrounds
+    100: '#e0f2fe',  // Light - hover states  
+    200: '#bae6fd',  // Light - disabled states
+    300: '#7dd3fc',  // Medium light - secondary actions
+    400: '#38bdf8',  // Medium - interactive elements
+    500: '#0ea5e9',  // Main brand - primary buttons (modern blue)
+    600: '#0284c7',  // Dark - hover states
+    700: '#0369a1',  // Darker - active states
+    800: '#075985',  // Very dark - text on light
+    900: '#0c4a6e'   // Darkest - emphasis
   },
 
-  // Secondary Colors - Complementary palette
+  // Secondary Colors - V7.0 Enhanced Modern Palette
   secondary: {
     50: '#f8fafc',
-    100: '#f1f5f9',
+    100: '#f1f5f9', 
     200: '#e2e8f0',
     300: '#cbd5e1',
     400: '#94a3b8',
@@ -39,6 +39,34 @@ export const colors = {
     700: '#334155',
     800: '#1e293b',
     900: '#0f172a'
+  },
+
+  // V7.0 Enhanced: Modern Accent Colors
+  accent: {
+    50: '#fdf4ff',   // Purple accent - creative elements
+    100: '#fae8ff',
+    200: '#f3e8ff',
+    300: '#e9d5ff',
+    400: '#d8b4fe',
+    500: '#c084fc',  // Main accent - creative highlights
+    600: '#a855f7',
+    700: '#9333ea',
+    800: '#7c3aed',
+    900: '#6b21a8'
+  },
+
+  // V7.0 Enhanced: Warm Accent Colors  
+  warm: {
+    50: '#fefce8',   // Warm accent - positive actions
+    100: '#fef9c3',
+    200: '#fef08a',
+    300: '#fde047',
+    400: '#facc15',
+    500: '#eab308',  // Main warm - success/positive
+    600: '#ca8a04',
+    700: '#a16207',
+    800: '#854d0e',
+    900: '#713f12'
   },
 
   // Success Colors - Positive feedback
@@ -130,6 +158,18 @@ export const colors = {
     placeholder: '#9ca3af',
     divider: '#e5e7eb',
     backdrop: 'rgba(0, 0, 0, 0.5)'
+  },
+
+  // Text colors for consistent typography
+  text: {
+    primary: '#1f2937',     // Dark gray for primary text
+    secondary: '#6b7280',   // Medium gray for secondary text
+    muted: '#9ca3af',       // Light gray for muted text
+    accent: '#3b82f6',      // Blue for accent text
+    success: '#10b981',     // Green for success text
+    warning: '#f59e0b',     // Amber for warning text
+    error: '#ef4444',       // Red for error text
+    inverse: '#ffffff'      // White for dark backgrounds
   }
 } as const;
 
@@ -341,6 +381,28 @@ export const shadows = {
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
 
+  // V7.0 Enhanced: Glass-morphism effects
+  glass: {
+    subtle: '0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.06)',
+    medium: '0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.05)',
+    strong: '0 16px 64px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.07)'
+  },
+
+  // V7.0 Enhanced: Colored shadows for brand depth
+  colored: {
+    primary: '0 8px 25px -8px rgba(14, 165, 233, 0.3)',
+    accent: '0 8px 25px -8px rgba(192, 132, 252, 0.25)',
+    warm: '0 8px 25px -8px rgba(234, 179, 8, 0.25)',
+    success: '0 8px 25px -8px rgba(16, 185, 129, 0.25)'
+  },
+
+  // V7.0 Enhanced: Interactive shadows
+  interactive: {
+    hover: '0 12px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.1)',
+    active: '0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.08)',
+    focus: '0 0 0 3px rgba(14, 165, 233, 0.12), 0 8px 25px -8px rgba(14, 165, 233, 0.3)'
+  },
+
   // Focus shadows
   focus: '0 0 0 3px rgba(59, 130, 246, 0.1)',
   focusError: '0 0 0 3px rgba(239, 68, 68, 0.1)',
@@ -524,6 +586,30 @@ export const variants = {
 } as const;
 
 // ============================================================================
+// GLASS EFFECT - GLASS-MORPHISM STYLES
+// ============================================================================
+
+export const glassEffect = {
+  light: 'rgba(255, 255, 255, 0.1)',
+  medium: 'rgba(255, 255, 255, 0.2)',
+  strong: 'rgba(255, 255, 255, 0.3)',
+  
+  // Dark mode variants
+  dark: {
+    light: 'rgba(0, 0, 0, 0.1)',
+    medium: 'rgba(0, 0, 0, 0.2)',
+    strong: 'rgba(0, 0, 0, 0.3)',
+  },
+  
+  // Subtle variants with transparency
+  subtle: {
+    light: 'rgba(255, 255, 255, 0.05)',
+    medium: 'rgba(255, 255, 255, 0.1)',
+    strong: 'rgba(255, 255, 255, 0.15)',
+  }
+} as const;
+
+// ============================================================================
 // THEME COMPOSITION - COMPLETE DESIGN SYSTEM
 // ============================================================================
 
@@ -536,7 +622,8 @@ export const theme = {
   zIndex,
   breakpoints,
   transitions,
-  variants
+  variants,
+  glassEffect
 } as const;
 
 // ============================================================================
@@ -618,10 +705,16 @@ export const darkModeClasses = {
   border: 'border-neutral-700',
   card: 'bg-neutral-800',
   input: 'bg-neutral-800 border-neutral-600',
+  hover: 'hover:bg-neutral-700',
   button: {
     primary: 'bg-primary-600 hover:bg-primary-700',
     secondary: 'bg-neutral-700 hover:bg-neutral-600 text-neutral-100',
     ghost: 'hover:bg-neutral-700 text-neutral-300'
+  },
+  feedback: {
+    button: 'bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600',
+    modal: 'bg-neutral-800 border-neutral-700',
+    success: 'bg-green-800 border-green-700'
   }
 } as const;
 
@@ -634,10 +727,12 @@ export const animationClasses = {
   fadeOut: 'animate-fade-out',
   slideInUp: 'animate-slide-in-up',
   slideInDown: 'animate-slide-in-down',
+  slideIn: 'animate-slide-in',
   scaleIn: 'animate-scale-in',
   bounce: 'animate-bounce',
   pulse: 'animate-pulse',
   spin: 'animate-spin',
+  themeTransition: 'transition-all duration-300 ease-in-out',
   // Migration-specific animations
   migration: {
     highlight: 'animate-highlight-feature',

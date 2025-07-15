@@ -4,361 +4,313 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card } from './ui/Card';
-import { Button } from './ui/Button';
-import { Badge } from './ui/Badge';
-import { performanceService } from '../services/performance';
-import { bundleOptimization } from '../services/bundleOptimization';
-import { useMemoryLeak } from '../hooks/useMemoryLeak';
-import { Activity, Zap, Package, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
+import { Activity, Zap, Clock, Eye, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
+import { WebVitalsService, WebVitalMetric, PerformanceReport } from '../services/monitoring/WebVitalsService';
 
-// =============================================================================
-// TYPES & INTERFACES
-// =============================================================================
-
-interface DashboardMetrics {
-  webVitals: {
-    LCP?: number;
-    FID?: number;
-    CLS?: number;
-    FCP?: number;
-  };
-  bundle: {
-    size: number;
-    score: number;
-    loadTime: number;
-  };
-  memory: {
-    usage: number;
-    domNodes: number;
-    leaks: string[];
-  };
-  lastUpdated: string;
+interface PerformanceDashboardProps {
+  userId?: string;
+  reportingEndpoint?: string;
 }
 
-// =============================================================================
-// PERFORMANCE DASHBOARD COMPONENT
-// =============================================================================
+export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
+  userId,
+  reportingEndpoint = '/api/performance'
+}) => {
+  const [webVitalsService, setWebVitalsService] = useState<WebVitalsService | null>(null);
+  const [metrics, setMetrics] = useState<WebVitalMetric[]>([]);
+  const [performanceReport, setPerformanceReport] = useState<PerformanceReport | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
-export const PerformanceDashboard: React.FC = () => {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  
-  const memoryLeak = useMemoryLeak({
-    componentName: 'PerformanceDashboard',
-    checkInterval: 5000,
-  });
-
-  // Update metrics
-  const updateMetrics = useCallback(async () => {
-    setIsRefreshing(true);
-    
-    try {
-      const webVitals = performanceService.getWebVitals();
-      const resourceMetrics = performanceService.getResourceMetrics();
-      const memoryMetrics = performanceService.getMemoryMetrics();
-      const bundleMetrics = bundleOptimizer.getCurrentMetrics();
-
-      setMetrics({
-        webVitals,
-        bundle: {
-          size: bundleMetrics.currentBundleSize,
-          score: 85, // Would come from bundle analysis
-          loadTime: bundleMetrics.loadTime,
-        },
-        memory: {
-          usage: memoryMetrics.memoryUsagePercent,
-          domNodes: memoryMetrics.domNodes,
-          leaks: memoryMetrics.potentialLeaks,
-        },
-        lastUpdated: new Date().toISOString(),
-      });
-    } catch (error: unknown) {
-      console.error('Failed to update metrics:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  // Auto-refresh effect
+  // Initialize Web Vitals Service
   useEffect(() => {
-    updateMetrics();
+    const service = new WebVitalsService({
+      reportingEndpoint,
+      userId,
+      reportingInterval: 15000 // 15 seconds
+    });
     
-    if (autoRefresh) {
-      const interval = setInterval(updateMetrics, 5000);
-      return () => clearInterval(interval);
+    setWebVitalsService(service);
+    
+    return () => {
+      service.destroy();
+    };
+  }, [userId, reportingEndpoint]);
+
+  // Update metrics periodically
+  useEffect(() => {
+    if (!webVitalsService) return;
+
+    const updateMetrics = () => {
+      const latestMetrics = webVitalsService.getMetrics();
+      const latestReport = webVitalsService.getLatestReport();
+      
+      setMetrics(latestMetrics);
+      setPerformanceReport(latestReport);
+      setLastUpdateTime(Date.now());
+      setIsLoading(false);
+    };
+
+    // Initial update
+    updateMetrics();
+
+    // Set up interval for updates
+    const interval = setInterval(updateMetrics, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [webVitalsService]);
+
+  const getMetricIcon = (metricName: string) => {
+    switch (metricName.toLowerCase()) {
+      case 'lcp':
+        return <Eye className="w-5 h-5" />;
+      case 'fid':
+        return <Zap className="w-5 h-5" />;
+      case 'cls':
+        return <Activity className="w-5 h-5" />;
+      case 'fcp':
+        return <Clock className="w-5 h-5" />;
+      case 'ttfb':
+        return <TrendingUp className="w-5 h-5" />;
+      default:
+        return <Activity className="w-5 h-5" />;
     }
-  }, [autoRefresh, updateMetrics]);
+  };
 
-  // Generate report
-  const generateReport = useCallback(() => {
-    const report = performanceService.generateReport();
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `performance-report-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, []);
+  const getMetricColor = (rating: string) => {
+    switch (rating) {
+      case 'good':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'needs-improvement':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'poor':
+        return 'text-red-600 bg-red-50 border-red-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
+    }
+  };
 
-  if (!metrics) {
+  const getMetricDescription = (metricName: string) => {
+    switch (metricName.toLowerCase()) {
+      case 'lcp':
+        return 'Largest Contentful Paint - Time to render the largest visible element';
+      case 'fid':
+        return 'First Input Delay - Time from first interaction to browser response';
+      case 'cls':
+        return 'Cumulative Layout Shift - Visual stability of page elements';
+      case 'fcp':
+        return 'First Contentful Paint - Time to render first content';
+      case 'ttfb':
+        return 'Time to First Byte - Time to receive first byte from server';
+      default:
+        return 'Performance metric';
+    }
+  };
+
+  const formatMetricValue = (metricName: string, value: number) => {
+    switch (metricName.toLowerCase()) {
+      case 'cls':
+        return value.toFixed(3);
+      case 'lcp':
+      case 'fcp':
+      case 'ttfb':
+        return `${Math.round(value)}ms`;
+      case 'fid':
+        return `${Math.round(value)}ms`;
+      default:
+        return Math.round(value).toString();
+    }
+  };
+
+  const getOverallScore = () => {
+    if (metrics.length === 0) return 0;
+    
+    const goodMetrics = metrics.filter(m => m.rating === 'good').length;
+    const totalMetrics = metrics.length;
+    
+    return Math.round((goodMetrics / totalMetrics) * 100);
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 70) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const clearMetrics = useCallback(() => {
+    if (webVitalsService) {
+      webVitalsService.clearMetrics();
+      setMetrics([]);
+      setPerformanceReport(null);
+    }
+  }, [webVitalsService]);
+
+  if (isLoading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center">
-          <Activity className="w-6 h-6 animate-spin mr-2" />
-          <span>Carregando métricas de performance...</span>
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-center h-48">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-3 text-gray-600">Carregando métricas de performance...</span>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Activity className="w-6 h-6 text-blue-500" />
-          <h2 className="text-2xl font-bold">Performance Dashboard</h2>
-          <Badge variant={autoRefresh ? 'default' : 'secondary'}>
-            {autoRefresh ? 'Tempo Real' : 'Manual'}
-          </Badge>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
-            {autoRefresh ? 'Pausar' : 'Auto-refresh'}
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={updateMetrics}
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? (
-              <Activity className="w-4 h-4 animate-spin" />
-            ) : (
-              'Atualizar'
-            )}
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={generateReport}
-          >
-            Exportar
-          </Button>
-        </div>
-      </div>
-
-      {/* Web Vitals */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <Zap className="w-5 h-5 text-yellow-500 mr-2" />
-          <h3 className="text-lg font-semibold">Core Web Vitals</h3>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <VitalMetric
-            name="LCP"
-            value={metrics.webVitals.LCP}
-            unit="ms"
-            threshold={2500}
-            description="Largest Contentful Paint"
-          />
-          <VitalMetric
-            name="FID"
-            value={metrics.webVitals.FID}
-            unit="ms"
-            threshold={100}
-            description="First Input Delay"
-          />
-          <VitalMetric
-            name="CLS"
-            value={metrics.webVitals.CLS}
-            unit=""
-            threshold={0.1}
-            description="Cumulative Layout Shift"
-          />
-          <VitalMetric
-            name="FCP"
-            value={metrics.webVitals.FCP}
-            unit="ms"
-            threshold={1800}
-            description="First Contentful Paint"
-          />
-        </div>
-      </Card>
-
-      {/* Bundle & Memory */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Bundle Metrics */}
-        <Card className="p-6">
-          <div className="flex items-center mb-4">
-            <Package className="w-5 h-5 text-purple-500 mr-2" />
-            <h3 className="text-lg font-semibold">Bundle Performance</h3>
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-blue-600" />
+              Performance Dashboard
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Monitoramento em tempo real das Web Vitals
+            </p>
           </div>
-          
-          <div className="space-y-4">
-            <MetricRow
-              label="Bundle Size"
-              value={`${(metrics.bundle.size / 1024).toFixed(1)} KB`}
-              status={metrics.bundle.size < 1024 * 1024 ? 'good' : 'warning'}
-            />
-            <MetricRow
-              label="Performance Score"
-              value={`${metrics.bundle.score}/100`}
-              status={metrics.bundle.score > 80 ? 'good' : metrics.bundle.score > 60 ? 'warning' : 'error'}
-            />
-            <MetricRow
-              label="Load Time"
-              value={`${metrics.bundle.loadTime.toFixed(0)} ms`}
-              status={metrics.bundle.loadTime < 500 ? 'good' : 'warning'}
-            />
-          </div>
-        </Card>
-
-        {/* Memory Metrics */}
-        <Card className="p-6">
-          <div className="flex items-center mb-4">
-            <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
-            <h3 className="text-lg font-semibold">Memory Usage</h3>
-          </div>
-          
-          <div className="space-y-4">
-            <MetricRow
-              label="Memory Usage"
-              value={`${metrics.memory.usage.toFixed(1)}%`}
-              status={metrics.memory.usage < 50 ? 'good' : metrics.memory.usage < 70 ? 'warning' : 'error'}
-            />
-            <MetricRow
-              label="DOM Nodes"
-              value={metrics.memory.domNodes.toLocaleString()}
-              status={metrics.memory.domNodes < 2000 ? 'good' : metrics.memory.domNodes < 3000 ? 'warning' : 'error'}
-            />
-            <MetricRow
-              label="Memory Leaks"
-              value={metrics.memory.leaks.length === 0 ? 'None' : `${metrics.memory.leaks.length} detected`}
-              status={metrics.memory.leaks.length === 0 ? 'good' : 'error'}
-            />
-          </div>
-          
-          {metrics.memory.leaks.length > 0 && (
-            <div className="mt-4 p-3 bg-red-50 rounded-lg">
-              <h4 className="text-sm font-medium text-red-700 mb-2">Potential Memory Leaks:</h4>
-              <ul className="text-sm text-red-600 space-y-1">
-                {metrics.memory.leaks.map((leak, index) => (
-                  <li key={index}>• {leak}</li>
-                ))}
-              </ul>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className={`text-2xl font-bold ${getScoreColor(getOverallScore())}`}>
+                {getOverallScore()}%
+              </div>
+              <div className="text-sm text-gray-600">Score Geral</div>
             </div>
-          )}
-        </Card>
-      </div>
-
-      {/* Footer */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            Última atualização: {new Date(metrics.lastUpdated).toLocaleTimeString()}
-          </span>
-          <span>
-            Monitoramento: {autoRefresh ? 'Ativo' : 'Pausado'}
-          </span>
+            <button
+              onClick={clearMetrics}
+              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+              Limpar Métricas
+            </button>
+          </div>
         </div>
-      </Card>
-    </div>
-  );
-};
-
-// =============================================================================
-// HELPER COMPONENTS
-// =============================================================================
-
-interface VitalMetricProps {
-  name: string;
-  value?: number;
-  unit: string;
-  threshold: number;
-  description: string;
-}
-
-const VitalMetric: React.FC<VitalMetricProps> = ({ name, value, unit, threshold, description }) => {
-  const getStatus = () => {
-    if (!value) return 'unknown';
-    return value <= threshold ? 'good' : 'warning';
-  };
-
-  const getStatusIcon = () => {
-    const status = getStatus();
-    switch (status) {
-      case 'good':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      default:
-        return <AlertTriangle className="w-4 h-4 text-gray-400" />;
-    }
-  };
-
-  return (
-    <div className="p-3 border rounded-lg">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-medium">{name}</span>
-        {getStatusIcon()}
       </div>
-      <div className="text-lg font-bold">
-        {value ? `${value.toFixed(name === 'CLS' ? 3 : 0)}${unit}` : 'N/A'}
+
+      {/* Web Vitals Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {metrics.map((metric, index) => (
+          <div
+            key={`${metric.name}-${index}`}
+            className={`bg-white rounded-lg border p-4 ${getMetricColor(metric.rating)}`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {getMetricIcon(metric.name)}
+                <span className="font-medium text-sm uppercase">{metric.name}</span>
+              </div>
+              <div className="flex items-center">
+                {metric.rating === 'good' ? (
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-yellow-600" />
+                )}
+              </div>
+            </div>
+            
+            <div className="mb-2">
+              <div className="text-2xl font-bold">
+                {formatMetricValue(metric.name, metric.value)}
+              </div>
+              <div className="text-xs opacity-75 capitalize">
+                {metric.rating.replace('-', ' ')}
+              </div>
+            </div>
+            
+            <div className="text-xs opacity-75">
+              {getMetricDescription(metric.name)}
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="text-xs text-muted-foreground">{description}</div>
-    </div>
-  );
-};
 
-interface MetricRowProps {
-  label: string;
-  value: string;
-  status: 'good' | 'warning' | 'error';
-}
+      {/* Performance Summary */}
+      {performanceReport && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h4 className="text-lg font-semibold mb-4">Resumo de Performance</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="text-sm text-blue-600 font-medium">Page Load Time</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {Math.round(performanceReport.pageLoadTime)}ms
+              </div>
+            </div>
+            
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="text-sm text-green-600 font-medium">DOM Content Loaded</div>
+              <div className="text-2xl font-bold text-green-900">
+                {Math.round(performanceReport.domContentLoadedTime)}ms
+              </div>
+            </div>
+            
+            <div className="bg-purple-50 rounded-lg p-4">
+              <div className="text-sm text-purple-600 font-medium">First Paint</div>
+              <div className="text-2xl font-bold text-purple-900">
+                {Math.round(performanceReport.firstPaintTime)}ms
+              </div>
+            </div>
+            
+            <div className="bg-orange-50 rounded-lg p-4">
+              <div className="text-sm text-orange-600 font-medium">Resources Loaded</div>
+              <div className="text-2xl font-bold text-orange-900">
+                {performanceReport.resourceLoadTimes.length}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-const MetricRow: React.FC<MetricRowProps> = ({ label, value, status }) => {
-  const getStatusColor = () => {
-    switch (status) {
-      case 'good':
-        return 'text-green-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'error':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+      {/* Resource Performance */}
+      {performanceReport && performanceReport.resourceLoadTimes.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h4 className="text-lg font-semibold mb-4">Performance de Recursos</h4>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-2">Recurso</th>
+                  <th className="text-left py-2">Tipo</th>
+                  <th className="text-left py-2">Duração</th>
+                  <th className="text-left py-2">Tamanho</th>
+                  <th className="text-left py-2">Cache</th>
+                </tr>
+              </thead>
+              <tbody>
+                {performanceReport.resourceLoadTimes
+                  .sort((a, b) => b.duration - a.duration)
+                  .slice(0, 10)
+                  .map((resource, index) => (
+                    <tr key={index} className="border-b border-gray-100">
+                      <td className="py-2 max-w-xs truncate" title={resource.name}>
+                        {resource.name.split('/').pop()}
+                      </td>
+                      <td className="py-2">
+                        <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+                          {resource.type}
+                        </span>
+                      </td>
+                      <td className="py-2">{Math.round(resource.duration)}ms</td>
+                      <td className="py-2">{Math.round(resource.size / 1024)}KB</td>
+                      <td className="py-2">
+                        {resource.cached ? (
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-gray-400" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'good':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'error':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex items-center space-x-2">
-        <span className={`text-sm font-medium ${getStatusColor()}`}>{value}</span>
-        {getStatusIcon()}
+      {/* Last Update */}
+      <div className="text-center text-sm text-gray-500">
+        Última atualização: {new Date(lastUpdateTime).toLocaleTimeString()}
       </div>
     </div>
   );

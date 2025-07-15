@@ -31,6 +31,7 @@ interface PredictiveState {
   isLearning: boolean;
   sessionPatterns: Map<string, number>;
   prefetchQueue: string[];
+  visibleFeatures: string[];
 }
 
 export const usePredictiveUX = () => {
@@ -39,7 +40,8 @@ export const usePredictiveUX = () => {
     predictions: [],
     isLearning: true,
     sessionPatterns: new Map(),
-    prefetchQueue: []
+    prefetchQueue: [],
+    visibleFeatures: ['multi-ai', 'analytics', 'collaboration', 'templates', 'voice-synthesis']
   });
 
   const sessionId = useRef<string>(
@@ -276,8 +278,21 @@ export const usePredictiveUX = () => {
       currentSequence: [],
       predictions: [],
       prefetchQueue: []
+      // Keep visibleFeatures intact during clear
     }));
   }, []);
+
+  const handleFeatureToggle = useCallback((feature: string) => {
+    setState(prev => ({
+      ...prev,
+      visibleFeatures: prev.visibleFeatures.includes(feature)
+        ? prev.visibleFeatures.filter(f => f !== feature)
+        : [...prev.visibleFeatures, feature]
+    }));
+    
+    // Track feature toggle for analytics
+    trackAction('feature-toggle', feature, { feature, timestamp: Date.now() });
+  }, [trackAction]);
 
   // ✅ PERFORMANCE OPTIMIZATION: Stable analytics function
   const getSessionStats = useCallback(() => ({
@@ -315,6 +330,13 @@ export const usePredictiveUX = () => {
     
     // Control
     toggleLearning,
-    clearHistory
+    clearHistory,
+    
+    // Features
+    visibleFeatures: state.visibleFeatures,
+    handleFeatureToggle,
+    
+    // User Journey
+    userJourneyStage: 'active' // Simple implementation for now
   };
 };

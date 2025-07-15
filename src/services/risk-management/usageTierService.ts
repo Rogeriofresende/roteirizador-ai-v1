@@ -1001,4 +1001,5 @@ class UsageTierService {
 // =============================================================================
 
 export const usageTierService = new UsageTierService();
+export { UsageTierService };
 export default UsageTierService; 

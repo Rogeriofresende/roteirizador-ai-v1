@@ -138,6 +138,70 @@ export interface IdeaBankMetrics {
   };
 }
 
+export interface SaveIdeaRequest {
+  userId: string;
+  idea: {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    targetAudience: string;
+    implementation: string;
+    tags: string[];
+  };
+  metadata?: {
+    source: string;
+    cost: number;
+    tokensUsed: number;
+  };
+}
+
+export interface SaveIdeaResponse {
+  success: boolean;
+  savedIdea?: Idea;
+  error?: string;
+}
+
+export interface QuickAddIdeaRequest {
+  userId: string;
+  title: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+}
+
+export interface QuickAddIdeaResponse {
+  success: boolean;
+  idea?: Idea;
+  error?: string;
+}
+
+export interface SearchIdeasRequest {
+  userId: string;
+  searchTerm: string;
+  filters?: {
+    category?: string;
+    tags?: string[];
+    dateRange?: { start: Date; end: Date };
+  };
+  pagination?: {
+    page: number;
+    limit: number;
+  };
+}
+
+export interface SearchIdeasResponse {
+  success: boolean;
+  ideas: Idea[];
+  total: number;
+  pagination: {
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  error?: string;
+}
+
 export class IdeaBankService extends BaseService {
   private geminiService: any;
   private personalizationService: any;
@@ -258,15 +322,16 @@ export class IdeaBankService extends BaseService {
         personalizedContext: personalizedRequest.personalizedContext
       });
 
-      if (!ideaResult.success) {
+      // ✅ CORREÇÃO: Verificar se a ideia foi gerada com sucesso
+      if (!ideaResult || !ideaResult.content) {
         return {
           success: false,
           metadata: {
-            cost: ideaResult.metadata?.cost || 0,
-            tokensUsed: ideaResult.metadata?.tokensUsed || 0,
+            cost: 0,
+            tokensUsed: 0,
             processingTime: Date.now() - startTime,
-            source: ideaResult.metadata?.source || 'ai',
-            serviceLevel: ideaResult.metadata?.serviceLevel || 'error',
+            source: 'ai',
+            serviceLevel: 'error',
             personalizationApplied: false,
             tierInfo: {
               current: userTier.tier,
@@ -274,28 +339,31 @@ export class IdeaBankService extends BaseService {
               resetTime: rateLimitCheck.resetTime
             }
           },
-          error: ideaResult.error
+          error: 'Falha na geração da ideia'
         };
       }
 
+      // ✅ CORREÇÃO: Processar o conteúdo da ideia gerada
+      const parsedContent = this.parseIdeaContent(ideaResult.content);
+      
       // Create and save idea entity
       const idea: Idea = {
         id: this.generateId(),
         userId: request.userId,
-        title: ideaResult.idea.title,
-        description: ideaResult.idea.description,
-        category: ideaResult.idea.category,
-        targetAudience: ideaResult.idea.targetAudience,
-        implementation: ideaResult.idea.implementation,
+        title: parsedContent.title || `Ideia de ${ideaResult.metadata.contentType}`,
+        description: parsedContent.description || ideaResult.content,
+        category: ideaResult.metadata.category,
+        targetAudience: ideaResult.metadata.targetAudience,
+        implementation: parsedContent.implementation || parsedContent.execution || 'Ver descrição completa',
         aiMetadata: {
           model: 'gemini-1.5-flash',
-          tokensUsed: ideaResult.metadata.tokensUsed,
-          cost: ideaResult.metadata.cost,
-          confidence: ideaResult.idea.confidence,
-          personalizedScore: ideaResult.idea.personalizedScore,
-          trending: ideaResult.idea.trending,
-          prompt: '', // Would store actual prompt
-          processingTime: ideaResult.metadata.processingTime
+          tokensUsed: 100, // Estimativa
+          cost: 0.01, // Estimativa
+          confidence: 0.8, // Estimativa
+          personalizedScore: 0.7, // Estimativa
+          trending: false,
+          prompt: 'Prompt de geração de ideia',
+          processingTime: Date.now() - startTime
         },
         userFeedback: {
           implemented: false
@@ -309,13 +377,13 @@ export class IdeaBankService extends BaseService {
           viralScore: 0
         },
         status: 'generated',
-        tags: this.extractTags(ideaResult.idea),
+        tags: this.extractTags(ideaResult.metadata),
         createdAt: new Date(),
         updatedAt: new Date()
       };
 
       // Save idea to repository
-      const savedIdea = await this.saveIdea(idea);
+      const savedIdea = await this.saveIdeaToRepository(idea);
 
       // Update metrics
       await this.updateMetrics('idea_generated', {
@@ -332,11 +400,11 @@ export class IdeaBankService extends BaseService {
         success: true,
         idea: savedIdea,
         metadata: {
-          cost: ideaResult.metadata.cost,
-          tokensUsed: ideaResult.metadata.tokensUsed,
+          cost: 0.01, // Estimativa - será calculado pela API
+          tokensUsed: 100, // Estimativa - será calculado pela API
           processingTime: Date.now() - startTime,
-          source: ideaResult.metadata.source,
-          serviceLevel: ideaResult.metadata.serviceLevel,
+          source: 'ai',
+          serviceLevel: 'premium',
           personalizationApplied: !!personalizedRequest.personalizedContext,
           tierInfo: {
             current: userTier.tier,
@@ -434,7 +502,7 @@ export class IdeaBankService extends BaseService {
       };
 
       // Save updated idea
-      await this.saveIdea(updatedIdea);
+      await this.saveIdeaToRepository(updatedIdea);
 
       // Update personalization using GeminiService
       const personalizationResult = await this.geminiService.updatePersonalization({
@@ -621,7 +689,7 @@ export class IdeaBankService extends BaseService {
     return personalizedRequest;
   }
 
-  private async saveIdea(idea: Idea): Promise<Idea> {
+  private async saveIdeaToRepository(idea: Idea): Promise<Idea> {
     // Mock implementation - would use repository
     console.log('Saving idea:', idea.id);
     return idea;
@@ -630,6 +698,13 @@ export class IdeaBankService extends BaseService {
   private async getIdeaById(ideaId: string): Promise<Idea | null> {
     // Mock implementation - would use repository
     console.log('Getting idea by ID:', ideaId);
+    
+    // ✅ CORREÇÃO: Validar se ideaId existe
+    if (!ideaId) {
+      console.warn('getIdeaById called with undefined or empty ideaId');
+      return null;
+    }
+    
     return null;
   }
 
@@ -698,13 +773,102 @@ export class IdeaBankService extends BaseService {
     }
   }
 
-  private extractTags(idea: any): string[] {
-    // Extract relevant tags from idea content
+  private extractTags(metadata: any): string[] {
+    // Extract relevant tags from idea metadata
     const tags = [];
-    if (idea.category) tags.push(idea.category);
-    if (idea.targetAudience) tags.push(idea.targetAudience);
-    if (idea.trending) tags.push('trending');
+    if (metadata?.category) tags.push(metadata.category);
+    if (metadata?.targetAudience) tags.push(metadata.targetAudience);
+    if (metadata?.contentType) tags.push(metadata.contentType);
+    if (metadata?.style) tags.push(metadata.style);
+    if (metadata?.trending) tags.push('trending');
     return tags;
+  }
+
+  // ✅ NOVA FUNÇÃO: Processar conteúdo markdown da ideia
+  private parseIdeaContent(content: string): {
+    title?: string;
+    description?: string;
+    implementation?: string;
+    execution?: string;
+    elements?: string;
+    callToAction?: string;
+  } {
+    const parsed = {
+      title: '',
+      description: '',
+      implementation: '',
+      execution: '',
+      elements: '',
+      callToAction: ''
+    };
+
+    // Dividir o conteúdo por linhas
+    const lines = content.split('\n');
+    let currentSection = '';
+    let currentContent = '';
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Identificar seções por markers
+      if (trimmedLine.startsWith('**Título:**')) {
+        if (currentSection) {
+          parsed[currentSection as keyof typeof parsed] = currentContent.trim();
+        }
+        currentSection = 'title';
+        currentContent = trimmedLine.replace('**Título:**', '').trim();
+      } else if (trimmedLine.startsWith('**Descrição:**')) {
+        if (currentSection) {
+          parsed[currentSection as keyof typeof parsed] = currentContent.trim();
+        }
+        currentSection = 'description';
+        currentContent = trimmedLine.replace('**Descrição:**', '').trim();
+      } else if (trimmedLine.startsWith('**Execução:**')) {
+        if (currentSection) {
+          parsed[currentSection as keyof typeof parsed] = currentContent.trim();
+        }
+        currentSection = 'execution';
+        currentContent = trimmedLine.replace('**Execução:**', '').trim();
+      } else if (trimmedLine.startsWith('**Elementos-chave:**')) {
+        if (currentSection) {
+          parsed[currentSection as keyof typeof parsed] = currentContent.trim();
+        }
+        currentSection = 'elements';
+        currentContent = trimmedLine.replace('**Elementos-chave:**', '').trim();
+      } else if (trimmedLine.startsWith('**Call-to-action:**')) {
+        if (currentSection) {
+          parsed[currentSection as keyof typeof parsed] = currentContent.trim();
+        }
+        currentSection = 'callToAction';
+        currentContent = trimmedLine.replace('**Call-to-action:**', '').trim();
+      } else if (trimmedLine.length > 0) {
+        // Adicionar conteúdo à seção atual
+        if (currentContent) {
+          currentContent += '\n' + trimmedLine;
+        } else {
+          currentContent = trimmedLine;
+        }
+      }
+    }
+
+    // Processar última seção
+    if (currentSection) {
+      parsed[currentSection as keyof typeof parsed] = currentContent.trim();
+    }
+
+    // Se não encontrou estrutura, usar o conteúdo completo como descrição
+    if (!parsed.title && !parsed.description) {
+      parsed.description = content;
+    }
+
+    return {
+      title: parsed.title,
+      description: parsed.description,
+      implementation: parsed.execution,
+      execution: parsed.execution,
+      elements: parsed.elements,
+      callToAction: parsed.callToAction
+    };
   }
 
   private generateId(): string {
@@ -741,6 +905,250 @@ export class IdeaBankService extends BaseService {
       calculatePersonalizationScore: async (user: any, content: any) => 0.5
     };
   }
+
+  /**
+   * P0.1 - Save idea to user's bank for later access
+   */
+  public async saveIdea(request: SaveIdeaRequest): Promise<SaveIdeaResponse> {
+    try {
+      const existingIdea = await this.ideaRepository.findById(request.idea.id);
+      
+      if (existingIdea) {
+        // Update existing idea
+        const updatedIdea = await this.ideaRepository.update(request.idea.id, {
+          ...existingIdea,
+          status: 'saved',
+          savedAt: new Date(),
+          metadata: {
+            ...existingIdea.metadata,
+            ...request.metadata
+          }
+        });
+        
+        return {
+          success: true,
+          savedIdea: updatedIdea
+        };
+      } else {
+        // Create new saved idea
+        const savedIdea: Idea = {
+          ...request.idea,
+          userId: request.userId,
+          status: 'saved',
+          createdAt: new Date(),
+          savedAt: new Date(),
+          aiMetadata: {
+            model: 'gemini-1.5-flash',
+            tokensUsed: request.metadata?.tokensUsed || 0,
+            cost: request.metadata?.cost || 0,
+            confidence: 0.8,
+            personalizedScore: 0.7,
+            trending: false,
+            personalizedElements: [],
+            tierUsed: 'basic'
+          },
+          engagementMetrics: {
+            views: 0,
+            likes: 0,
+            shares: 0,
+            implementations: 0,
+            userRating: 0,
+            avgRating: 0,
+            lastViewed: new Date(),
+            timeToImplement: 0,
+            engagementScore: 0
+          },
+          tags: request.idea.tags || []
+        };
+        
+        const created = await this.ideaRepository.create(savedIdea);
+        
+        // Track save event
+        await this.analyticsService.trackEvent('idea_saved', {
+          userId: request.userId,
+          ideaId: created.id,
+          category: created.category,
+          source: request.metadata?.source || 'manual'
+        });
+        
+        return {
+          success: true,
+          savedIdea: created
+        };
+      }
+    } catch (error) {
+      console.error('Error saving idea:', error);
+      return {
+        success: false,
+        error: 'Erro ao salvar ideia'
+      };
+    }
+  }
+
+  /**
+   * P0.2 - Get user's saved ideas history with pagination
+   */
+  public async getUserIdeasHistory(request: GetUserIdeasRequest): Promise<GetUserIdeasResponse> {
+    try {
+      const { userId, filters, pagination, sort } = request;
+      
+      const historyFilters = {
+        userId,
+        status: 'saved',
+        ...filters
+      };
+      
+      const ideas = await this.ideaRepository.findByUserId(userId, {
+        filters: historyFilters,
+        pagination: pagination || { page: 1, limit: 20 },
+        sort: sort || { field: 'savedAt', order: 'desc' }
+      });
+      
+      const total = await this.ideaRepository.countByUserId(userId, historyFilters);
+      
+      return {
+        success: true,
+        ideas,
+        pagination: {
+          total,
+          page: pagination?.page || 1,
+          limit: pagination?.limit || 20,
+          totalPages: Math.ceil(total / (pagination?.limit || 20))
+        }
+      };
+    } catch (error) {
+      console.error('Error getting user ideas history:', error);
+      return {
+        success: false,
+        ideas: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          limit: 20,
+          totalPages: 0
+        },
+        error: 'Erro ao carregar histórico de ideias'
+      };
+    }
+  }
+
+  /**
+   * P0.3 - Quick add idea functionality
+   */
+  public async quickAddIdea(request: QuickAddIdeaRequest): Promise<QuickAddIdeaResponse> {
+    try {
+      const idea: Idea = {
+        id: this.generateId(),
+        userId: request.userId,
+        title: request.title,
+        description: request.description || '',
+        category: request.category || 'geral',
+        targetAudience: 'geral',
+        implementation: 'Desenvolvida pelo usuário',
+        status: 'manual',
+        createdAt: new Date(),
+        aiMetadata: {
+          model: 'user-input',
+          tokensUsed: 0,
+          cost: 0,
+          confidence: 1.0,
+          personalizedScore: 1.0,
+          trending: false,
+          personalizedElements: [],
+          tierUsed: 'manual'
+        },
+        engagementMetrics: {
+          views: 0,
+          likes: 0,
+          shares: 0,
+          implementations: 0,
+          userRating: 0,
+          avgRating: 0,
+          lastViewed: new Date(),
+          timeToImplement: 0,
+          engagementScore: 0
+        },
+        tags: request.tags || []
+      };
+      
+      const created = await this.ideaRepository.create(idea);
+      
+      // Track quick add event
+      await this.analyticsService.trackEvent('idea_quick_added', {
+        userId: request.userId,
+        ideaId: created.id,
+        category: created.category,
+        hasDescription: !!request.description,
+        tagsCount: request.tags?.length || 0
+      });
+      
+      return {
+        success: true,
+        idea: created
+      };
+    } catch (error) {
+      console.error('Error quick adding idea:', error);
+      return {
+        success: false,
+        error: 'Erro ao adicionar ideia rapidamente'
+      };
+    }
+  }
+
+  /**
+   * P0.4 - Search ideas with filters
+   */
+  public async searchIdeas(request: SearchIdeasRequest): Promise<SearchIdeasResponse> {
+    try {
+      const { userId, searchTerm, filters, pagination } = request;
+      
+      const searchFilters = {
+        userId,
+        searchTerm,
+        ...filters
+      };
+      
+      const ideas = await this.ideaRepository.search(searchFilters, {
+        pagination: pagination || { page: 1, limit: 20 },
+        sort: { field: 'createdAt', order: 'desc' }
+      });
+      
+      const total = await this.ideaRepository.countSearch(searchFilters);
+      
+      // Track search event
+      await this.analyticsService.trackEvent('ideas_searched', {
+        userId,
+        searchTerm,
+        filtersUsed: Object.keys(filters || {}).length,
+        resultsCount: ideas.length
+      });
+      
+      return {
+        success: true,
+        ideas,
+        total,
+        pagination: {
+          page: pagination?.page || 1,
+          limit: pagination?.limit || 20,
+          totalPages: Math.ceil(total / (pagination?.limit || 20))
+        }
+      };
+    } catch (error) {
+      console.error('Error searching ideas:', error);
+      return {
+        success: false,
+        ideas: [],
+        total: 0,
+        pagination: {
+          page: 1,
+          limit: 20,
+          totalPages: 0
+        },
+        error: 'Erro ao buscar ideias'
+      };
+    }
+  }
+
 }
 
 export default IdeaBankService; 

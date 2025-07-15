@@ -7,10 +7,12 @@ import { Button } from "../components/ui/Button";
 import { Label } from "../components/ui/Label";
 import { Alert, AlertDescription, AlertTitle } from "../components/ui/Alert";
 import { CircleAlert, Mail, Lock, UserPlus } from "lucide-react";
-// import { RiGoogleFill } from "@remixicon/react";
 import { Separator } from "../components/ui/Separator";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/Card";
 import Navbar from '../components/Navbar';
+
+// DESIGN SYSTEM IMPORTS
+import { Layout } from '../design-system/components/Layout';
+import { theme } from '../design-system/tokens';
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -29,7 +31,7 @@ const SignupPage: React.FC = () => {
     setError('');
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/'); // Redirect to home/dashboard after signup
+      navigate('/');
     } catch (err: any) {
       setError('Falha ao criar conta. O e-mail pode já estar em uso.');
       console.error(err);
@@ -52,39 +54,52 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <>
+    <Layout.Page variant="centered">
       <Navbar />
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-background to-background/80 relative overflow-hidden pt-20">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 w-full h-full bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
-      <div className="absolute h-[200px] w-[200px] rounded-full bg-primary/20 blur-3xl -top-20 -left-20" />
-      <div className="absolute h-[300px] w-[300px] rounded-full bg-primary/10 blur-3xl -bottom-40 -right-20" />
       
-      <Card className="w-full max-w-md mx-4 backdrop-blur-sm bg-background/60 border border-border/50 shadow-xl">
-        <CardHeader className="space-y-1 flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-            <UserPlus className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-semibold">Criar Conta</CardTitle>
-          <CardDescription className="text-center text-muted-foreground">
-            Crie sua conta para começar a usar o RoteiroPro
-          </CardDescription>
-        </CardHeader>
+      <Layout.Section spacing="loose" className="pt-20 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 w-full h-full bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
+        <div className="absolute h-[200px] w-[200px] rounded-full bg-primary-200/30 blur-3xl -top-20 -left-20" />
+        <div className="absolute h-[300px] w-[300px] rounded-full bg-accent-200/20 blur-3xl -bottom-40 -right-20" />
         
-        <CardContent className="space-y-4">
+        <Layout.Card 
+          variant="elevated" 
+          padding="lg" 
+          className="w-full max-w-md mx-auto backdrop-blur-sm bg-white/80 border border-neutral-200/50 shadow-xl relative z-10"
+        >
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mx-auto mb-4">
+              <UserPlus className="h-8 w-8 text-accent-600" />
+            </div>
+            <Layout.Heading level={2} color="primary" className="mb-2">
+              Criar Conta
+            </Layout.Heading>
+            <Layout.Text variant="body" color="muted" className="text-center">
+              Crie sua conta para começar a usar o Roteirar IA
+            </Layout.Text>
+          </div>
+          
+          {/* Error Alert */}
           {error && (
-            <Alert variant="destructive">
-              <CircleAlert className="h-4 w-4" />
-              <AlertTitle>Erro</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="mb-6">
+              <Alert variant="destructive">
+                <CircleAlert className="h-4 w-4" />
+                <AlertTitle>Erro</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            </div>
           )}
           
-          <form onSubmit={handleSignup} className="space-y-4">
+          {/* Signup Form */}
+          <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">
+                <Layout.Text variant="label">Email</Layout.Text>
+              </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
                   id="email"
                   type="email"
@@ -98,9 +113,11 @@ const SignupPage: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">
+                <Layout.Text variant="label">Senha</Layout.Text>
+              </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
                   id="password"
                   type="password"
@@ -114,9 +131,11 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <Label htmlFor="confirmPassword">
+                <Layout.Text variant="label">Confirmar Senha</Layout.Text>
+              </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -131,29 +150,31 @@ const SignupPage: React.FC = () => {
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-accent-600 hover:bg-accent-700 shadow-lg hover:shadow-xl transform hover:scale-[1.01] transition-all duration-200" 
               disabled={loading}
             >
               {loading ? 'Criando conta...' : 'Criar Conta'}
             </Button>
           </form>
           
-          <div className="relative">
+          {/* Separator */}
+          <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-white px-3 text-neutral-500">
                 ou cadastre-se com
               </span>
             </div>
           </div>
           
+          {/* Google Signup */}
           <Button
             variant="outline"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full"
+            className="w-full border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-200"
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -163,19 +184,22 @@ const SignupPage: React.FC = () => {
             </svg>
             Cadastrar com Google
           </Button>
-        </CardContent>
-        
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Já tem uma conta?{' '}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Faça login
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
-      </div>
-    </>
+          
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <Layout.Text variant="bodySmall" color="muted">
+              Já tem uma conta?{' '}
+              <Link 
+                to="/login" 
+                className="text-primary-600 font-medium hover:text-primary-700 hover:underline transition-colors"
+              >
+                Faça login
+              </Link>
+            </Layout.Text>
+          </div>
+        </Layout.Card>
+      </Layout.Section>
+    </Layout.Page>
   );
 };
 

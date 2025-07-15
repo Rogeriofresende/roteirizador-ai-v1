@@ -106,6 +106,16 @@ class EnhancedPerformanceService {
   private sessionId: string;
 
   constructor() {
+    // 🛡️ STORYBOOK SAFETY: Don't initialize monitoring in Storybook environment
+    const isStorybook = globalThis.STORYBOOK_ENVIRONMENT || 
+                       (typeof window !== 'undefined' && window.location.port === '6006');
+    
+    if (isStorybook) {
+      console.log('ℹ️ [PERFORMANCE] Skipping performance monitoring in Storybook environment');
+      this.sessionId = 'storybook-session';
+      return;
+    }
+    
     this.sessionId = this.generateSessionId();
     this.initializeAdvancedMonitoring();
     

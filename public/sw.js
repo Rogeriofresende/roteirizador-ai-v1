@@ -1,353 +1,431 @@
-// Service Worker para Roteirar IA Pro v2.0.0
-const CACHE_NAME = 'roteirar-ia-v2.0.0';
-const API_CACHE = 'roteirar-api-v1.0.0';
+// Service Worker para Roteirar IA PWA
+// Versão 1.0.0 - Sprint 3 Implementation
 
-// Assets para cache obrigatório (Core files)
-const STATIC_ASSETS = [
+const CACHE_NAME = 'roteirar-ia-v1.0.0';
+const OFFLINE_CACHE = 'roteirar-ia-offline-v1.0.0';
+const RUNTIME_CACHE = 'roteirar-ia-runtime-v1.0.0';
+
+// Assets essenciais para funcionar offline
+const ESSENTIAL_ASSETS = [
   '/',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/index.html',
+  '/src/main.tsx',
+  '/src/App.tsx',
+  '/src/pages/BancoDeIdeias.tsx',
+  '/src/components/LoadingStates.tsx',
+  '/src/hooks/useIdeaCache.ts',
+  '/offline.html'
 ];
 
-// Arquivos que serão cached quando acessados
-const CACHE_ON_ACCESS = [
-  '/icons/',
-  '/screenshots/',
-  '.js',
-  '.css',
-  '.png',
-  '.jpg',
-  '.jpeg',
-  '.svg',
-  '.webp'
+// Assets estáticos para cache
+const STATIC_ASSETS = [
+  '/favicon.svg',
+  '/icons/apple-touch-icon.png',
+  '/icons/favicon-16x16.png',
+  '/icons/favicon-32x32.png',
+  '/icons/android-chrome-192x192.png',
+  '/icons/android-chrome-512x512.png'
 ];
 
-// API endpoints para cache
-const API_ENDPOINTS = [
-  '/api/health',
-  '/api/status'
-];
+// Estratégias de cache
+const CACHE_STRATEGIES = {
+  // Cache First: Para assets estáticos
+  CACHE_FIRST: 'cache-first',
+  // Network First: Para APIs e dados dinâmicos
+  NETWORK_FIRST: 'network-first',
+  // Stale While Revalidate: Para recursos que podem ser atualizados
+  STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
+  // Cache Only: Para recursos offline
+  CACHE_ONLY: 'cache-only',
+  // Network Only: Para recursos que sempre precisam ser atualizados
+  NETWORK_ONLY: 'network-only'
+};
 
-console.log('SW: Roteirar IA Pro Service Worker v2.0.0 loading...');
+// Configuração de rotas e estratégias
+const ROUTE_STRATEGIES = {
+  // Assets estáticos
+  '/icons/': CACHE_STRATEGIES.CACHE_FIRST,
+  '/assets/': CACHE_STRATEGIES.CACHE_FIRST,
+  '/favicon.svg': CACHE_STRATEGIES.CACHE_FIRST,
+  
+  // APIs
+  '/api/': CACHE_STRATEGIES.NETWORK_FIRST,
+  '/api/ideas': CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
+  '/api/performance': CACHE_STRATEGIES.NETWORK_ONLY,
+  
+  // Páginas
+  '/': CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
+  '/banco-de-ideias': CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
+  
+  // Recursos externos
+  'https://fonts.googleapis.com': CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
+  'https://fonts.gstatic.com': CACHE_STRATEGIES.CACHE_FIRST
+};
 
-// Install Event - Cache recursos essenciais
+// Install event - Cache assets essenciais
 self.addEventListener('install', (event) => {
-  console.log('SW: Installing...');
+  console.log('Service Worker: Installing...');
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('SW: Caching static assets');
+    Promise.all([
+      // Cache assets essenciais
+      caches.open(CACHE_NAME).then((cache) => {
+        console.log('Service Worker: Caching essential assets');
+        return cache.addAll(ESSENTIAL_ASSETS);
+      }),
+      
+      // Cache assets estáticos
+      caches.open(OFFLINE_CACHE).then((cache) => {
+        console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
-      .then(() => {
-        console.log('SW: Skip waiting');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('SW: Install failed:', error);
-      })
+    ]).then(() => {
+      console.log('Service Worker: Installation completed');
+      // Ativar imediatamente
+      self.skipWaiting();
+    })
   );
 });
 
-// Activate Event - Limpar caches antigos
+// Activate event - Limpar caches antigos
 self.addEventListener('activate', (event) => {
-  console.log('SW: Activating...');
+  console.log('Service Worker: Activating...');
   
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames
-            .filter((cacheName) => {
-              // Manter apenas o cache atual
-              return cacheName !== CACHE_NAME && cacheName !== API_CACHE;
-            })
-            .map((cacheName) => {
-              console.log('SW: Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            })
-        );
-      })
-      .then(() => {
-        console.log('SW: Claiming clients');
-        return self.clients.claim();
-      })
-      .catch((error) => {
-        console.error('SW: Activate failed:', error);
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // Remover caches antigos
+          if (cacheName !== CACHE_NAME && 
+              cacheName !== OFFLINE_CACHE && 
+              cacheName !== RUNTIME_CACHE) {
+            console.log('Service Worker: Removing old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('Service Worker: Activation completed');
+      // Controlar todas as abas imediatamente
+      return self.clients.claim();
+    })
   );
 });
 
-// Fetch Event - Estratégia de cache
+// Fetch event - Estratégias de cache
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // Apenas interceptar requests GET
+  // Ignorar requests que não são GET
   if (request.method !== 'GET') {
     return;
   }
   
-  // Skip Vite development assets in development mode
-  if (url.hostname === 'localhost' && (
-    url.pathname.includes('@vite/client') ||
-    url.pathname.includes('@react-refresh') ||
-    url.pathname.includes('node_modules/vite/') ||
-    url.searchParams.has('t') || // Vite timestamp queries
-    url.pathname.includes('.tsx') ||
-    url.pathname.includes('.ts') ||
-    url.pathname.includes('src/')
-  )) {
-    // Let Vite handle these requests directly
-    return;
-  }
+  // Determinar estratégia de cache
+  const strategy = determineStrategy(url);
   
-  // API calls do próprio app - Network First
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request, API_CACHE));
-    return;
-  }
-  
-  // Chamadas para Gemini AI - Network Only (sempre online)
-  if (url.hostname.includes('generativeai') || url.hostname.includes('googleapis')) {
-    event.respondWith(networkOnly(request));
-    return;
-  }
-  
-  // Chamadas para CDNs externos - Cache First
-  if (url.hostname !== self.location.hostname) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-  
-  // Assets estáticos (JS, CSS, imagens) - Cache First
-  if (shouldCacheAsset(url.pathname)) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-  
-  // Páginas HTML - Stale While Revalidate
-  if (request.destination === 'document' || url.pathname === '/') {
-    event.respondWith(staleWhileRevalidate(request));
-    return;
-  }
-  
-  // Default - Network First
-  event.respondWith(networkFirst(request));
-});
-
-// Helper: Verificar se deve fazer cache do asset
-function shouldCacheAsset(pathname) {
-  return CACHE_ON_ACCESS.some(pattern => {
-    if (pattern.startsWith('.')) {
-      return pathname.endsWith(pattern);
-    }
-    return pathname.includes(pattern);
-  });
-}
-
-// Strategy: Cache First (para assets estáticos)
-async function cacheFirst(request) {
-  try {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      console.log('SW: Cache hit:', request.url);
-      return cachedResponse;
-    }
-    
-    console.log('SW: Cache miss, fetching:', request.url);
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-      console.log('SW: Cached:', request.url);
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.log('SW: Network failed for:', request.url, error);
-    
-    // Retornar fallback para imagens
-    if (request.destination === 'image') {
-      return new Response(
-        '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#8B5CF6"/><text x="50%" y="50%" text-anchor="middle" fill="white" font-size="16">Offline</text></svg>',
-        { headers: { 'Content-Type': 'image/svg+xml' } }
-      );
-    }
-    
-    return await caches.match('/offline.html') || new Response('Offline');
-  }
-}
-
-// Strategy: Network First (para APIs e conteúdo dinâmico)
-async function networkFirst(request, cacheName = CACHE_NAME) {
-  try {
-    console.log('SW: Network first for:', request.url);
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, networkResponse.clone());
-      console.log('SW: Updated cache:', request.url);
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.log('SW: Network failed, trying cache:', request.url);
-    const cachedResponse = await caches.match(request);
-    
-    if (cachedResponse) {
-      console.log('SW: Serving from cache:', request.url);
-      return cachedResponse;
-    }
-    
-    // Fallback para páginas
-    if (request.destination === 'document') {
-      return await caches.match('/') || new Response('Offline - Conecte-se à internet');
-    }
-    
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-// Strategy: Network Only (para Gemini AI)
-async function networkOnly(request) {
-  try {
-    console.log('SW: Network only for:', request.url);
-    return await fetch(request);
-  } catch (error) {
-    console.log('SW: Network only failed:', request.url, error);
-    
-    return new Response(JSON.stringify({
-      error: 'Offline - Conecte-se à internet para gerar roteiros',
-      status: 'offline',
-      message: 'A geração de roteiros requer conexão com a internet'
-    }), {
-      status: 503,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      }
-    });
-  }
-}
-
-// Strategy: Stale While Revalidate (para páginas)
-async function staleWhileRevalidate(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cachedResponse = await cache.match(request);
-  
-  // Buscar nova versão em background
-  const networkPromise = fetch(request)
-    .then((networkResponse) => {
-      if (networkResponse.ok) {
-        cache.put(request, networkResponse.clone());
-        console.log('SW: Background update:', request.url);
-      }
-      return networkResponse;
-    })
-    .catch(() => {
-      console.log('SW: Background update failed:', request.url);
-      return cachedResponse;
-    });
-  
-  // Retornar cache imediatamente se disponível, senão aguardar network
-  return cachedResponse || networkPromise;
-}
-
-// Background Sync (para funcionalidade futura)
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    console.log('SW: Background sync triggered');
-    event.waitUntil(doBackgroundSync());
-  }
-});
-
-async function doBackgroundSync() {
-  try {
-    // Sincronizar dados quando volta online
-    console.log('SW: Performing background sync...');
-    
-    // Aqui poderiamos sincronizar roteiros salvos localmente
-    // com servidor quando volta online
-    
-  } catch (error) {
-    console.error('SW: Background sync failed:', error);
-  }
-}
-
-// Push Notifications (para funcionalidade futura)
-self.addEventListener('push', (event) => {
-  console.log('SW: Push notification received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'Nova funcionalidade disponível no Roteirar IA!',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    image: '/icons/icon-512x512.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: Math.random()
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Abrir App',
-        icon: '/icons/icon-96x96.png'
-      },
-      {
-        action: 'close',
-        title: 'Fechar',
-        icon: '/icons/icon-96x96.png'
-      }
-    ],
-    requireInteraction: false,
-    tag: 'roteirar-notification'
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification('Roteirar IA Pro', options)
+  event.respondWith(
+    handleRequest(request, strategy)
   );
 });
 
-// Notification Click Handler
-self.addEventListener('notificationclick', (event) => {
-  console.log('SW: Notification clicked:', event.action);
+// Message event - Comunicação com a aplicação
+self.addEventListener('message', (event) => {
+  const { data } = event;
   
-  event.notification.close();
+  switch (data.type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+      
+    case 'CACHE_IDEA':
+      cacheIdea(data.payload);
+      break;
+      
+    case 'GET_CACHED_IDEAS':
+      getCachedIdeas().then(ideas => {
+        event.ports[0].postMessage({ ideas });
+      });
+      break;
+      
+    case 'CLEAR_CACHE':
+      clearCache(data.cacheType);
+      break;
+      
+    case 'GET_CACHE_STATUS':
+      getCacheStatus().then(status => {
+        event.ports[0].postMessage({ status });
+      });
+      break;
+  }
+});
+
+// Determinar estratégia de cache baseada na URL
+function determineStrategy(url) {
+  // Verificar rotas configuradas
+  for (const [route, strategy] of Object.entries(ROUTE_STRATEGIES)) {
+    if (url.pathname.startsWith(route) || url.href.startsWith(route)) {
+      return strategy;
+    }
+  }
   
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/')
+  // Estratégia padrão baseada no tipo de recurso
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+    return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE;
+  }
+  
+  if (url.pathname.endsWith('.png') || url.pathname.endsWith('.jpg') || 
+      url.pathname.endsWith('.svg') || url.pathname.endsWith('.ico')) {
+    return CACHE_STRATEGIES.CACHE_FIRST;
+  }
+  
+  if (url.pathname.includes('/api/')) {
+    return CACHE_STRATEGIES.NETWORK_FIRST;
+  }
+  
+  return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE;
+}
+
+// Manipular request baseado na estratégia
+async function handleRequest(request, strategy) {
+  switch (strategy) {
+    case CACHE_STRATEGIES.CACHE_FIRST:
+      return cacheFirst(request);
+      
+    case CACHE_STRATEGIES.NETWORK_FIRST:
+      return networkFirst(request);
+      
+    case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:
+      return staleWhileRevalidate(request);
+      
+    case CACHE_STRATEGIES.CACHE_ONLY:
+      return cacheOnly(request);
+      
+    case CACHE_STRATEGIES.NETWORK_ONLY:
+      return networkOnly(request);
+      
+    default:
+      return networkFirst(request);
+  }
+}
+
+// Cache First Strategy
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  
+  if (cached) {
+    return cached;
+  }
+  
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.error('Cache First failed:', error);
+    return getOfflineResponse(request);
+  }
+}
+
+// Network First Strategy
+async function networkFirst(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.error('Network First failed:', error);
+    const cached = await cache.match(request);
+    return cached || getOfflineResponse(request);
+  }
+}
+
+// Stale While Revalidate Strategy
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  const cached = await cache.match(request);
+  
+  // Revalidar em background
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(error => {
+    console.error('Revalidation failed:', error);
+    return cached;
+  });
+  
+  return cached || fetchPromise;
+}
+
+// Cache Only Strategy
+async function cacheOnly(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  return cached || getOfflineResponse(request);
+}
+
+// Network Only Strategy
+async function networkOnly(request) {
+  try {
+    return await fetch(request);
+  } catch (error) {
+    console.error('Network Only failed:', error);
+    return getOfflineResponse(request);
+  }
+}
+
+// Resposta offline
+function getOfflineResponse(request) {
+  const url = new URL(request.url);
+  
+  // Página HTML offline
+  if (request.destination === 'document') {
+    return caches.match('/offline.html');
+  }
+  
+  // Imagem offline
+  if (request.destination === 'image') {
+    return new Response(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f0f0f0"/><text x="100" y="100" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">Offline</text></svg>',
+      { headers: { 'Content-Type': 'image/svg+xml' } }
     );
   }
-});
-
-// Message Handler (para comunicação com app)
-self.addEventListener('message', (event) => {
-  console.log('SW: Message received:', event.data);
   
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+  // JSON offline
+  if (request.headers.get('Accept')?.includes('application/json')) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'offline', 
+        message: 'Funcionalidade disponível quando online',
+        cached: true 
+      }),
+      { 
+        headers: { 'Content-Type': 'application/json' },
+        status: 200
+      }
+    );
   }
   
-  if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version: CACHE_NAME });
+  return new Response('Offline', { status: 503 });
+}
+
+// Cache de ideias para funcionalidade offline
+async function cacheIdea(idea) {
+  const cache = await caches.open(OFFLINE_CACHE);
+  const stored = await cache.match('/offline-ideas');
+  
+  let ideas = [];
+  if (stored) {
+    ideas = await stored.json();
+  }
+  
+  ideas.push({
+    ...idea,
+    cachedAt: Date.now(),
+    offline: true
+  });
+  
+  const response = new Response(JSON.stringify(ideas), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+  
+  return cache.put('/offline-ideas', response);
+}
+
+// Recuperar ideias em cache
+async function getCachedIdeas() {
+  const cache = await caches.open(OFFLINE_CACHE);
+  const stored = await cache.match('/offline-ideas');
+  
+  if (stored) {
+    return await stored.json();
+  }
+  
+  return [];
+}
+
+// Limpar cache
+async function clearCache(cacheType) {
+  switch (cacheType) {
+    case 'all':
+      const cacheNames = await caches.keys();
+      return Promise.all(cacheNames.map(name => caches.delete(name)));
+      
+    case 'runtime':
+      return caches.delete(RUNTIME_CACHE);
+      
+    case 'offline':
+      return caches.delete(OFFLINE_CACHE);
+      
+    default:
+      return caches.delete(CACHE_NAME);
+  }
+}
+
+// Status do cache
+async function getCacheStatus() {
+  const cacheNames = await caches.keys();
+  const status = {};
+  
+  for (const name of cacheNames) {
+    const cache = await caches.open(name);
+    const keys = await cache.keys();
+    status[name] = {
+      name,
+      size: keys.length,
+      keys: keys.map(key => key.url)
+    };
+  }
+  
+  return status;
+}
+
+// Background sync para sincronizar dados offline
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-offline-ideas') {
+    event.waitUntil(syncOfflineIdeas());
   }
 });
 
-// Error Handler
-self.addEventListener('error', (event) => {
-  console.error('SW: Error occurred:', event.error);
-});
+// Sincronizar ideias offline
+async function syncOfflineIdeas() {
+  try {
+    const ideas = await getCachedIdeas();
+    const offlineIdeas = ideas.filter(idea => idea.offline);
+    
+    for (const idea of offlineIdeas) {
+      try {
+        await fetch('/api/ideas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(idea)
+        });
+      } catch (error) {
+        console.error('Failed to sync idea:', error);
+      }
+    }
+    
+    // Remover ideias sincronizadas
+    const syncedIdeas = ideas.filter(idea => !idea.offline);
+    const cache = await caches.open(OFFLINE_CACHE);
+    const response = new Response(JSON.stringify(syncedIdeas), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    cache.put('/offline-ideas', response);
+    
+  } catch (error) {
+    console.error('Sync failed:', error);
+  }
+}
 
-// Unhandled Rejection Handler
-self.addEventListener('unhandledrejection', (event) => {
-  console.error('SW: Unhandled promise rejection:', event.reason);
-});
-
-console.log('SW: Roteirar IA Pro Service Worker v2.0.0 loaded successfully!'); 
+console.log('Service Worker: Loaded and ready!'); 

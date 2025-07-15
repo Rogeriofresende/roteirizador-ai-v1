@@ -13,8 +13,8 @@
  */
 
 import { BudgetControlService } from './budgetControlService';
-import { UsageTierService, UserTier } from './usageTierService';
-import { EmergencyProtocolService } from './emergencyProtocolService';
+import { UsageTierService, UserTier } from '../risk-management/usageTierService';
+import { EmergencyProtocolService } from '../risk-management/emergencyProtocolService';
 
 // Queue Configuration Types
 export interface QueueRequest {

@@ -13,6 +13,10 @@ import type { FormData } from '../types';
 import { analyticsService } from '../services/analyticsService';
 import { cn } from '../lib/utils';
 
+// DESIGN SYSTEM IMPORTS
+import { Layout } from '../design-system/components/Layout';
+import { theme } from '../design-system/tokens';
+
 // CONVERSION OPTIMIZATION COMPONENTS
 import { OnboardingFlow, QuickStartPrompt } from '../components/onboarding/OnboardingFlow';
 import { ProgressiveFeatureDisclosure } from '../components/cro/ProgressiveFeatureDisclosure';
@@ -41,139 +45,66 @@ import { SmartLoadingStates } from '../components/ui/SmartLoadingStates';
 import { useSimpleLoading } from '../hooks/useSmartLoading';
 import { PredictiveButton, PredictiveCard } from '../components/ui/AdvancedMicroInteractions';
 import { v51Intelligence } from '../services/v51Intelligence';
+import { TouchGestureHandler } from '../components/mobile/TouchGestureHandler';
 
 const GeneratorPage: React.FC = () => {
   const [script, setScript] = useState<string>('');
   const [isConfigured, setIsConfigured] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  // V5.1: Multi-AI Selection State
-  const [selectedAI, setSelectedAI] = useState<'gemini' | 'chatgpt'>('gemini');
 
-  // CONVERSION OPTIMIZATION STATE
-  const {
-    isFirstTime,
-    hasCompletedOnboarding,
-    userJourneyStage,
-    showQuickStart,
-    isOnboardingOpen,
-    startOnboarding,
-    completeOnboarding,
-    skipOnboarding,
-    dismissQuickStart,
-    getUserGuidance
+  // V5.1 Enhanced State Management
+  const [selectedAI, setSelectedAI] = useState<'gemini' | 'chatgpt'>('gemini');
+  const [userScriptCount, setUserScriptCount] = useState(0);
+  const [showVoicePanel, setShowVoicePanel] = useState(false);
+  const [showCollaborationPanel, setShowCollaborationPanel] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [featuredTemplates, setFeaturedTemplates] = useState([]);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+
+  // CONVERSION OPTIMIZATION: Enhanced onboarding and progressive disclosure
+  const { 
+    isOnboardingOpen, 
+    hasCompletedOnboarding, 
+    showQuickStart, 
+    startOnboarding, 
+    completeOnboarding, 
+    skipOnboarding, 
+    dismissQuickStart 
   } = useOnboarding();
 
-  // Track user's script generation count for progressive disclosure
-  const [userScriptCount, setUserScriptCount] = useState(() => {
-    try {
-      return parseInt(localStorage.getItem('user_script_count') || '0');
-    } catch {
-      return 0;
-    }
-  });
+  // V5.1 Enhanced UX Intelligence
+  const {
+    trackAction,
+    getMostLikelyNext,
+    getSessionStats,
+    userJourneyStage,
+    visibleFeatures,
+    handleFeatureToggle
+  } = usePredictiveUX();
 
-  // Progressive Feature Disclosure state
-  const [visibleFeatures, setVisibleFeatures] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem('visible_features');
-      return stored ? JSON.parse(stored) : ['templates']; // Only templates visible by default
-    } catch {
-      return ['templates'];
-    }
-  });
+  // V5.1 Enhanced Loading States
+  const { 
+    isLoading, 
+    startLoading, 
+    stopLoading, 
+    loadingStage 
+  } = useSimpleLoading();
 
-  // STEP 2: Advanced Editor Integration
   const { currentUser } = useAuth();
-  const [currentProjectId, setCurrentProjectId] = useState<string>('');
 
-  // STEP 3: Voice Synthesis Integration
-  const [showVoicePanel, setShowVoicePanel] = useState(false);
-
-  // STEP 4: Advanced Analytics Integration
-  const [showAnalytics, setShowAnalytics] = useState(false);
-
-  // STEP 5: Collaboration Integration - Week 8 Implementation
-  const [showCollaborationPanel, setShowCollaborationPanel] = useState(false);
-
-  // STEP 6: Template Library Integration
-  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
-  const [featuredTemplates, setFeaturedTemplates] = useState<any[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-
-  // V5.1: Predictive UX and Smart Loading
-  const { trackAction, getMostLikelyNext, getSessionStats } = usePredictiveUX();
-  const { isLoading: isGenerating, startLoading, stopLoading } = useSimpleLoading();
-
-  // CONVERSION OPTIMIZATION: Update script count and persist visible features
-  useEffect(() => {
-    localStorage.setItem('visible_features', JSON.stringify(visibleFeatures));
-  }, [visibleFeatures]);
-
-  // Handle feature toggle for progressive disclosure
-  const handleFeatureToggle = useCallback((featureId: string, isVisible: boolean) => {
-    setVisibleFeatures(prev => {
-      if (isVisible) {
-        return [...prev.filter(id => id !== featureId), featureId];
-      } else {
-        return prev.filter(id => id !== featureId);
-      }
-    });
-
-    // Track feature usage for analytics
-    analyticsService.trackEvent('feature_toggled', {
-      featureId,
-      isVisible,
-      userScriptCount,
-      userJourneyStage
-    });
-  }, [userScriptCount, userJourneyStage]);
-
-  // V5.1: Track user interactions for learning
-  useEffect(() => {
-    trackAction('navigation', 'generator_page', { 
-      timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      screenSize: `${window.innerWidth}x${window.innerHeight}`,
-      userJourneyStage,
-      hasCompletedOnboarding
-    });
-
-    // V5.1: Record pattern for intelligence system
-    v51Intelligence.recordPattern(
-      'session_' + Date.now(),
-      ['navigation:homepage', 'navigation:generator_page'],
-      'success',
-      { 
-        entryPoint: 'direct_access',
-        userJourneyStage,
-        isFirstTime
-      }
-    );
-  }, [trackAction, userJourneyStage, hasCompletedOnboarding, isFirstTime]);
-
-  // STEP 2: Initialize project ID for Advanced Editor
-  useEffect(() => {
-    if (!currentProjectId) {
-      const projectId = `project_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setCurrentProjectId(projectId);
+  // Load featured templates
+  const loadFeaturedTemplates = async () => {
+    try {
+      const templates = await TemplateService.getFeaturedTemplates();
+      setFeaturedTemplates(templates.slice(0, 6)); // Limit to 6 featured
+    } catch (error) {
+      // Silently handle template loading errors - service already logs appropriately
+      console.log('ℹ️ [GENERATOR] Template loading handled by TemplateService');
     }
-  }, [currentProjectId]);
-
-  // STEP 6: Load featured templates
-  useEffect(() => {
-    const loadFeaturedTemplates = async () => {
-      try {
-        const templates = await TemplateService.getFeaturedTemplates(6);
-        setFeaturedTemplates(templates);
-      } catch (error) {
-        console.error('Erro ao carregar templates em destaque:', error);
-      }
-    };
-
-    loadFeaturedTemplates();
-  }, []);
+  };
 
   useEffect(() => {
     const checkConfig = () => {
@@ -181,7 +112,6 @@ const GeneratorPage: React.FC = () => {
       setIsConfigured(configured);
       
       if (configured) {
-        // V5.1: Enhanced tracking with predictive context
         trackAction('configuration', 'api_ready', { 
           timestamp: Date.now(),
           userJourneyStage 
@@ -196,11 +126,7 @@ const GeneratorPage: React.FC = () => {
     };
 
     checkConfig();
-    
-    // Listener para mudanças no localStorage (quando API key é configurada)
     window.addEventListener('storage', checkConfig);
-    
-    // Check periodicamente também
     const interval = setInterval(checkConfig, 2000);
     
     return () => {
@@ -209,14 +135,13 @@ const GeneratorPage: React.FC = () => {
     };
   }, [trackAction, getSessionStats, userJourneyStage]);
 
-  // CONVERSION OPTIMIZATION: Enhanced generate handler with script count tracking
+  // Enhanced generate handler
   const handleGenerate = useCallback(async (formData: FormData) => {
     if (!isConfigured) {
       alert('Configure sua API key do Gemini primeiro!');
       return;
     }
 
-    // V5.1: Track generation pattern and predict next actions
     trackAction('click', 'generate_script', { 
       formData,
       selectedAI,
@@ -230,18 +155,6 @@ const GeneratorPage: React.FC = () => {
     setScript('');
     
     try {
-      // V5.1: Enhanced analytics with prediction context
-      analyticsService.trackEvent('generation_started', {
-        ...formData,
-        selectedAI,
-        predictiveContext: getMostLikelyNext(),
-        sessionStats: getSessionStats(),
-        context: 'generation_started',
-        userJourneyStage,
-        scriptCount: userScriptCount
-      });
-      
-      // V5.1: Multi-AI Support - Route to selected AI service
       const generatedScript = selectedAI === 'gemini'
         ? await geminiService.generateScript({
             subject: formData.subject,
@@ -251,7 +164,7 @@ const GeneratorPage: React.FC = () => {
             audience: formData.audience,
             objective: formData.objective
           })
-        : await geminiService.generateScript({ // Fallback to Gemini until ChatGPT is ready
+        : await geminiService.generateScript({
             subject: formData.subject,
             platform: formData.platform,
             duration: formData.duration,
@@ -261,13 +174,11 @@ const GeneratorPage: React.FC = () => {
           });
       
       setScript(generatedScript);
-
-      // CONVERSION OPTIMIZATION: Update script count
+      
       const newScriptCount = userScriptCount + 1;
       setUserScriptCount(newScriptCount);
       localStorage.setItem('user_script_count', newScriptCount.toString());
       
-      // V5.1: Record successful pattern for learning
       v51Intelligence.recordPattern(
         'session_' + Date.now(),
         ['click:generate_script', 'data:script_generated'],
@@ -275,151 +186,66 @@ const GeneratorPage: React.FC = () => {
         { 
           scriptLength: generatedScript.length,
           platform: formData.platform,
-          subject: formData.subject.substring(0, 50), // Truncate for privacy
-          scriptCount: newScriptCount,
-          userJourneyStage
+          scriptCount: newScriptCount
         }
       );
-      
-      // Track successful generation with V5.1 context
-      analyticsService.trackEvent('generation_completed', {
+
+      analyticsService.trackEvent('generation_success', {
         ...formData,
-        script_length: generatedScript.length,
-        sessionStats: getSessionStats(),
-        context: 'generation_completed',
+        selectedAI,
+        scriptLength: generatedScript.length,
         scriptCount: newScriptCount,
         userJourneyStage
       });
+
+    } catch (err) {
+      console.error('Erro na geração:', err);
+      setError('Erro ao gerar roteiro. Tente novamente.');
       
-    } catch (error: unknown) {
-      console.error('Erro ao gerar roteiro:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      setError(`Falha ao gerar roteiro: ${errorMessage}`);
+      analyticsService.trackEvent('generation_error', {
+        error: (err as Error).message,
+        selectedAI,
+        userJourneyStage
+      });
     } finally {
       stopLoading();
     }
-  }, [isConfigured, trackAction, getMostLikelyNext, getSessionStats, startLoading, stopLoading, selectedAI, userScriptCount, userJourneyStage]);
+  }, [isConfigured, selectedAI, userScriptCount, trackAction, getMostLikelyNext, getSessionStats, userJourneyStage, startLoading, stopLoading]);
 
-  // V5.1: Enhanced script change handler with tracking
-  const handleScriptChange = useCallback((newScript: string) => {
-    setScript(newScript);
-    trackAction('input', 'script_edit', { 
-      length: newScript.length,
-      action: 'manual_edit',
-      userJourneyStage
-    });
-  }, [trackAction, userJourneyStage]);
-
-  // V5.1: Enhanced copy handler with predictive context
+  // Handlers for various features
   const handleCopyScript = useCallback(() => {
     navigator.clipboard.writeText(script);
-    trackAction('click', 'copy_script', { 
-      scriptLength: script.length,
-      nextPrediction: getMostLikelyNext(),
-      userJourneyStage
-    });
-    
-    // V5.1: Record copy pattern for learning
-    v51Intelligence.recordPattern(
-      'session_' + Date.now(),
-      ['data:script_generated', 'click:copy_script'],
-      'success',
-      { 
-        scriptLength: script.length,
-        userJourneyStage
-      }
-    );
-  }, [script, trackAction, getMostLikelyNext, userJourneyStage]);
+    trackAction('click', 'copy_script', { scriptLength: script.length });
+  }, [script, trackAction]);
 
-  // STEP 3: Voice synthesis handler
+  const handleScriptChange = useCallback((newScript: string) => {
+    setScript(newScript);
+  }, []);
+
   const handleOpenVoicePanel = useCallback(() => {
     setShowVoicePanel(true);
-    trackAction('click', 'open_voice_panel', {
-      scriptLength: script.length,
-      hasScript: script.length > 0,
-      userJourneyStage
-    });
-  }, [script.length, trackAction, userJourneyStage]);
+    trackAction('click', 'open_voice_panel', { scriptLength: script.length });
+  }, [script.length, trackAction]);
 
-  // STEP 4: Analytics dashboard handler
-  const handleToggleAnalytics = useCallback(() => {
-    setShowAnalytics(!showAnalytics);
-    trackAction('click', showAnalytics ? 'close_analytics' : 'open_analytics', {
-      currentView: showAnalytics ? 'visible' : 'hidden',
-      sessionStats: getSessionStats(),
-      userJourneyStage
-    });
-  }, [showAnalytics, trackAction, getSessionStats, userJourneyStage]);
-
-  // STEP 5: Collaboration handlers - Week 8 Implementation
   const handleToggleCollaboration = useCallback(() => {
-    setShowCollaborationPanel(!showCollaborationPanel);
-    trackAction('click', showCollaborationPanel ? 'close_collaboration' : 'open_collaboration', {
-      projectId: currentProjectId,
-      userJourneyStage
-    });
-  }, [showCollaborationPanel, trackAction, currentProjectId, userJourneyStage]);
+    setShowCollaborationPanel(prev => !prev);
+    trackAction('click', 'toggle_collaboration', { showing: !showCollaborationPanel });
+  }, [showCollaborationPanel, trackAction]);
 
-  const handleShareCollaboration = useCallback((shareLink: string) => {
-    trackAction('collaboration', 'share_link_generated', {
-      projectId: currentProjectId,
-      shareLink,
-      userJourneyStage
-    });
-    console.log('🔗 Collaboration link generated:', shareLink);
-  }, [trackAction, currentProjectId, userJourneyStage]);
-
-  // STEP 6: Template library handlers
   const handleToggleTemplates = useCallback(() => {
-    setShowTemplateLibrary(!showTemplateLibrary);
-    trackAction('click', showTemplateLibrary ? 'close_templates' : 'open_templates', {
-      featuredCount: featuredTemplates.length,
-      userJourneyStage
-    });
-  }, [showTemplateLibrary, featuredTemplates.length, trackAction, userJourneyStage]);
-
-  const handleUseTemplate = useCallback(async (template: any) => {
-    if (!currentUser) return;
-
-    try {
-      // Usar valores padrão para placeholders
-      const placeholderValues = {
-        skill: 'usar esta funcionalidade',
-        benefit: 'melhorar seus resultados',
-        product: 'produto incrível',
-        problem: 'problema comum',
-        solution: 'solução eficaz'
-      };
-
-      const newScript = await TemplateService.applyTemplate(
-        template.id,
-        currentUser.uid,
-        placeholderValues
-      );
-
-      setScript(newScript.content);
-      setSelectedTemplate(template);
-      setShowTemplateLibrary(false);
-
-      trackAction('template', 'template_used', {
-        templateId: template.id,
-        templateTitle: template.title,
-        category: template.category,
-        scriptLength: newScript.content.length,
-        userJourneyStage
-      });
-
-    } catch (error) {
-      console.error('Erro ao usar template:', error);
-      alert('Erro ao aplicar template: ' + (error as Error).message);
+    setShowTemplateLibrary(prev => !prev);
+    if (!showTemplateLibrary) {
+      loadFeaturedTemplates();
     }
-  }, [currentUser, trackAction, userJourneyStage]);
+    trackAction('click', 'toggle_templates', { showing: !showTemplateLibrary });
+  }, [showTemplateLibrary, trackAction]);
 
-  // CONVERSION OPTIMIZATION: Handle onboarding completion
+  const handleShareCollaboration = useCallback((shareData: any) => {
+    trackAction('collaboration', 'project_shared', shareData);
+  }, [trackAction]);
+
   const handleOnboardingComplete = useCallback(() => {
     completeOnboarding();
-    
-    // Track successful onboarding conversion
     analyticsService.trackEvent('onboarding_conversion_success', {
       userJourneyStage: 'experienced',
       timestamp: Date.now(),
@@ -427,23 +253,25 @@ const GeneratorPage: React.FC = () => {
     });
   }, [completeOnboarding]);
 
-  // Se API não está configurada, mostrar interface de configuração V5.1
+  // Se API não está configurada, mostrar interface de configuração
   if (!isConfigured) {
     return (
-      <>
+      <Layout.Page variant="centered">
         <Navbar />
-        <div className="pt-20 min-h-screen bg-background">
-          <GeminiApiConfig />
-        </div>
-      </>
+        <Layout.Section spacing="loose" className="pt-20">
+          <Layout.Card variant="elevated" padding="lg" className="max-w-2xl mx-auto">
+            <GeminiApiConfig />
+          </Layout.Card>
+        </Layout.Section>
+      </Layout.Page>
     );
   }
 
   return (
-    <>
+    <Layout.Page variant="generator">
       <Navbar />
       
-      {/* CONVERSION OPTIMIZATION: Onboarding Flow */}
+      {/* ONBOARDING FLOW */}
       <OnboardingFlow
         isOpen={isOnboardingOpen}
         onComplete={handleOnboardingComplete}
@@ -451,284 +279,265 @@ const GeneratorPage: React.FC = () => {
         variant="first-time"
       />
 
-      <section className={cn(
-        "bg-background text-foreground",
-        "py-12 sm:py-24 md:py-32 px-4",
-        "fade-bottom overflow-hidden min-h-screen pt-20"
-      )}>
-        <div className="mx-auto flex max-w-container flex-col gap-12">
-          <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
-            {/* V5.1 Enhanced Title */}
-            <h1 className="relative z-10 inline-block animate-appear bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-4xl font-semibold leading-tight text-transparent drop-shadow-2xl sm:text-6xl sm:leading-tight">
-              Roteirar IA - Gerador V5.1
-            </h1>
+      {/* HERO SECTION */}
+      <Layout.Section spacing="loose" className="pt-20">
+        <div className="text-center">
+          <Layout.Heading 
+            level={1} 
+            className="mb-6 bg-gradient-to-r from-primary-600 via-accent-600 to-primary-800 bg-clip-text text-transparent"
+          >
+            Roteirar IA - Gerador V5.1
+          </Layout.Heading>
+          
+          <Layout.Text variant="bodyLarge" color="muted" className="mb-8 max-w-2xl mx-auto">
+            Transforme suas ideias em roteiros profissionais com inteligência preditiva
+          </Layout.Text>
 
-            {/* V5.1 Enhanced Description */}
-            <p className="text-md relative z-10 max-w-[550px] animate-appear font-medium text-muted-foreground opacity-0 delay-100 sm:text-xl">
-              Transforme suas ideias em roteiros profissionais com inteligência preditiva
-            </p>
-
-            {/* CONVERSION OPTIMIZATION: Quick Start Prompt for new/returning users */}
-            {showQuickStart && !hasCompletedOnboarding && (
-              <div className="w-full max-w-2xl animate-appear opacity-0 delay-200">
-                <QuickStartPrompt
-                  onStartOnboarding={startOnboarding}
-                  onDismiss={dismissQuickStart}
-                />
-              </div>
-            )}
-
-            {/* V5.1 Enhanced Main Content Grid */}
-            <div className="relative z-10 w-full grid lg:grid-cols-3 gap-8 max-w-7xl animate-appear opacity-0 delay-300">
-              {/* V5.1 Enhanced Form Section */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* V5.1: Multi-AI Selector - Only show if advanced features unlocked */}
-                {(userScriptCount >= 3 || visibleFeatures.includes('multi-ai')) && (
-                  <PredictiveCard 
-                    className="p-4"
-                    data-track-id="ai_selector_card"
-                  >
-                    <h3 className="text-lg font-semibold mb-4 text-foreground">
-                      Escolha sua IA
-                    </h3>
-                    <div className="flex gap-3 p-3 bg-muted/30 rounded-lg">
-                      <PredictiveButton
-                        variant={selectedAI === 'gemini' ? 'default' : 'outline'}
-                        className={cn(
-                          "flex items-center gap-2 px-4 py-2 transition-all",
-                          selectedAI === 'gemini' && "shadow-md scale-[1.02]"
-                        )}
-                        onClick={() => {
-                          setSelectedAI('gemini');
-                          trackAction('click', 'ai_selector_gemini', { 
-                            previousAI: selectedAI,
-                            newAI: 'gemini',
-                            userJourneyStage
-                          });
-                        }}
-                        data-track-id="select_gemini"
-                      >
-                        <span className="text-xl">🧠</span>
-                        <span className="font-medium">Gemini AI</span>
-                        {selectedAI === 'gemini' && (
-                          <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                            Ativo
-                          </span>
-                        )}
-                      </PredictiveButton>
-                      
-                      <PredictiveButton
-                        variant={selectedAI === 'chatgpt' ? 'default' : 'outline'}
-                        className={cn(
-                          "flex items-center gap-2 px-4 py-2 transition-all",
-                          selectedAI === 'chatgpt' && "shadow-md scale-[1.02]"
-                        )}
-                        onClick={() => {
-                          setSelectedAI('chatgpt');
-                          trackAction('click', 'ai_selector_chatgpt', { 
-                            previousAI: selectedAI,
-                            newAI: 'chatgpt',
-                            userJourneyStage
-                          });
-                        }}
-                        data-track-id="select_chatgpt"
-                      >
-                        <span className="text-xl">🤖</span>
-                        <span className="font-medium">ChatGPT</span>
-                        {selectedAI === 'chatgpt' && (
-                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                            Ativo
-                          </span>
-                        )}
-                      </PredictiveButton>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-3">
-                      {selectedAI === 'gemini' 
-                        ? '⚡ Gemini: Rápido e criativo, ideal para conteúdo viral'
-                        : '💡 ChatGPT: Detalhado e eloquente, perfeito para roteiros complexos'
-                      }
-                    </p>
-                  </PredictiveCard>
-                )}
-
-                <PredictiveCard 
-                  className="p-6"
-                  data-track-id="form_card"
-                >
-                  <h2 className="text-2xl font-semibold mb-6 text-foreground">
-                    Configurações do Roteiro
-                  </h2>
-                  <ScriptForm 
-                    onSubmit={handleGenerate} 
-                    isLoading={isGenerating}
-                  />
-                </PredictiveCard>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <PWAInstall />
-                  <PWAFeedback />
-                </div>
-
-                {/* STEP 4: Analytics Toggle Button - Progressive Disclosure */}
-                {(userScriptCount >= 1 || visibleFeatures.includes('analytics')) && (
-                  <PredictiveCard className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium">Insights de IA</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Análise comportamental e recomendações
-                        </p>
-                      </div>
-                      <PredictiveButton
-                        onClick={handleToggleAnalytics}
-                        variant={showAnalytics ? "default" : "outline"}
-                        size="sm"
-                        data-track-id="analytics_toggle"
-                      >
-                        📊 {showAnalytics ? 'Ocultar' : 'Ver'} Analytics
-                      </PredictiveButton>
-                    </div>
-                  </PredictiveCard>
-                )}
-
-                {/* STEP 5: Collaboration Controls - Progressive Disclosure */}
-                {currentUser && currentProjectId && (userScriptCount >= 3 || visibleFeatures.includes('collaboration')) && (
-                  <PredictiveCard className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium">Colaboração em Tempo Real</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Compartilhe e edite roteiros em tempo real
-                        </p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <ShareButton
-                          projectId={currentProjectId}
-                          onShare={handleShareCollaboration}
-                          size="small"
-                        />
-                        <PredictiveButton
-                          onClick={handleToggleCollaboration}
-                          variant={showCollaborationPanel ? "default" : "outline"}
-                          size="sm"
-                          data-track-id="toggle_collaboration"
-                        >
-                          👥 {showCollaborationPanel ? 'Ocultar' : 'Ver'} Painel
-                        </PredictiveButton>
-                      </div>
-                    </div>
-                  </PredictiveCard>
-                )}
-
-                {/* STEP 6: Template Library Controls */}
-                {visibleFeatures.includes('templates') && (
-                  <PredictiveCard className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium">Biblioteca de Templates</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedTemplate 
-                            ? `Template ativo: ${selectedTemplate.title}`
-                            : `${featuredTemplates.length} templates disponíveis`
-                          }
-                        </p>
-                      </div>
-                      <PredictiveButton
-                        onClick={handleToggleTemplates}
-                        variant={showTemplateLibrary ? "default" : "outline"}
-                        size="sm"
-                        data-track-id="toggle_templates"
-                      >
-                        📚 {showTemplateLibrary ? 'Ocultar' : 'Ver'} Templates
-                      </PredictiveButton>
-                    </div>
-                  </PredictiveCard>
-                )}
-              </div>
-
-              {/* CONVERSION OPTIMIZATION: Progressive Feature Disclosure Sidebar */}
-              <div className="space-y-6">
-                <ProgressiveFeatureDisclosure
-                  userScriptCount={userScriptCount}
-                  onFeatureToggle={handleFeatureToggle}
-                  visibleFeatures={visibleFeatures}
-                  variant="sidebar"
-                />
-              </div>
-            </div>
-
-            {/* Enhanced Result Section with Progressive Features */}
-            {script && (
-              <div className="relative z-10 w-full max-w-4xl animate-appear opacity-0 delay-500">
-                <Card className="p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      Seu Roteiro Gerado
-                    </h2>
-                    <div className="flex space-x-2">
-                      <PredictiveButton
-                        onClick={handleCopyScript}
-                        variant="outline"
-                        size="sm"
-                        data-track-id="copy_script"
-                      >
-                        📋 Copiar
-                      </PredictiveButton>
-                      
-                      {/* Voice Panel - Progressive Disclosure */}
-                      {(userScriptCount >= 1 || visibleFeatures.includes('voice-synthesis')) && (
-                        <PredictiveButton
-                          onClick={handleOpenVoicePanel}
-                          variant="outline"
-                          size="sm"
-                          data-track-id="voice_panel"
-                        >
-                          🎤 Áudio
-                        </PredictiveButton>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <AdvancedTextEditor
-                    value={script}
-                    onChange={handleScriptChange}
-                    projectId={currentProjectId}
-                    className="min-h-[400px]"
-                  />
-                </Card>
-              </div>
-            )}
-
-            {/* Analytics Dashboard - Progressive Disclosure */}
-            {showAnalytics && (userScriptCount >= 1 || visibleFeatures.includes('analytics')) && (
-              <div className="relative z-10 w-full max-w-6xl animate-appear opacity-0 delay-600">
-                <AIInsightsDashboard />
-              </div>
-            )}
-
-            {/* Collaboration Panel - Progressive Disclosure */}
-            {showCollaborationPanel && currentUser && (userScriptCount >= 3 || visibleFeatures.includes('collaboration')) && (
-              <div className="relative z-10 w-full max-w-4xl animate-appear opacity-0 delay-700">
-                <CollaborationPanel
-                  projectId={currentProjectId}
-                  initialScript={script}
-                  onScriptChange={handleScriptChange}
-                />
-              </div>
-            )}
-
-            {/* Voice Synthesis Panel */}
-            {showVoicePanel && script && (
-              <VoiceSynthesisPanel
-                script={script}
-                onClose={() => setShowVoicePanel(false)}
-                projectId={currentProjectId}
+          {/* QUICK START PROMPT */}
+          {showQuickStart && !hasCompletedOnboarding && (
+            <div className="mb-8 max-w-2xl mx-auto">
+              <QuickStartPrompt
+                onStartOnboarding={startOnboarding}
+                onDismiss={dismissQuickStart}
               />
+            </div>
+          )}
+        </div>
+      </Layout.Section>
+
+      {/* MAIN CONTENT SECTION */}
+      <Layout.Section spacing="normal" background="white">
+        <Layout.Grid cols={3} gap="lg" className="max-w-7xl mx-auto">
+          
+          {/* FORM SECTION */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* AI SELECTOR */}
+            {(userScriptCount >= 3 || visibleFeatures.includes('multi-ai')) && (
+              <Layout.Card variant="elevated" padding="md">
+                <Layout.Heading level={4} className="mb-4">
+                  Escolha sua IA
+                </Layout.Heading>
+                <div className="flex gap-3 p-3 bg-neutral-50 rounded-lg">
+                  <Button
+                    variant={selectedAI === 'gemini' ? 'default' : 'outline'}
+                    onClick={() => setSelectedAI('gemini')}
+                    className="flex items-center gap-2"
+                  >
+                    ✨ Gemini 1.5 Flash
+                  </Button>
+                  <Button
+                    variant={selectedAI === 'chatgpt' ? 'default' : 'outline'}
+                    onClick={() => setSelectedAI('chatgpt')}
+                    className="flex items-center gap-2"
+                    disabled
+                  >
+                    🚀 ChatGPT (Em breve)
+                  </Button>
+                </div>
+              </Layout.Card>
+            )}
+
+            {/* SCRIPT FORM */}
+            <Layout.Card variant="elevated" padding="lg">
+              <Layout.Heading level={3} className="mb-6">
+                Dados do Roteiro
+              </Layout.Heading>
+              
+              {isLoading && (
+                <div className="mb-4">
+                  <SmartLoadingStates
+                    isLoading={true}
+                    loadingStage={loadingStage}
+                    className="w-full"
+                  />
+                </div>
+              )}
+              
+              <ScriptForm onGenerate={handleGenerate} />
+              
+              {error && (
+                <div className="mt-4 p-4 bg-error-50 border border-error-200 rounded-lg">
+                  <Layout.Text variant="body" color="error">
+                    {error}
+                  </Layout.Text>
+                </div>
+              )}
+            </Layout.Card>
+
+            {/* ANALYTICS PANEL */}
+            {(userScriptCount >= 2 || visibleFeatures.includes('analytics')) && (
+              <Layout.Card variant="interactive" padding="md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Layout.Heading level={5}>Analytics Avançado</Layout.Heading>
+                    <Layout.Text variant="bodySmall" color="muted">
+                      Insights sobre performance dos roteiros
+                    </Layout.Text>
+                  </div>
+                  <Button
+                    onClick={() => setShowAnalytics(prev => !prev)}
+                    variant={showAnalytics ? "default" : "outline"}
+                    size="sm"
+                  >
+                    📊 {showAnalytics ? 'Ocultar' : 'Ver'} Analytics
+                  </Button>
+                </div>
+              </Layout.Card>
+            )}
+
+            {/* COLLABORATION PANEL */}
+            {(userScriptCount >= 3 || visibleFeatures.includes('collaboration')) && currentUser && (
+              <Layout.Card variant="interactive" padding="md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Layout.Heading level={5}>Colaboração em Tempo Real</Layout.Heading>
+                    <Layout.Text variant="bodySmall" color="muted">
+                      Compartilhe e edite roteiros em tempo real
+                    </Layout.Text>
+                  </div>
+                  <div className="flex space-x-2">
+                    <ShareButton
+                      projectId={currentProjectId}
+                      onShare={handleShareCollaboration}
+                      size="small"
+                    />
+                    <Button
+                      onClick={handleToggleCollaboration}
+                      variant={showCollaborationPanel ? "default" : "outline"}
+                      size="sm"
+                    >
+                      👥 {showCollaborationPanel ? 'Ocultar' : 'Ver'} Painel
+                    </Button>
+                  </div>
+                </div>
+              </Layout.Card>
+            )}
+
+            {/* TEMPLATE LIBRARY */}
+            {visibleFeatures.includes('templates') && (
+              <Layout.Card variant="interactive" padding="md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Layout.Heading level={5}>Biblioteca de Templates</Layout.Heading>
+                    <Layout.Text variant="bodySmall" color="muted">
+                      {selectedTemplate 
+                        ? `Template ativo: ${selectedTemplate.title}`
+                        : `${featuredTemplates.length} templates disponíveis`
+                      }
+                    </Layout.Text>
+                  </div>
+                  <Button
+                    onClick={handleToggleTemplates}
+                    variant={showTemplateLibrary ? "default" : "outline"}
+                    size="sm"
+                  >
+                    📚 {showTemplateLibrary ? 'Ocultar' : 'Ver'} Templates
+                  </Button>
+                </div>
+              </Layout.Card>
             )}
           </div>
-        </div>
-      </section>
-    </>
+
+          {/* SIDEBAR */}
+          <div className="space-y-6">
+            <TouchGestureHandler
+              enabledGestures={['swipe', 'tap', 'longpress']}
+              onGesture={(gesture) => {
+                if (gesture.type === 'swipe' && gesture.direction === 'up') {
+                  trackAction({ type: 'swipe_up_features', target: 'progressive_disclosure' });
+                } else if (gesture.type === 'longpress') {
+                  trackAction({ type: 'longpress_advanced_mode', target: 'progressive_disclosure' });
+                }
+              }}
+            >
+              <ProgressiveFeatureDisclosure
+                userScriptCount={userScriptCount}
+                onFeatureToggle={handleFeatureToggle}
+                visibleFeatures={visibleFeatures}
+                variant="sidebar"
+              />
+            </TouchGestureHandler>
+          </div>
+        </Layout.Grid>
+      </Layout.Section>
+
+      {/* RESULT SECTION */}
+      {script && (
+        <Layout.Section spacing="normal" background="neutral">
+          <div className="max-w-4xl mx-auto">
+            <Layout.Card variant="elevated" padding="lg">
+              <div className="flex items-center justify-between mb-6">
+                <Layout.Heading level={2}>
+                  Seu Roteiro Gerado
+                </Layout.Heading>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handleCopyScript}
+                    variant="outline"
+                    size="sm"
+                  >
+                    📋 Copiar
+                  </Button>
+                  
+                  {(userScriptCount >= 1 || visibleFeatures.includes('voice-synthesis')) && (
+                    <Button
+                      onClick={handleOpenVoicePanel}
+                      variant="outline"
+                      size="sm"
+                    >
+                      🎤 Áudio
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              <AdvancedTextEditor
+                value={script}
+                onChange={handleScriptChange}
+                projectId={currentProjectId}
+                className="min-h-[400px]"
+              />
+            </Layout.Card>
+          </div>
+        </Layout.Section>
+      )}
+
+      {/* ANALYTICS DASHBOARD */}
+      {showAnalytics && (userScriptCount >= 1 || visibleFeatures.includes('analytics')) && (
+        <Layout.Section spacing="normal" background="white">
+          <div className="max-w-6xl mx-auto">
+            <AIInsightsDashboard />
+          </div>
+        </Layout.Section>
+      )}
+
+      {/* COLLABORATION PANEL */}
+      {showCollaborationPanel && currentUser && (userScriptCount >= 3 || visibleFeatures.includes('collaboration')) && (
+        <Layout.Section spacing="normal" background="neutral">
+          <div className="max-w-4xl mx-auto">
+            <CollaborationPanel
+              projectId={currentProjectId}
+              initialScript={script}
+              onScriptChange={handleScriptChange}
+            />
+          </div>
+        </Layout.Section>
+      )}
+
+      {/* VOICE SYNTHESIS PANEL */}
+      {showVoicePanel && script && (
+        <VoiceSynthesisPanel
+          script={script}
+          onClose={() => setShowVoicePanel(false)}
+          projectId={currentProjectId}
+        />
+      )}
+
+      {/* PWA COMPONENTS */}
+      <PWAInstall />
+      <PWAFeedback />
+    </Layout.Page>
   );
 };
 

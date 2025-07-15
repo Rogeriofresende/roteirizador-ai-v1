@@ -3,96 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roteirar IA Pro - Offline</title>
-    <meta name="theme-color" content="#8B5CF6">
+    <title>Roteirar IA - Modo Offline</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 50%, #4338CA 100%);
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: #333;
         }
-        .container {
+
+        .offline-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
             text-align: center;
-            padding: 2rem;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(16px);
-            border-radius: 1rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            max-width: 400px;
-            margin: 1rem;
         }
-        .icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+
+        .offline-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
         }
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+
+        .offline-title {
+            font-size: 2rem;
             font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 1rem;
         }
-        p {
-            margin-bottom: 1.5rem;
-            opacity: 0.9;
+
+        .offline-message {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 2rem;
             line-height: 1.6;
         }
-        .retry-btn {
-            background: white;
-            color: #8B5CF6;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+
+        .offline-features {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .offline-features h3 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .features-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            text-align: left;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .features-list li::before {
+            content: "✓";
+            color: #48bb78;
             font-weight: bold;
-            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
             transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
         }
-        .retry-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+        .btn-primary {
+            background: #3182ce;
+            color: white;
         }
-        .status {
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            opacity: 0.7;
+
+        .btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .cached-ideas {
+            background: #fef5e7;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .cached-ideas.show {
+            display: block;
+        }
+
+        .cached-ideas h3 {
+            color: #c05621;
+            margin-bottom: 1rem;
+        }
+
+        .cached-idea {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #fed7aa;
+        }
+
+        .cached-idea h4 {
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .cached-idea p {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: #fed7aa;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #c05621;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator::before {
+            content: "⚠️";
+        }
+
+        @media (max-width: 768px) {
+            .offline-container {
+                padding: 2rem;
+            }
+
+            .offline-title {
+                font-size: 1.5rem;
+            }
+
+            .offline-message {
+                font-size: 1rem;
+            }
+
+            .features-list {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon">📱</div>
-        <h1>Roteirar IA Pro</h1>
-        <p>
-            Você está offline, mas não se preocupe! A interface do app funciona normalmente.
-            Para gerar novos roteiros, conecte-se à internet.
+    <div class="offline-container">
+        <div class="offline-icon">
+            📱
+        </div>
+        
+        <div class="status-indicator">
+            Modo Offline Ativo
+        </div>
+
+        <h1 class="offline-title">Roteirar IA - Offline</h1>
+        
+        <p class="offline-message">
+            Você está sem conexão com a internet, mas ainda pode usar algumas funcionalidades do Roteirar IA!
         </p>
-        <button class="retry-btn" onclick="window.location.reload()">
-            🔄 Tentar Novamente
-        </button>
-        <div class="status">
-            PWA funcionando offline
+
+        <div class="offline-features">
+            <h3>Funcionalidades Disponíveis Offline:</h3>
+            <ul class="features-list">
+                <li>Visualizar ideias salvas em cache</li>
+                <li>Usar templates pré-carregados</li>
+                <li>Acessar histórico local</li>
+                <li>Visualizar métricas de performance</li>
+                <li>Exportar ideias em cache</li>
+                <li>Modo escuro/claro</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="tryReconnect()">
+                Tentar Reconectar
+            </button>
+            <button class="btn btn-secondary" onclick="showCachedIdeas()">
+                Ver Ideias Offline
+            </button>
+            <button class="btn btn-secondary" onclick="goToApp()">
+                Abrir App
+            </button>
+        </div>
+
+        <div class="cached-ideas" id="cachedIdeas">
+            <h3>Ideias Armazenadas Offline</h3>
+            <div id="ideasContainer">
+                <p>Carregando ideias em cache...</p>
+            </div>
         </div>
     </div>
 
     <script>
-        // Verificar conexão periodicamente
-        function checkConnection() {
+        // Verificar status de conexão
+        function updateConnectionStatus() {
+            const statusIndicator = document.querySelector('.status-indicator');
             if (navigator.onLine) {
-                window.location.href = '/';
+                statusIndicator.textContent = 'Conexão Restaurada';
+                statusIndicator.style.background = '#c6f6d5';
+                statusIndicator.style.color = '#276749';
+                statusIndicator.innerHTML = '✅ Conexão Restaurada';
+                
+                // Redirecionar para a aplicação após 2 segundos
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                statusIndicator.innerHTML = '⚠️ Modo Offline Ativo';
             }
         }
-        
-        // Verificar a cada 5 segundos
-        setInterval(checkConnection, 5000);
-        
-        // Verificar quando a conexão volta
-        window.addEventListener('online', () => {
+
+        // Tentar reconectar
+        function tryReconnect() {
+            const btn = event.target;
+            btn.textContent = 'Verificando...';
+            btn.disabled = true;
+            
+            // Tentar fazer uma request para verificar conexão
+            fetch('/favicon.svg', { cache: 'no-cache' })
+                .then(() => {
+                    btn.textContent = 'Conectado!';
+                    btn.style.background = '#48bb78';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                })
+                .catch(() => {
+                    btn.textContent = 'Ainda Offline';
+                    btn.style.background = '#e53e3e';
+                    setTimeout(() => {
+                        btn.textContent = 'Tentar Reconectar';
+                        btn.style.background = '#3182ce';
+                        btn.disabled = false;
+                    }, 2000);
+                });
+        }
+
+        // Mostrar ideias em cache
+        function showCachedIdeas() {
+            const cachedIdeasDiv = document.getElementById('cachedIdeas');
+            const ideasContainer = document.getElementById('ideasContainer');
+            
+            cachedIdeasDiv.classList.add('show');
+            
+            // Tentar acessar ideias do cache do service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    const channel = new MessageChannel();
+                    channel.port1.onmessage = function(event) {
+                        const ideas = event.data.ideas || [];
+                        displayCachedIdeas(ideas);
+                    };
+                    
+                    registration.active.postMessage({
+                        type: 'GET_CACHED_IDEAS'
+                    }, [channel.port2]);
+                });
+            } else {
+                // Fallback para localStorage
+                const cachedIdeas = JSON.parse(localStorage.getItem('cached_ideas') || '[]');
+                displayCachedIdeas(cachedIdeas);
+            }
+        }
+
+        // Exibir ideias em cache
+        function displayCachedIdeas(ideas) {
+            const ideasContainer = document.getElementById('ideasContainer');
+            
+            if (ideas.length === 0) {
+                ideasContainer.innerHTML = '<p>Nenhuma ideia encontrada no cache.</p>';
+                return;
+            }
+            
+            ideasContainer.innerHTML = ideas.slice(0, 5).map(idea => `
+                <div class="cached-idea">
+                    <h4>${idea.title || 'Ideia sem título'}</h4>
+                    <p>${idea.description || 'Sem descrição'}</p>
+                    <small>Categoria: ${idea.category || 'Geral'} • 
+                           Cached: ${new Date(idea.cachedAt).toLocaleString()}</small>
+                </div>
+            `).join('');
+            
+            if (ideas.length > 5) {
+                ideasContainer.innerHTML += `<p><em>... e mais ${ideas.length - 5} ideias</em></p>`;
+            }
+        }
+
+        // Ir para a aplicação
+        function goToApp() {
             window.location.href = '/';
-        });
+        }
+
+        // Listeners para mudanças de conexão
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Verificar status inicial
+        updateConnectionStatus();
+
+        // Tentar registrar service worker se não estiver registrado
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registrado:', registration);
+                })
+                .catch(error => {
+                    console.log('Erro ao registrar Service Worker:', error);
+                });
+        }
+
+        // Auto-refresh a cada 30 segundos se estiver online
+        setInterval(() => {
+            if (navigator.onLine) {
+                fetch('/favicon.svg', { cache: 'no-cache' })
+                    .then(() => {
+                        window.location.href = '/';
+                    })
+                    .catch(() => {
+                        // Ainda offline
+                    });
+            }
+        }, 30000);
     </script>
 </body>
 </html> 

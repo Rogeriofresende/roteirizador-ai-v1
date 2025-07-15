@@ -197,6 +197,117 @@ npm run build && npm run dev
 
 ---
 
+## 🎨 **WIREFRAMES & PROTOTYPING METHODOLOGY (NOVO)**
+
+### **📋 STORYBOOK WIREFRAME WORKFLOW:**
+
+#### **🔄 PROCESSO ITERATIVO COMPLETO:**
+```typescript
+const wireframeWorkflow = {
+  phase1: "Wireframe Creation",     // IA creates initial mockup
+  phase2: "User Testing",           // User tests in Storybook
+  phase3: "Feedback Collection",    // Specific feedback documented
+  phase4: "Iteration",              // IA creates V2 based on feedback
+  phase5: "Approval",               // User approves final version
+  phase6: "Implementation"          // Convert to real component
+}
+```
+
+#### **🗂️ ORGANIZING CONVENTION:**
+```bash
+src/components/wireframes/
+├── 📁 active/                    # Current development wireframes
+│   ├── FeatureName.wireframe.stories.tsx     # Latest version
+│   └── FeatureName.wireframe.v2.stories.tsx  # Iterations
+├── 📁 approved/                  # Ready for implementation
+│   └── FeatureName.approved.stories.tsx      # Final approved version
+└── 📁 implementation/            # Real working components
+    └── FeatureName.implementation.stories.tsx # Live component
+```
+
+#### **💬 FEEDBACK SYSTEM INTEGRATION:**
+```typescript
+interface WireframeFeedback {
+  version: string;                  // "v1", "v2", "v3"
+  reviewer: string;                 // "User", "IA Alpha", "IA Beta"
+  status: 'pending' | 'approved' | 'needs_changes';
+  feedback: {
+    visual: string[];              // Visual/UX feedback
+    interaction: string[];         // Interaction feedback  
+    technical: string[];           // Technical considerations
+    business: string[];            // Business rules
+  };
+  changes_requested: string[];     // Specific changes needed
+  next_version_notes: string;      // Notes for next iteration
+}
+```
+
+#### **🎯 STORYBOOK CATEGORIES:**
+```typescript
+const storyTitles = {
+  wireframes: "🎨 Wireframes/[FeatureName] V[X]",     // Development phase
+  approved: "✅ Approved/[FeatureName] Final",        // Ready to implement
+  implementation: "🚀 Implementation/[FeatureName]",  // Live component
+  documentation: "📐 Architecture/System Flows"      // System documentation
+}
+```
+
+#### **📋 QUALITY GATES FOR WIREFRAMES:**
+- ✅ **User Approval:** Explicit approval documented
+- ✅ **Responsive Design:** Mobile + desktop tested
+- ✅ **Interaction Design:** All states documented (loading, error, success)
+- ✅ **Business Logic:** All requirements covered
+- ✅ **Performance Considerations:** Noted for implementation
+
+#### **🤖 IA RESPONSIBILITIES:**
+- **IA Alpha:** Technical feasibility review, performance considerations
+- **IA Beta:** UX review, accessibility compliance, responsive design
+- **IA Charlie:** Quality assurance, testing strategy validation
+
+#### **📝 TEMPLATE PARA WIREFRAME STORIES:**
+```typescript
+// Template padrão para wireframes
+export default {
+  title: '🎨 Wireframes/[FeatureName] V[X]',
+  component: [FeatureName]Wireframe,
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        component: 'Wireframe V[X] para [FeatureName]. Teste todas as interações e dê feedback para iteração.'
+      }
+    }
+  }
+};
+
+// Feedback panel obrigatório em todos os wireframes
+const FeedbackPanel = ({ feedbackHistory, onFeedback }) => (
+  <div style={{ /* feedback panel styles */ }}>
+    <h3>📝 Feedback History & Status</h3>
+    {/* Histórico de feedback */}
+    {/* Form para novo feedback */}
+  </div>
+);
+```
+
+#### **🔄 INTEGRATION COM VERSIONINGSERVICE:**
+```typescript
+// Conecta wireframes com sistema de versionamento existente
+const createWireframeVersion = async (
+  wireframeName: string,
+  version: string,
+  feedback: WireframeFeedback
+) => {
+  await setDoc(doc(db, 'wireframe_versions', `${wireframeName}_${version}`), {
+    ...feedback,
+    wireframeName,
+    type: 'wireframe_feedback'
+  });
+};
+```
+
+---
+
 ## 🤝 **COORDENAÇÃO MULTI-IA V6.0 ENHANCED**
 
 ### **📋 ESPECIALIZAÇÃO ENHANCED:**
@@ -298,6 +409,86 @@ npm run build && npm run dev
 
 ---
 
+## 🏆 **WIREFRAME BEST PRACTICES (PROFESSIONAL STANDARDS)**
+
+### **✅ BEFORE CREATING WIREFRAMES:**
+- [ ] Definir objetivo claro da feature
+- [ ] Mapear user journey completo
+- [ ] Identificar todos os estados possíveis (loading, error, success, empty)
+- [ ] Considerar responsive design desde o início
+- [ ] Verificar compatibilidade com design system existente
+
+### **✅ DURING WIREFRAME CREATION:**
+- [ ] Usar componentes do design system quando possível
+- [ ] Implementar todos os estados visuais
+- [ ] Adicionar feedback panel para iteração
+- [ ] Documentar decisões de UX inline
+- [ ] Testar fluxo completo no Storybook
+
+### **✅ FEEDBACK COLLECTION STANDARDS:**
+- [ ] Feedback específico e acionável
+- [ ] Categorizar por: visual, interaction, technical, business
+- [ ] Documentar mudanças solicitadas claramente
+- [ ] Registrar reasoning por trás das decisões
+- [ ] Versionar feedback com timestamps
+
+### **✅ ITERATION BEST PRACTICES:**
+- [ ] Address high-priority feedback primeiro
+- [ ] Manter histórico de versões
+- [ ] Test new version completamente
+- [ ] Document what changed between versions
+- [ ] Get explicit approval before implementation
+
+### **✅ APPROVAL CRITERIA:**
+- [ ] User experience validated
+- [ ] All business requirements met
+- [ ] Responsive design working
+- [ ] Performance implications considered
+- [ ] Technical feasibility confirmed
+- [ ] Accessibility compliance checked
+
+---
+
+## 🏆 **WIREFRAME BEST PRACTICES (PROFESSIONAL STANDARDS)**
+
+### **✅ BEFORE CREATING WIREFRAMES:**
+- [ ] Definir objetivo claro da feature
+- [ ] Mapear user journey completo
+- [ ] Identificar todos os estados possíveis (loading, error, success, empty)
+- [ ] Considerar responsive design desde o início
+- [ ] Verificar compatibilidade com design system existente
+
+### **✅ DURING WIREFRAME CREATION:**
+- [ ] Usar componentes do design system quando possível
+- [ ] Implementar todos os estados visuais
+- [ ] Adicionar feedback panel para iteração
+- [ ] Documentar decisões de UX inline
+- [ ] Testar fluxo completo no Storybook
+
+### **✅ FEEDBACK COLLECTION STANDARDS:**
+- [ ] Feedback específico e acionável
+- [ ] Categorizar por: visual, interaction, technical, business
+- [ ] Documentar mudanças solicitadas claramente
+- [ ] Registrar reasoning por trás das decisões
+- [ ] Versionar feedback com timestamps
+
+### **✅ ITERATION BEST PRACTICES:**
+- [ ] Address high-priority feedback primeiro
+- [ ] Manter histórico de versões
+- [ ] Test new version completamente
+- [ ] Document what changed between versions
+- [ ] Get explicit approval before implementation
+
+### **✅ APPROVAL CRITERIA:**
+- [ ] User experience validated
+- [ ] All business requirements met
+- [ ] Responsive design working
+- [ ] Performance implications considered
+- [ ] Technical feasibility confirmed
+- [ ] Accessibility compliance checked
+
+---
+
 ## 📋 **METODOLOGIA COMPLIANCE CHECKLIST**
 
 ### **✅ ANTES DE CADA SESSÃO:**
@@ -348,5 +539,14 @@ npm run build && npm run dev
 **Recomendação:** Deploy methodology para Pre-Week 0 execution immediately
 
 ---
+
+### **📚 DOCUMENTAÇÃO COMPLEMENTAR:**
+
+#### **🎨 Wireframes & Prototyping:**
+- **Arquivo:** [`docs/development/WIREFRAME_PROTOTYPING_METHODOLOGY.md`](./docs/development/WIREFRAME_PROTOTYPING_METHODOLOGY.md)
+- **Conteúdo:** Processo completo de 6 fases para wireframes no Storybook
+- **Includes:** Organizing conventions, feedback system, templates, best practices
+- **Status:** ✅ IMPLEMENTADA E VALIDADA
+- **Integration:** Fully integrated com V6.0 Enhanced methodology
 
 > **📖 Este é o ÚNICO documento de metodologia a ser seguido. Todos os outros arquivos de metodologia são históricos e devem ser ignorados.**
