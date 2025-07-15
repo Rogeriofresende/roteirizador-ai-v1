@@ -148,7 +148,7 @@ export const SocialMediaInput: React.FC<SocialMediaInputProps> = ({
 
               return (
                 <div key={platform.key} className="space-y-2">
-                  <Label htmlFor={platform.key} className="text-sm font-medium flex items-center gap-2">
+                  <Label htmlFor={`social-${platform.key}`} className="text-sm font-medium flex items-center gap-2">
                     <span className="text-lg">{platform.icon}</span>
                     {platform.label}
                     <Badge variant="secondary" className="text-xs">Opcional</Badge>
@@ -156,7 +156,7 @@ export const SocialMediaInput: React.FC<SocialMediaInputProps> = ({
                   
                   <div className="relative">
                     <Input
-                      id={platform.key}
+                      id={`social-${platform.key}`}
                       placeholder={platform.placeholder}
                       value={value}
                       onChange={(e) => handleInputChange(platform.key, e.target.value)}

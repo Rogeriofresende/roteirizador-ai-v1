@@ -95,13 +95,13 @@ const SignupPage: React.FC = () => {
           {/* Signup Form */}
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">
+              <Label htmlFor="signup-email">
                 <Layout.Text variant="label">Email</Layout.Text>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="email"
+                  id="signup-email"
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
@@ -113,13 +113,13 @@ const SignupPage: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">
+              <Label htmlFor="signup-password">
                 <Layout.Text variant="label">Senha</Layout.Text>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="password"
+                  id="signup-password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
@@ -131,13 +131,13 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">
+              <Label htmlFor="signup-confirmPassword">
                 <Layout.Text variant="label">Confirmar Senha</Layout.Text>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="confirmPassword"
+                  id="signup-confirmPassword"
                   type="password"
                   placeholder="••••••••"
                   value={confirmPassword}

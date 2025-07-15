@@ -95,13 +95,13 @@ const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">
+              <Label htmlFor="login-email">
                 <Layout.Text variant="label">Email</Layout.Text>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="email"
+                  id="login-email"
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">
+                <Label htmlFor="login-password">
                   <Layout.Text variant="label">Senha</Layout.Text>
                 </Label>
                 <Link 
@@ -127,7 +127,7 @@ const LoginPage: React.FC = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="password"
+                  id="login-password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
