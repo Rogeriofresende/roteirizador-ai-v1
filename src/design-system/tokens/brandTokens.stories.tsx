@@ -32,17 +32,17 @@ export const ColorPalette: Story = {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <ColorSwatch 
             name="Primary" 
-            color={designTokens.colors.primary} 
+            color={designTokens.colors.primary[500]} 
             description="Main brand color"
           />
           <ColorSwatch 
             name="Primary Light" 
-            color={designTokens.colors.primaryLight} 
+            color={designTokens.colors.primary[200]} 
             description="Lighter variant"
           />
           <ColorSwatch 
             name="Primary Dark" 
-            color={designTokens.colors.primaryDark} 
+            color={designTokens.colors.primary[700]} 
             description="Darker variant"
           />
         </div>
@@ -99,7 +99,7 @@ export const ColorPalette: Story = {
                 style={{ 
                   width: value, 
                   height: value, 
-                  backgroundColor: designTokens.colors.primary,
+                  backgroundColor: designTokens.colors.primary[500],
                   marginBottom: '0.5rem',
                   borderRadius: '4px'
                 }}
@@ -234,7 +234,7 @@ export const AccessibilityValidation: Story = {
             label="Primary Text on Background"
           />
           <ContrastTest 
-            background={designTokens.colors.primary}
+            background={designTokens.colors.primary[500]}
             foreground={designTokens.colors.white}
             label="White Text on Primary"
           />
@@ -251,13 +251,13 @@ export const AccessibilityValidation: Story = {
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           <button style={{
             padding: '0.75rem 1.5rem',
-            background: designTokens.colors.primary,
+            background: designTokens.colors.primary[500],
             color: designTokens.colors.white,
             border: 'none',
             borderRadius: designTokens.borderRadius.md,
             cursor: 'pointer',
-            outline: `2px solid transparent`,
-            ':focus': { outline: `2px solid ${designTokens.colors.primary}` }
+            outline: `2px solid ${designTokens.colors.primary[500]}`,
+            ':focus': { outline: `2px solid ${designTokens.colors.primary[500]}` }
           }}>
             Focusable Button
           </button>
