@@ -1,0 +1,81 @@
+{
+  "workflow": "V9.0 Natural Language First",
+  "execution": {
+    "startTime": "2025-07-20T14:39:22.999Z",
+    "endTime": "2025-07-20T14:39:28.431Z",
+    "totalDuration": 5432,
+    "status": "completed"
+  },
+  "specifications": {
+    "total": 2,
+    "successful": 2,
+    "successRate": 100
+  },
+  "phases": [
+    {
+      "name": "Discovery",
+      "duration": 1,
+      "status": "completed",
+      "output": "2 especificação(ões) encontradas"
+    },
+    {
+      "name": "Validation",
+      "duration": 0,
+      "status": "completed",
+      "output": "2/2 especificações válidas"
+    },
+    {
+      "name": "Agentic Coordination",
+      "duration": 4611,
+      "status": "completed",
+      "output": "2 planos técnicos gerados"
+    },
+    {
+      "name": "Artifact Generation",
+      "duration": 7,
+      "status": "completed",
+      "output": "4 artefatos gerados"
+    },
+    {
+      "name": "Quality Gates",
+      "duration": 811,
+      "status": "completed",
+      "output": "7/8 quality gates aprovados"
+    }
+  ],
+  "performance": {
+    "avgPhaseTime": 1086,
+    "totalTime": 5432,
+    "specsPerMinute": "22.09",
+    "efficiency": 1,
+    "phases": [
+      {
+        "name": "Discovery",
+        "duration": 1,
+        "percentage": 0
+      },
+      {
+        "name": "Validation",
+        "duration": 0,
+        "percentage": 0
+      },
+      {
+        "name": "Agentic Coordination",
+        "duration": 4611,
+        "percentage": 85
+      },
+      {
+        "name": "Artifact Generation",
+        "duration": 7,
+        "percentage": 0
+      },
+      {
+        "name": "Quality Gates",
+        "duration": 811,
+        "percentage": 15
+      }
+    ]
+  },
+  "errors": [],
+  "generatedAt": "2025-07-20T14:39:28.431Z"
+}

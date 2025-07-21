@@ -1,94 +1,136 @@
 /**
  * 📊 MONITORING PROVIDER V8.0 - FRONTEND INTEGRATION
- * Conecta frontend ao MonitoringHub consolidado (5 sistemas enterprise)
- * Baseado em: systemHealthService + AdaptiveMonitoringV8 + healthCheckService + etc.
- * Metodologia: V8.0 Consolidation Strategy
+ * Conecta frontend ao MonitoringHubV8 consolidado (1295 linhas, 5 sistemas enterprise)
+ * V8.0 CONSOLIDATION: Distributed tracing + Intelligent alerting + Auto-remediation
+ * Metodologia: V8.0 Unified Development + Frontend Integration
  */
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { monitoringHubV8 } from '../../services/monitoring/MonitoringHubV8';
 import { createLogger } from '../../utils/logger';
 
-const logger = createLogger('MonitoringProvider');
+const logger = createLogger('MonitoringProviderV8');
 
 // =============================================================================
-// TYPES & INTERFACES - ENTERPRISE MONITORING
+// V8.0 UNIFIED MONITORING INTERFACES
 // =============================================================================
 
-interface SystemHealth {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  score: number; // 0-100
-  lastCheck: number;
-  checks: {
-    firebase: HealthCheck;
-    gemini: HealthCheck;
-    performance: HealthCheck;
-    storage: HealthCheck;
-    network: HealthCheck;
-  };
-}
-
-interface HealthCheck {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  responseTime: number;
-  errorCount: number;
-  lastError?: string;
-  uptime: number;
-}
-
-interface PerformanceMetrics {
-  fps: number;
-  memoryUsage: number;
-  networkLatency: number;
-  cacheHitRate: number;
-  renderTime: number;
-  loadTime: number;
-  coreWebVitals: {
-    LCP: number; // Largest Contentful Paint
-    FID: number; // First Input Delay
-    CLS: number; // Cumulative Layout Shift
-    FCP: number; // First Contentful Paint
-    TTFB: number; // Time to First Byte
-  };
-}
-
-interface AlertConfiguration {
-  performanceThreshold: number; // ms
-  memoryThreshold: number; // MB
-  errorRateThreshold: number; // percentage
-  uptimeThreshold: number; // percentage
-  cooldownPeriod: number; // ms
-}
-
-interface MonitoringContextValue {
+interface MonitoringContextValueV8 {
   isInitialized: boolean;
-  systemHealth: SystemHealth;
-  performanceMetrics: PerformanceMetrics;
-  alerts: Alert[];
-  alertConfig: AlertConfiguration;
+  currentMetrics: MonitoringMetricsV8;
+  systemHealth: SystemHealthV8;
+  distributedTraces: DistributedTraceV8[];
+  performanceBudget: PerformanceBudgetV8;
+  alerts: AlertV8[];
   
-  // Actions
-  runHealthCheck: () => Promise<SystemHealth>;
-  updateAlertConfig: (config: Partial<AlertConfiguration>) => void;
-  dismissAlert: (id: string) => void;
-  getMetricsHistory: (period: '1h' | '24h' | '7d') => PerformanceMetrics[];
-  
-  // Real-time subscriptions
-  subscribeToMetrics: (callback: (metrics: PerformanceMetrics) => void) => () => void;
-  subscribeToAlerts: (callback: (alert: Alert) => void) => () => void;
+  // Methods
+  startTrace: (operationName: string, serviceName: string, tags?: Record<string, any>) => string;
+  finishTrace: (traceId: string, status: 'success' | 'error' | 'timeout', tags?: Record<string, any>) => void;
+  recordPerformanceMetric: (metric: string, value: number, unit: string, tags?: Record<string, any>) => void;
+  getSystemHealth: () => Promise<SystemHealthV8>;
+  getMetrics: () => MonitoringMetricsV8;
+  createAlert: (type: string, severity: 'low' | 'medium' | 'high' | 'critical', message: string, details?: any) => void;
+  enablePredictiveAnalytics: () => void;
+  triggerAutoRemediation: (issue: string) => Promise<boolean>;
+  getHealthReport: () => Promise<HealthReportV8>;
 }
 
-interface Alert {
+interface MonitoringMetricsV8 {
+  systemHealth: {
+    overall: 'healthy' | 'degraded' | 'critical';
+    score: number;
+    uptime: number;
+    lastIncident?: Date;
+  };
+  performance: {
+    responseTime: { avg: number; p95: number; p99: number; };
+    fps: number;
+    memoryUsage: number;
+    cpuUsage: number;
+    networkLatency: number;
+  };
+  application: {
+    errorRate: number;
+    throughput: number;
+    activeUsers: number;
+    cacheHitRate: number;
+    apiCallCount: number;
+  };
+  infrastructure: {
+    serviceAvailability: number;
+    databaseConnections: number;
+    queueDepth: number;
+    diskUsage: number;
+    networkConnections: number;
+  };
+}
+
+interface SystemHealthV8 {
+  overall: 'healthy' | 'degraded' | 'critical';
+  services: Array<{
+    name: string;
+    status: 'healthy' | 'degraded' | 'offline';
+    health: any;
+    metrics: any;
+  }>;
+  summary: {
+    total: number;
+    healthy: number;
+    degraded: number;
+    offline: number;
+  };
+  telemetry: any;
+}
+
+interface DistributedTraceV8 {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+  operationName: string;
+  serviceName: string;
+  startTime: number;
+  endTime?: number;
+  duration?: number;
+  status: 'success' | 'error' | 'timeout';
+  tags: Record<string, any>;
+  logs: Array<{
+    timestamp: number;
+    level: 'debug' | 'info' | 'warn' | 'error';
+    message: string;
+    fields?: Record<string, any>;
+  }>;
+}
+
+interface PerformanceBudgetV8 {
+  responseTime: { budget: number; current: number; status: 'ok' | 'warning' | 'exceeded'; };
+  memoryUsage: { budget: number; current: number; status: 'ok' | 'warning' | 'exceeded'; };
+  fps: { budget: number; current: number; status: 'ok' | 'warning' | 'exceeded'; };
+  bundleSize: { budget: number; current: number; status: 'ok' | 'warning' | 'exceeded'; };
+}
+
+interface AlertV8 {
   id: string;
-  type: 'performance' | 'error' | 'health' | 'security';
+  type: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
   message: string;
-  timestamp: number;
-  acknowledged: boolean;
-  metadata?: Record<string, any>;
+  timestamp: Date;
+  details?: any;
+  resolved?: boolean;
+  responseTime?: number;
 }
 
-const MonitoringContext = createContext<MonitoringContextValue | null>(null);
+interface HealthReportV8 {
+  overall: 'healthy' | 'degraded' | 'critical';
+  score: number;
+  timestamp: Date;
+  services: Record<string, any>;
+  metrics: MonitoringMetricsV8;
+  traces: DistributedTraceV8[];
+  alerts: AlertV8[];
+  recommendations: string[];
+}
+
+const MonitoringContext = createContext<MonitoringContextValueV8 | null>(null);
 
 // =============================================================================
 // MONITORING PROVIDER COMPONENT
@@ -490,7 +532,7 @@ export const MonitoringProvider: React.FC<MonitoringProviderProps> = ({
 
     // Initial health check
     runHealthCheck();
-  }, [runHealthCheck]);
+  }, []); // Removido runHealthCheck da dependency
 
   // Regular health checks every 60 seconds
   useEffect(() => {
@@ -498,7 +540,7 @@ export const MonitoringProvider: React.FC<MonitoringProviderProps> = ({
 
     const healthInterval = setInterval(runHealthCheck, 60000);
     return () => clearInterval(healthInterval);
-  }, [isInitialized, runHealthCheck]);
+  }, [isInitialized]); // Removido runHealthCheck da dependency
 
   // Regular performance metrics collection every 10 seconds
   useEffect(() => {
@@ -507,7 +549,7 @@ export const MonitoringProvider: React.FC<MonitoringProviderProps> = ({
     collectPerformanceMetrics(); // Initial collection
     const metricsInterval = setInterval(collectPerformanceMetrics, 10000);
     return () => clearInterval(metricsInterval);
-  }, [isInitialized, enableRealTime, collectPerformanceMetrics]);
+  }, [isInitialized, enableRealTime]); // Removido collectPerformanceMetrics da dependency
 
   // =============================================================================
   // CONTEXT VALUE

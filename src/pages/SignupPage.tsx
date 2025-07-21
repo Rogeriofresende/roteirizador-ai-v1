@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -21,6 +21,12 @@ const SignupPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // V8.0 Fix: Generate unique IDs to prevent duplicate form field IDs
+  const formIdPrefix = useId();
+  const emailId = `${formIdPrefix}-email`;
+  const passwordId = `${formIdPrefix}-password`;
+  const confirmPasswordId = `${formIdPrefix}-confirmPassword`;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,13 +101,13 @@ const SignupPage: React.FC = () => {
           {/* Signup Form */}
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="signup-email">
+              <Label htmlFor={emailId}>
                 <Layout.Text variant="label">Email</Layout.Text>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="signup-email"
+                  id={emailId}
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
@@ -113,13 +119,13 @@ const SignupPage: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="signup-password">
+              <Label htmlFor={passwordId}>
                 <Layout.Text variant="label">Senha</Layout.Text>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="signup-password"
+                  id={passwordId}
                   type="password"
                   placeholder="••••••••"
                   value={password}
@@ -131,13 +137,13 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="signup-confirmPassword">
+              <Label htmlFor={confirmPasswordId}>
                 <Layout.Text variant="label">Confirmar Senha</Layout.Text>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="signup-confirmPassword"
+                  id={confirmPasswordId}
                   type="password"
                   placeholder="••••••••"
                   value={confirmPassword}

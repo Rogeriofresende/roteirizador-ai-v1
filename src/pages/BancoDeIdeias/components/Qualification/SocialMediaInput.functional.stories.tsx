@@ -29,7 +29,7 @@ const meta: Meta<typeof SocialMediaInput> = {
 - 🔗 **Validação real** de URLs de redes sociais  
 - 📊 **Analytics tracking** real via analyticsService
 - 🧠 **Preparação para AI** analysis com dados reais
-- �� **Estado global** conectado via useBancoDeIdeiasState
+- 🔄 **Estado global** conectado via useBancoDeIdeiasState
 - 🔄 **Error handling** robusto
 
 ### 🚀 Fluxo Real:
@@ -77,7 +77,7 @@ export const RealFlow: Story = {
     return (
       <div className="space-y-6">
         <SocialMediaInput
-          onSubmit={async (profiles) => {
+          onAnalyze={async (profiles) => {
             console.log('🚀 [REAL FLOW] Submitted profiles:', profiles);
             
             // Simular analytics real
@@ -121,7 +121,7 @@ export const WithRealValidation: Story = {
   },
   render: () => (
     <SocialMediaInput
-      onSubmit={async (profiles) => {
+      onAnalyze={async (profiles) => {
         console.log('🔍 [VALIDATION] Profiles validated:', profiles);
         alert('✅ Perfis validados e enviados!');
       }}
@@ -146,7 +146,7 @@ export const ErrorHandling: Story = {
   },
   render: () => (
     <SocialMediaInput
-      onSubmit={async (profiles) => {
+      onAnalyze={async (profiles) => {
         console.log('⚠️ [ERROR TEST] Simulating error...');
         throw new Error('Erro simulado para testar handling');
       }}
@@ -173,7 +173,7 @@ export const AnalyticsIntegration: Story = {
     return (
       <div className="space-y-6">
         <SocialMediaInput
-          onSubmit={async (profiles) => {
+          onAnalyze={async (profiles) => {
             const eventLog = `${new Date().toLocaleTimeString()}: qualification_started with ${Object.keys(profiles).length} platforms`;
             setEvents(prev => [...prev, eventLog]);
             
@@ -214,7 +214,7 @@ export const StateIntegration: Story = {
     return (
       <div className="space-y-6">
         <SocialMediaInput
-          onSubmit={async (profiles) => {
+          onAnalyze={async (profiles) => {
             const update = `${new Date().toLocaleTimeString()}: Estado atualizado com perfis de ${Object.keys(profiles).length} plataformas`;
             setStateUpdates(prev => [...prev, update]);
             
@@ -259,7 +259,7 @@ export const PerformanceTest: Story = {
     return (
       <div className="space-y-6">
         <SocialMediaInput
-          onSubmit={async (profiles) => {
+          onAnalyze={async (profiles) => {
             const startTime = performance.now();
             
             // Simular validação

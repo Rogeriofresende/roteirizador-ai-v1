@@ -77,7 +77,11 @@
     "bundle:analyze": "vite build --mode analyze && npx vite-bundle-analyzer dist",
     "bundle:size": "npm run build && du -sh dist/* | sort -h",
     "performance:audit": "npm run build && npx lighthouse http://localhost:4173 --output html --output-path ./reports/performance-audit.html",
-    "alpha:validate": "npm run build && echo '🔴 IA Alpha Performance System Validation Complete' && npm run dev --silent &"
+    "alpha:validate": "npm run build && echo '🔴 IA Alpha Performance System Validation Complete' && npm run dev --silent &",
+    "spec:create": "node scripts/createNLSpec.cjs",
+    "spec:validate": "node scripts/validateSpecs.cjs",
+    "spec:generate": "node scripts/generateTechnicalPlan.cjs",
+    "workflow:agentic": "node scripts/runAgenticWorkflow.cjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

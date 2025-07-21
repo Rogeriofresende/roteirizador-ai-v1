@@ -14,6 +14,14 @@ import {
 } from "../types/auth";
 import { adminService } from '../services/adminService';
 import { createLogger } from '../utils/logger';
+import { securityService } from '../services/security/securityService';
+import { 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  updateProfile
+} from 'firebase/auth';
 
 const logger = createLogger('AuthContext');
 
@@ -320,26 +328,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAdmin = currentUser?.role === 'admin';
   const isUser = currentUser?.role === 'user';
 
-  // === CONTEXT VALUE ===
-
-  const value: AuthContextType = {
-    // User state
-    currentUser,
-    firebaseUser,
-    loading,
-    isFirebaseEnabled: isFirebaseConfigured,
-    
-    // Role helpers
-    isAdmin,
-    isUser,
-    hasRole,
-    hasPermission,
-    
-    // Auth actions
-    checkPermissions,
-    refreshUserData,
-    updateUserPreferences,
-  };
 
   // === DEBUG LOGGING ===
 
@@ -360,6 +348,176 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
   }, [currentUser, isAdmin, isUser]);
+
+  // ============================================================================
+  // AUTHENTICATION FUNCTIONS WITH SECURITY INTEGRATION
+  // ============================================================================
+
+  const signIn = async (email: string, password: string): Promise<void> => {
+    try {
+      // Validar tentativa de login com rate limiting
+      const validation = securityService.validateLoginAttempt(email);
+      if (!validation.allowed) {
+        throw new Error(validation.error || 'Login não permitido');
+      }
+
+      if (!isFirebaseConfigured || !auth) {
+        throw new Error('Firebase não configurado');
+      }
+
+      // Tentar fazer login
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Registrar sucesso e criar sessão
+      securityService.recordLoginAttempt(email, true, userCredential.user.uid);
+      const sessionId = securityService.createSession(userCredential.user.uid);
+      
+      // Salvar ID da sessão para uso posterior
+      localStorage.setItem('sessionId', sessionId);
+      
+      logger.info(`Login successful for user: ${userCredential.user.uid}`);
+      
+    } catch (error: any) {
+      // Registrar falha no login
+      securityService.recordLoginAttempt(email, false);
+      
+      logger.error('Login failed', { error: error.message });
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, displayName?: string): Promise<void> => {
+    try {
+      // Verificar rate limiting para cadastro
+      const rateLimitCheck = securityService.checkRateLimit(email, 'signup');
+      if (!rateLimitCheck.allowed) {
+        throw new Error('Muitas tentativas de cadastro. Tente novamente mais tarde.');
+      }
+
+      if (!isFirebaseConfigured || !auth) {
+        throw new Error('Firebase não configurado');
+      }
+
+      // Criar usuário
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Atualizar perfil se nome foi fornecido
+      if (displayName) {
+        await updateProfile(userCredential.user, { displayName });
+      }
+
+      // Registrar evento de segurança
+      securityService.logSecurityEvent({
+        type: 'login_success',
+        userId: userCredential.user.uid,
+        email,
+        ip: '127.0.0.1', // Em produção, pegar IP real
+        userAgent: navigator.userAgent,
+        details: { accountCreated: true },
+        severity: 'low'
+      });
+
+      logger.info(`Account created for user: ${userCredential.user.uid}`);
+      
+    } catch (error: any) {
+      logger.error('Signup failed', { error: error.message });
+      throw error;
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    try {
+      // Invalidar sessão de segurança
+      const sessionId = localStorage.getItem('sessionId');
+      if (sessionId) {
+        securityService.invalidateSession(sessionId, 'logout');
+        localStorage.removeItem('sessionId');
+      }
+
+      if (isFirebaseConfigured && auth) {
+        await firebaseSignOut(auth);
+      }
+
+      // Limpar estado local
+      setCurrentUser(null);
+      setFirebaseUser(null);
+      adminService.setCurrentUser(null);
+      
+      logger.info('User signed out successfully');
+      
+    } catch (error: any) {
+      logger.error('Logout failed', { error: error.message });
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string): Promise<void> => {
+    try {
+      if (!isFirebaseConfigured || !auth) {
+        throw new Error('Firebase não configurado');
+      }
+
+      await sendPasswordResetEmail(auth, email);
+      
+      // Registrar evento de segurança
+      securityService.logSecurityEvent({
+        type: 'password_change',
+        email,
+        ip: '127.0.0.1',
+        userAgent: navigator.userAgent,
+        details: { resetRequested: true },
+        severity: 'medium'
+      });
+      
+      logger.info(`Password reset email sent to: ${email}`);
+      
+    } catch (error: any) {
+      logger.error('Password reset failed', { error: error.message });
+      throw error;
+    }
+  };
+
+  // ============================================================================
+  // CONTEXT VALUE WITH ENHANCED FUNCTIONS
+  // ============================================================================
+
+  const value: AuthContextType = {
+    // User state
+    currentUser,
+    firebaseUser,
+    loading,
+    isFirebaseEnabled: isFirebaseConfigured,
+    
+    // Role helpers
+    isAdmin,
+    isUser,
+    hasRole,
+    hasPermission,
+    
+    // User management
+    createExtendedUser,
+    updateExtendedUser,
+    refreshUserData,
+    updateUserPreferences,
+    checkPermissions,
+    
+    // Admin functions
+    getUserList,
+    updateUserRole,
+    updateUserPermissions,
+    deleteUser,
+    getUserById,
+    
+    // Enhanced authentication functions
+    signIn,
+    signOut,
+    signUp,
+    resetPassword,
+    
+    // Error handling
+    error: null,
+    clearError: () => {},
+  };
 
   return (
     <AuthContext.Provider value={value}>

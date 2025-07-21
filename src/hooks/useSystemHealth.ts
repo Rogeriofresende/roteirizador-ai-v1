@@ -1,81 +1,94 @@
 /**
- * 🔗 SYSTEM HEALTH HOOK V8.0 - UNIFIED INTEGRATION
- * Hook unificado para todos os sistemas consolidados
- * Integra: DI + Cache + Monitoring + Performance
- * Metodologia: V8.0 Consolidation Strategy
+ * 🩺 USE SYSTEM HEALTH V8.0 - UNIFIED MONITORING HOOK
+ * Hook React para MonitoringHubV8 consolidado (1295 linhas, 5 sistemas enterprise)
+ * V8.0 CONSOLIDATION: Distributed tracing + Auto-remediation + Intelligent alerting
+ * Metodologia: V8.0 Unified Development + Frontend Integration
  */
 
-import { useEffect, useState, useCallback } from 'react';
-import { useDI } from '../components/integration/DIProvider';
-import { useCache } from '../components/integration/CacheProvider';
-import { useMonitoring } from '../components/integration/MonitoringProvider';
+import { useState, useEffect, useCallback } from 'react';
+import { monitoringHubV8 } from '../services/monitoring/MonitoringHubV8';
 import { createLogger } from '../utils/logger';
 
-const logger = createLogger('useSystemHealth');
+const logger = createLogger('useSystemHealthV8');
 
 // =============================================================================
-// TYPES & INTERFACES
+// V8.0 UNIFIED HEALTH INTERFACES
 // =============================================================================
 
-interface SystemOverview {
-  overall: {
-    status: 'healthy' | 'degraded' | 'critical';
-    score: number; // 0-100
-    lastUpdate: number;
+interface SystemHealthV8 {
+  overall: 'healthy' | 'degraded' | 'critical';
+  score: number;
+  uptime: number;
+  services: Array<{
+    name: string;
+    status: 'healthy' | 'degraded' | 'offline';
+    health: any;
+    metrics: any;
+  }>;
+  summary: {
+    total: number;
+    healthy: number;
+    degraded: number;
+    offline: number;
   };
-  di: {
-    isInitialized: boolean;
-    totalServices: number;
-    healthyServices: number;
-    averageResponseTime: number;
-  };
-  cache: {
-    isInitialized: boolean;
-    hitRate: number;
-    memoryUsage: number;
-    entriesCount: number;
-  };
-  monitoring: {
-    isInitialized: boolean;
-    systemHealth: any;
-    alertCount: number;
-    performanceScore: number;
-  };
+  telemetry: any;
 }
 
-interface SystemActions {
-  refreshAll: () => Promise<void>;
-  runDiagnostics: () => Promise<DiagnosticReport>;
-  clearCaches: () => Promise<void>;
-  exportMetrics: () => SystemMetricsExport;
-}
-
-interface DiagnosticReport {
-  timestamp: number;
-  duration: number;
-  tests: {
-    di: { passed: boolean; time: number; details: string };
-    cache: { passed: boolean; time: number; details: string };
-    monitoring: { passed: boolean; time: number; details: string };
-    integration: { passed: boolean; time: number; details: string };
-  };
-  recommendations: string[];
-  overallHealth: number;
-}
-
-interface SystemMetricsExport {
-  timestamp: number;
-  version: string;
-  systems: {
-    di: any;
-    cache: any;
-    monitoring: any;
+interface HealthMetricsV8 {
+  systemHealth: {
+    overall: 'healthy' | 'degraded' | 'critical';
+    score: number;
+    uptime: number;
+    lastIncident?: Date;
   };
   performance: {
-    responseTime: number;
+    responseTime: { avg: number; p95: number; p99: number; };
+    fps: number;
     memoryUsage: number;
-    cacheEfficiency: number;
+    cpuUsage: number;
+    networkLatency: number;
   };
+  application: {
+    errorRate: number;
+    throughput: number;
+    activeUsers: number;
+    cacheHitRate: number;
+    apiCallCount: number;
+  };
+  infrastructure: {
+    serviceAvailability: number;
+    databaseConnections: number;
+    queueDepth: number;
+    diskUsage: number;
+    networkConnections: number;
+  };
+}
+
+interface UseSystemHealthV8Result {
+  // State
+  isInitialized: boolean;
+  health: SystemHealthV8 | null;
+  metrics: HealthMetricsV8 | null;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: Date | null;
+  
+  // Methods  
+  refreshHealth: () => Promise<void>;
+  getMetrics: () => HealthMetricsV8 | null;
+  startMonitoring: (intervalMs?: number) => void;
+  stopMonitoring: () => void;
+  
+  // V8.0 Advanced features
+  startTrace: (operationName: string, serviceName: string, tags?: Record<string, any>) => string;
+  finishTrace: (traceId: string, status: 'success' | 'error' | 'timeout', tags?: Record<string, any>) => void;
+  recordPerformanceMetric: (metric: string, value: number, unit: string, tags?: Record<string, any>) => void;
+  createAlert: (type: string, severity: 'low' | 'medium' | 'high' | 'critical', message: string, details?: any) => void;
+  triggerAutoRemediation: (issue: string) => Promise<boolean>;
+  
+  // Monitoring flags
+  isMonitoring: boolean;
+  monitoringInterval: number;
 }
 
 // =============================================================================
@@ -83,394 +96,183 @@ interface SystemMetricsExport {
 // =============================================================================
 
 export const useSystemHealth = () => {
-  const di = useDI();
-  const cache = useCache();
-  const monitoring = useMonitoring();
+  const monitoring = monitoringHubV8;
   
-  const [overview, setOverview] = useState<SystemOverview>({
-    overall: { status: 'healthy', score: 100, lastUpdate: Date.now() },
-    di: { isInitialized: false, totalServices: 0, healthyServices: 0, averageResponseTime: 0 },
-    cache: { isInitialized: false, hitRate: 0, memoryUsage: 0, entriesCount: 0 },
-    monitoring: { isInitialized: false, systemHealth: null, alertCount: 0, performanceScore: 100 }
-  });
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastDiagnostic, setLastDiagnostic] = useState<DiagnosticReport | null>(null);
+  const [health, setHealth] = useState<SystemHealthV8 | null>(null);
+  const [metrics, setMetrics] = useState<HealthMetricsV8 | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // =============================================================================
   // SYSTEM OVERVIEW CALCULATION
   // =============================================================================
 
-  const calculateOverview = useCallback((): SystemOverview => {
-    try {
-      // DI System Status
-      const diStatus = {
-        isInitialized: di.isInitialized,
-        totalServices: di.registryMetrics.totalServices,
-        healthyServices: di.registryMetrics.healthyServices,
-        averageResponseTime: di.registryMetrics.averageResponseTime
-      };
-
-      // Cache System Status  
-      const cacheStatus = {
-        isInitialized: cache.isInitialized,
-        hitRate: cache.metrics.hitRate,
-        memoryUsage: cache.metrics.memoryUsage,
-        entriesCount: cache.metrics.entriesCount
-      };
-
-      // Monitoring System Status
-      const monitoringStatus = {
-        isInitialized: monitoring.isInitialized,
-        systemHealth: monitoring.systemHealth,
-        alertCount: monitoring.alerts.length,
-        performanceScore: monitoring.systemHealth.score
-      };
-
-      // Calculate overall score
-      const scores = [
-        diStatus.isInitialized ? (diStatus.healthyServices / Math.max(diStatus.totalServices, 1)) * 100 : 0,
-        cacheStatus.isInitialized ? Math.min(cacheStatus.hitRate, 100) : 0,
-        monitoringStatus.isInitialized ? monitoringStatus.performanceScore : 0
-      ];
-
-      const overallScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-      const overallStatus = overallScore >= 80 ? 'healthy' : overallScore >= 50 ? 'degraded' : 'critical';
-
-      return {
-        overall: {
-          status: overallStatus,
-          score: overallScore,
-          lastUpdate: Date.now()
-        },
-        di: diStatus,
-        cache: cacheStatus,
-        monitoring: monitoringStatus
-      };
-    } catch (error) {
-      logger.error('Error calculating system overview:', error);
-      return overview; // Return previous state on error
-    }
-  }, [di, cache, monitoring, overview]);
-
-  // =============================================================================
-  // SYSTEM ACTIONS
-  // =============================================================================
-
-  const refreshAll = useCallback(async (): Promise<void> => {
-    try {
-      setIsRefreshing(true);
-      logger.info('🔄 Refreshing all systems...');
-
-      const promises = [];
-
-      // Refresh DI system if not initialized
-      if (!di.isInitialized) {
-        promises.push(di.bootstrap());
-      }
-
-      // Run health check in monitoring
-      if (monitoring.isInitialized) {
-        promises.push(monitoring.runHealthCheck());
-      }
-
-      await Promise.all(promises);
-      
-      // Update overview
-      const newOverview = calculateOverview();
-      setOverview(newOverview);
-
-      logger.info('✅ All systems refreshed successfully');
-    } catch (error) {
-      logger.error('❌ Error refreshing systems:', error);
-      throw error;
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [di, monitoring, calculateOverview]);
-
-  const runDiagnostics = useCallback(async (): Promise<DiagnosticReport> => {
-    try {
-      logger.info('🔍 Running system diagnostics...');
-      const startTime = performance.now();
-
-      const tests = {
-        di: await testDISystem(),
-        cache: await testCacheSystem(),
-        monitoring: await testMonitoringSystem(),
-        integration: await testIntegration()
-      };
-
-      const duration = performance.now() - startTime;
-      const passedTests = Object.values(tests).filter(test => test.passed).length;
-      const overallHealth = (passedTests / Object.keys(tests).length) * 100;
-
-      const recommendations = generateRecommendations(tests);
-
-      const report: DiagnosticReport = {
-        timestamp: Date.now(),
-        duration,
-        tests,
-        recommendations,
-        overallHealth
-      };
-
-      setLastDiagnostic(report);
-      logger.info(`✅ Diagnostics completed in ${duration.toFixed(2)}ms`);
-      
-      return report;
-    } catch (error) {
-      logger.error('❌ Error running diagnostics:', error);
-      throw error;
-    }
-  }, []);
-
-  const clearCaches = useCallback(async (): Promise<void> => {
-    try {
-      logger.info('🗑️ Clearing all caches...');
-      
-      if (cache.isInitialized) {
-        await cache.clear();
-      }
-
-      // Clear browser caches
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-      }
-
-      logger.info('✅ All caches cleared');
-    } catch (error) {
-      logger.error('❌ Error clearing caches:', error);
-      throw error;
-    }
-  }, [cache]);
-
-  const exportMetrics = useCallback((): SystemMetricsExport => {
-    try {
-      return {
-        timestamp: Date.now(),
-        version: '8.0',
-        systems: {
-          di: {
-            isInitialized: di.isInitialized,
-            metrics: di.registryMetrics,
-            services: Object.keys(di.services)
-          },
-          cache: {
-            isInitialized: cache.isInitialized,
-            metrics: cache.metrics
-          },
-          monitoring: {
-            isInitialized: monitoring.isInitialized,
-            health: monitoring.systemHealth,
-            alerts: monitoring.alerts.length,
-            metrics: monitoring.performanceMetrics
-          }
-        },
-        performance: {
-          responseTime: di.registryMetrics.averageResponseTime,
-          memoryUsage: cache.metrics.memoryUsage,
-          cacheEfficiency: cache.metrics.hitRate
-        }
-      };
-    } catch (error) {
-      logger.error('Error exporting metrics:', error);
-      throw error;
-    }
-  }, [di, cache, monitoring]);
-
-  // =============================================================================
-  // DIAGNOSTIC TESTS
-  // =============================================================================
-
-  const testDISystem = async () => {
-    const startTime = performance.now();
-    try {
-      if (!di.isInitialized) {
-        throw new Error('DI system not initialized');
-      }
-
-      // Test service access
-      const analyticsService = di.getService('AnalyticsService');
-      if (!analyticsService) {
-        throw new Error('Failed to access analytics service');
-      }
-
-      const time = performance.now() - startTime;
-      return {
-        passed: true,
-        time,
-        details: `DI system healthy, ${di.registryMetrics.totalServices} services registered`
-      };
-    } catch (error) {
-      return {
-        passed: false,
-        time: performance.now() - startTime,
-        details: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  };
-
-  const testCacheSystem = async () => {
-    const startTime = performance.now();
-    try {
-      if (!cache.isInitialized) {
-        throw new Error('Cache system not initialized');
-      }
-
-      // Test cache operations
-      const testKey = 'health-check-test';
-      const testValue = { test: true, timestamp: Date.now() };
-      
-      await cache.set(testKey, testValue);
-      const retrieved = await cache.get(testKey);
-      
-      if (!retrieved || retrieved.test !== true) {
-        throw new Error('Cache set/get test failed');
-      }
-
-      await cache.delete(testKey);
-
-      const time = performance.now() - startTime;
-      return {
-        passed: true,
-        time,
-        details: `Cache system healthy, ${cache.metrics.hitRate.toFixed(1)}% hit rate`
-      };
-    } catch (error) {
-      return {
-        passed: false,
-        time: performance.now() - startTime,
-        details: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  };
-
-  const testMonitoringSystem = async () => {
-    const startTime = performance.now();
+  const calculateOverview = useCallback((): SystemHealthV8 => {
     try {
       if (!monitoring.isInitialized) {
         throw new Error('Monitoring system not initialized');
       }
 
-      // Test health check
-      const health = await monitoring.runHealthCheck();
-      if (health.status === 'unhealthy') {
-        throw new Error('System health check failed');
-      }
+      const systemHealth = monitoring.systemHealth;
+      const performance = monitoring.performanceMetrics;
+      const application = monitoring.applicationMetrics;
+      const infrastructure = monitoring.infrastructureMetrics;
 
-      const time = performance.now() - startTime;
+      const overallStatus = systemHealth.overall;
+      const overallScore = systemHealth.score;
+      const uptime = systemHealth.uptime;
+
+      const services = Object.entries(monitoring.services).map(([name, service]) => ({
+        name,
+        status: service.status,
+        health: service.health,
+        metrics: service.metrics
+      }));
+
+      const summary = {
+        total: Object.keys(monitoring.services).length,
+        healthy: Object.values(monitoring.services).filter(s => s.status === 'healthy').length,
+        degraded: Object.values(monitoring.services).filter(s => s.status === 'degraded').length,
+        offline: Object.values(monitoring.services).filter(s => s.status === 'offline').length
+      };
+
+      const telemetry = monitoring.telemetry;
+
       return {
-        passed: true,
-        time,
-        details: `Monitoring healthy, system score: ${health.score.toFixed(1)}`
+        overall: overallStatus,
+        score: overallScore,
+        uptime,
+        services,
+        summary,
+        telemetry
       };
     } catch (error) {
-      return {
-        passed: false,
-        time: performance.now() - startTime,
-        details: error instanceof Error ? error.message : 'Unknown error'
-      };
+      logger.error('Error calculating system overview:', error);
+      throw error; // Re-throw to be caught by the hook's error state
     }
-  };
+  }, [monitoring]);
 
-  const testIntegration = async () => {
-    const startTime = performance.now();
+  // =============================================================================
+  // SYSTEM ACTIONS
+  // =============================================================================
+
+  const refreshHealth = useCallback(async (): Promise<void> => {
     try {
-      // Test that all systems are properly integrated
-      if (!di.isInitialized || !cache.isInitialized || !monitoring.isInitialized) {
-        throw new Error('Not all systems are initialized');
-      }
+      setIsLoading(true);
+      logger.info('🔄 Refreshing system health...');
 
-      // Test cross-system integration
-      const overview = calculateOverview();
-      if (overview.overall.score < 50) {
-        throw new Error('Integration health score too low');
-      }
-
-      const time = performance.now() - startTime;
-      return {
-        passed: true,
-        time,
-        details: `Integration healthy, overall score: ${overview.overall.score.toFixed(1)}`
-      };
+      await monitoring.refreshHealth();
+      const newHealth = calculateOverview();
+      setHealth(newHealth);
+      setLastUpdated(new Date());
+      logger.info('✅ System health refreshed successfully');
     } catch (error) {
-      return {
-        passed: false,
-        time: performance.now() - startTime,
-        details: error instanceof Error ? error.message : 'Unknown error'
-      };
+      logger.error('❌ Error refreshing system health:', error);
+      setError('Failed to refresh system health.');
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [monitoring, calculateOverview]);
 
-  const generateRecommendations = (tests: DiagnosticReport['tests']): string[] => {
-    const recommendations: string[] = [];
-
-    if (!tests.di.passed) {
-      recommendations.push('Initialize DI system and verify service registrations');
+  const getMetrics = useCallback((): HealthMetricsV8 | null => {
+    if (!monitoring.isInitialized) {
+      return null;
     }
+    return monitoring.performanceMetrics;
+  }, [monitoring]);
 
-    if (!tests.cache.passed) {
-      recommendations.push('Clear cache and verify storage permissions');
-    }
+  const startMonitoring = useCallback((intervalMs: number = 5000) => {
+    monitoring.startMonitoring(intervalMs);
+  }, [monitoring]);
 
-    if (!tests.monitoring.passed) {
-      recommendations.push('Check network connectivity and system resources');
-    }
+  const stopMonitoring = useCallback(() => {
+    monitoring.stopMonitoring();
+  }, [monitoring]);
 
-    if (!tests.integration.passed) {
-      recommendations.push('Verify all systems are properly configured and initialized');
-    }
+  // V8.0 Advanced features
+  const startTrace = useCallback((operationName: string, serviceName: string, tags?: Record<string, any>) => {
+    return monitoring.startTrace(operationName, serviceName, tags);
+  }, [monitoring]);
 
-    if (cache.metrics.hitRate < 50) {
-      recommendations.push('Consider adjusting cache TTL settings for better hit rate');
-    }
+  const finishTrace = useCallback((traceId: string, status: 'success' | 'error' | 'timeout', tags?: Record<string, any>) => {
+    monitoring.finishTrace(traceId, status, tags);
+  }, [monitoring]);
 
-    if (di.registryMetrics.averageResponseTime > 100) {
-      recommendations.push('Optimize service initialization for better response times');
-    }
+  const recordPerformanceMetric = useCallback((metric: string, value: number, unit: string, tags?: Record<string, any>) => {
+    monitoring.recordPerformanceMetric(metric, value, unit, tags);
+  }, [monitoring]);
 
-    return recommendations;
-  };
+  const createAlert = useCallback((type: string, severity: 'low' | 'medium' | 'high' | 'critical', message: string, details?: any) => {
+    monitoring.createAlert(type, severity, message, details);
+  }, [monitoring]);
+
+  const triggerAutoRemediation = useCallback(async (issue: string) => {
+    return monitoring.triggerAutoRemediation(issue);
+  }, [monitoring]);
+
+  // Monitoring flags
+  const isMonitoring = useCallback(() => {
+    return monitoring.isMonitoring;
+  }, [monitoring]);
+
+  const monitoringInterval = useCallback(() => {
+    return monitoring.monitoringInterval;
+  }, [monitoring]);
 
   // =============================================================================
   // EFFECTS
   // =============================================================================
 
   useEffect(() => {
-    // Update overview when any system changes
-    const newOverview = calculateOverview();
-    setOverview(newOverview);
-  }, [
-    di.isInitialized, di.registryMetrics,
-    cache.isInitialized, cache.metrics,
-    monitoring.isInitialized, monitoring.systemHealth, monitoring.alerts,
-    calculateOverview
-  ]);
+    const initializeMonitoring = async () => {
+      try {
+        await monitoring.bootstrap();
+        const initialHealth = calculateOverview();
+        setHealth(initialHealth);
+        setLastUpdated(new Date());
+        logger.info('✅ Monitoring system initialized successfully');
+      } catch (error) {
+        logger.error('❌ Error initializing monitoring system:', error);
+        setError('Failed to initialize monitoring system.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeMonitoring();
+    startMonitoring(); // Start monitoring on mount
+
+    return () => {
+      stopMonitoring(); // Clean up on unmount
+    };
+  }, [monitoring, calculateOverview, startMonitoring, stopMonitoring]);
 
   // =============================================================================
   // RETURN VALUE
   // =============================================================================
 
-  const actions: SystemActions = {
-    refreshAll,
-    runDiagnostics,
-    clearCaches,
-    exportMetrics
+  const result: UseSystemHealthV8Result = {
+    isInitialized: monitoring.isInitialized,
+    health,
+    metrics,
+    isLoading,
+    error,
+    lastUpdated,
+    refreshHealth,
+    getMetrics,
+    startMonitoring,
+    stopMonitoring,
+    startTrace,
+    finishTrace,
+    recordPerformanceMetric,
+    createAlert,
+    triggerAutoRemediation,
+    isMonitoring,
+    monitoringInterval
   };
 
-  return {
-    overview,
-    actions,
-    isRefreshing,
-    lastDiagnostic,
-    
-    // Individual system access
-    di,
-    cache,
-    monitoring
-  };
+  return result;
 };
 
 // =============================================================================
@@ -478,18 +280,18 @@ export const useSystemHealth = () => {
 // =============================================================================
 
 export const useSystemScore = () => {
-  const { overview } = useSystemHealth();
-  return overview.overall.score;
+  const { health } = useSystemHealth();
+  return health?.score || 0;
 };
 
 export const useSystemStatus = () => {
-  const { overview } = useSystemHealth();
-  return overview.overall.status;
+  const { health } = useSystemHealth();
+  return health?.overall || 'healthy';
 };
 
 export const useSystemDiagnostics = () => {
-  const { actions, lastDiagnostic } = useSystemHealth();
-  return { runDiagnostics: actions.runDiagnostics, lastDiagnostic };
+  const { refreshHealth, getMetrics } = useSystemHealth();
+  return { refreshHealth, getMetrics };
 };
 
 // =============================================================================

@@ -57,6 +57,10 @@ module.exports = {
     
     // Day 5 Final Integration Validation
     '<rootDir>/src/**/__tests__/**/final-validation/**/*.test.ts',
+    
+    // RoteirosIA V9.0 Tests
+    '<rootDir>/src/components/RoteirosIA/__tests__/**/*.test.tsx',
+    '<rootDir>/src/components/RoteirosIA/__tests__/**/*.test.ts',
   ],
   
   // IGNORE still problematic test files (to be gradually re-enabled)

@@ -197,6 +197,19 @@ const ContentAnalyzer = React.lazy(() =>
   )
 );
 
+// 🎬 ROTEIROS IA V9.0 - Script Generation System
+const RoteirosIA = React.lazy(() => 
+  performanceService.measureFunction("load_RoteirosIA", () => 
+    import("./components/RoteirosIA/RoteirosIA").then(module => {
+      // 🚀 V9.0: Preload Roteiros IA services
+      import("./services/geminiService");
+      import("./services/ai/GeminiService");
+      logger.log("debug", "RoteirosIA V9.0 lazy loaded with script generation services preloaded", {}, "CODE_SPLITTING");
+      return module;
+    })
+  )
+);
+
 // =============================================================================
 // PRELOADING STRATEGY
 // =============================================================================
@@ -756,6 +769,15 @@ const App: React.FC = () => {
                     element={
                       <ProtectedRoute>
                         <ContentAnalyzer />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  {/* 🎬 ROTEIROS IA V9.0 - Script Generation System */}
+                  <Route 
+                    path="/roteiros-ia" 
+                    element={
+                      <ProtectedRoute>
+                        <RoteirosIA />
                       </ProtectedRoute>
                     } 
                   />

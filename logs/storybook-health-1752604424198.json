@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-07-15T18:33:44.198Z",
+  "duration": 60,
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "warnings": 0,
+    "errors": 0
+  },
+  "checks": [
+    {
+      "name": "Configuration Check",
+      "status": "PASS",
+      "files": [
+        {
+          "file": ".storybook/main.ts",
+          "exists": true
+        },
+        {
+          "file": ".storybook/preview.ts",
+          "exists": true
+        },
+        {
+          "file": "package.json",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "name": "Process Check",
+      "status": "PASS",
+      "pid": "47270\n98812"
+    },
+    {
+      "name": "HTTP Response",
+      "status": "PASS",
+      "responseTime": 2,
+      "statusCode": 200
+    },
+    {
+      "name": "Stories Check",
+      "status": "PASS",
+      "storyCount": 392
+    },
+    {
+      "name": "System Resources",
+      "status": "PASS",
+      "memory": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                              ...",
+      "disk": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   ..."
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "status": "HEALTHY"
+}

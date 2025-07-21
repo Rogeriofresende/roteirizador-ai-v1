@@ -28,6 +28,7 @@ import ErrorBoundary from './components/shared/ErrorBoundary';
 // V8.0 Professional Components - Beta Phase
 const BancoIdeiasLayout = lazy(() => import('./components/BancoIdeiasLayout'));
 const IdeaGenerationForm = lazy(() => import('./components/IdeaGenerationForm'));
+const EnhancedIdeaForm = lazy(() => import('./components/EnhancedIdeaForm'));
 const IdeaResultsDisplay = lazy(() => import('./components/IdeaResultsDisplay'));
 const IdeaHistoryTab = lazy(() => import('./components/IdeaHistoryTab'));
 const IdeaQuickActions = lazy(() => import('./components/IdeaQuickActions'));
@@ -60,12 +61,13 @@ export const BancoDeIdeias: React.FC = () => {
   });
   
   // ============================================================================
-  // BETA PHASE STATE
+  // BETA PHASE STATE + V9.0 ENHANCEMENT
   // ============================================================================
   
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [filteredIdeas, setFilteredIdeas] = useState<IdeaResponse[]>([]);
   const [allIdeas, setAllIdeas] = useState<IdeaResponse[]>([]);
+  const [useEnhancedForm, setUseEnhancedForm] = useState(true); // V9.0 by default
   
   // ============================================================================
   // HANDLERS
@@ -150,13 +152,40 @@ export const BancoDeIdeias: React.FC = () => {
       case 'generator':
         return (
           <div className="space-y-8">
+            {/* V9.0 Form Toggle */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-gray-800">Gerador de Ideias</h2>
+                {useEnhancedForm && (
+                  <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                    V9.0 Enhanced
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setUseEnhancedForm(!useEnhancedForm)}
+                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                {useEnhancedForm ? 'Formulário Clássico' : 'Formulário V9.0'}
+              </button>
+            </div>
+
             <Suspense fallback={<LoadingStates.ComponentSkeleton />}>
-              <IdeaGenerationForm
-                formData={state.formData}
-                onFormChange={actions.handleFormChange}
-                onGenerateIdea={handleGenerateIdea}
-                isGenerating={state.isGenerating}
-              />
+              {useEnhancedForm ? (
+                <EnhancedIdeaForm
+                  formData={state.formData}
+                  onFormChange={actions.handleFormChange}
+                  onGenerateIdea={handleGenerateIdea}
+                  isGenerating={state.isGenerating}
+                />
+              ) : (
+                <IdeaGenerationForm
+                  formData={state.formData}
+                  onFormChange={actions.handleFormChange}
+                  onGenerateIdea={handleGenerateIdea}
+                  isGenerating={state.isGenerating}
+                />
+              )}
             </Suspense>
             
             <Suspense fallback={<LoadingStates.ComponentSkeleton />}>

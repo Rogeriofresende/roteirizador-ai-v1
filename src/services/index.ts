@@ -1,57 +1,53 @@
 /**
  * Services DI System - Main Export
- * Sistema de Dependency Injection V6.4 - IA Beta Implementation
+ * V8.0 CONSOLIDATED SYSTEM - Migrado para ServiceBootstrapV8
  */
 
-// Core DI system exports
+// V8.0 Core DI system exports - CONSOLIDATED
 export { container } from './container/DIContainer';
 export { serviceRegistry } from './registry/ServiceRegistry';
 
-// Bootstrap import with error handling - FIXED CRITICAL ISSUE
+// V8.0 BOOTSTRAP MIGRATION: Usar ServiceBootstrapV8 consolidado
 let serviceBootstrap: any;
 let ServiceIdentifiers: any;
 let isBootstrapLoaded = false;
 
-// Initialize with safe fallback
-serviceBootstrap = {
-  initialize: () => Promise.resolve({ 
-    success: true, // Changed to true to prevent error cascade
-    registeredServices: 0, 
-    initializedServices: 0, 
-    errors: ['DI System running in fallback mode - legacy services active'] 
-  }),
-  dispose: () => Promise.resolve(),
-  getSystemStatus: () => Promise.resolve({ 
-    initialized: true, // Changed to true for stability
-    health: { overall: 'healthy' }, // Changed to healthy 
-    stats: { registeredServices: 0, activeInstances: 0 } 
-  })
-};
-ServiceIdentifiers = {};
-
-// Async initialization function
+// V8.0 Initialize with ServiceBootstrapV8 (no more fallback needed)
 async function initializeBootstrap() {
   try {
-    // Use dynamic import instead of require
-    const bootstrap = await import('./bootstrap/ServiceBootstrap');
-    if (bootstrap && bootstrap.serviceBootstrap) {
-      serviceBootstrap = bootstrap.serviceBootstrap;
-      ServiceIdentifiers = bootstrap.ServiceIdentifiers;
+    // V8.0: Usar ServiceBootstrapV8 consolidado ao invés do legado
+    const bootstrap = await import('./bootstrap/ServiceBootstrapV8');
+    if (bootstrap && bootstrap.serviceBootstrapV8) {
+      serviceBootstrap = bootstrap.serviceBootstrapV8;
+      ServiceIdentifiers = bootstrap.ServiceIdentifiers || {};
       isBootstrapLoaded = true;
-      console.log('✅ ServiceBootstrap loaded successfully');
+      console.log('✅ ServiceBootstrapV8 loaded successfully - Consolidated DI System');
     }
   } catch (error) {
-    console.warn('⚠️ ServiceBootstrap not available, using fallback mode:', error);
-    // Fallback mode is already set above, no need to error
+    console.error('❌ ServiceBootstrapV8 failed to load:', error);
+    // V8.0: Keep minimal fallback but prefer V8 system
+    serviceBootstrap = {
+      initialize: () => Promise.resolve({ 
+        success: false,
+        registeredServices: 0, 
+        initializedServices: 0, 
+        errors: ['ServiceBootstrapV8 failed to load'] 
+      }),
+      dispose: () => Promise.resolve(),
+      getSystemStatus: () => Promise.resolve({ 
+        initialized: false,
+        health: { overall: 'offline' },
+        stats: { registeredServices: 0, activeInstances: 0 } 
+      })
+    };
   }
 }
 
-// Initialize bootstrap asynchronously
-initializeBootstrap().catch(error => {
-  console.warn('Failed to initialize bootstrap:', error);
-});
+// Initialize on module load
+initializeBootstrap();
 
-export { serviceBootstrap, ServiceIdentifiers };
+// V8.0 CONSOLIDATED EXPORTS
+export { serviceBootstrap, ServiceIdentifiers, isBootstrapLoaded };
 
 // Interface exports
 export * from './interfaces';

@@ -14,39 +14,20 @@ import {
   Lightbulb,
   BarChart3,
   ArrowRight,
-  Edit3
+  Edit3,
+  Clock,
+  Award,
+  Hash
 } from 'lucide-react';
 
-interface AIInsightsDisplayProps {
-  analysis: AnalysisResult;
-  onProceed?: () => void;
-  onRefineAnalysis?: () => void;
-  loading?: boolean;
-}
-
-interface AnalysisResult {
-  profile: {
-    niche: string;
-    tone: string;
-    audience: string;
-    topics: string[];
-    postFrequency: string;
-    bestPerformingContent: string;
-  };
-  insights: Array<{
-    type: 'opportunity' | 'strength' | 'improvement';
-    title: string;
-    description: string;
-    impact: 'high' | 'medium' | 'low';
-  }>;
-  confidence: number;
-  stats: {
-    postsAnalyzed: number;
-    engagementAverage: string;
-    topHashtags: string[];
-    peakTimes: string[];
-  };
-}
+// V8.0: Importar interface unificada
+import { 
+  UnifiedAnalysisResult,
+  AIInsightsDisplayProps,
+  AnalysisInsight,
+  getConfidenceLevel,
+  createEmptyAnalysisResult
+} from '../../../../types/QualificationTypes';
 
 export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
   analysis,
@@ -56,6 +37,23 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
 }) => {
   const [selectedInsight, setSelectedInsight] = useState<number | null>(null);
 
+  // V8.0: Usar dados da interface unificada com defensive programming
+  const safeAnalysis = analysis || createEmptyAnalysisResult();
+  const { profile, insights, stats, confidence, metadata, contentRecommendations } = safeAnalysis;
+
+  // V8.0: Verificação adicional de segurança com interface unificada
+  if (!analysis) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Alert>
+          <AlertDescription>
+            Dados de análise não disponíveis. Por favor, tente novamente.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   const getInsightIcon = (type: string) => {
     switch (type) {
       case 'opportunity':
@@ -64,6 +62,8 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
         return <CheckCircle className="w-5 h-5 text-green-600" />;
       case 'improvement':
         return <TrendingUp className="w-5 h-5 text-blue-600" />;
+      case 'warning':
+        return <Alert className="w-5 h-5 text-red-600" />;
       default:
         return <Brain className="w-5 h-5 text-purple-600" />;
     }
@@ -82,9 +82,6 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
     }
   };
 
-  const confidenceColor = analysis.confidence >= 80 ? 'text-green-600' : 
-                         analysis.confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Progress Header */}
@@ -93,142 +90,199 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
           <span>Etapa 1 de 5</span>
           <span>Análise Completa</span>
         </div>
-        <Progress value={40} className="h-2" />
+        <Progress value={20} className="h-2" />
       </div>
 
-      {/* Main Results Card */}
-      <Card className="border-2 border-green-100">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-3xl text-white">
-            ✨
+      {/* Main Header with Confidence */}
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+          <span className="text-3xl">✨</span>
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Análise do Seu Perfil Completa!
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Nossa IA analisou seu conteúdo e identificou padrões importantes. Veja o que descobrimos sobre seu perfil profissional.
+          </p>
+        </div>
+        
+        {/* V8.0: Enhanced Confidence Display */}
+        <div className="flex justify-center">
+          <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${
+            getConfidenceLevel(confidence) === 'very-high' ? 'bg-green-100 text-green-800' :
+            getConfidenceLevel(confidence) === 'high' ? 'bg-blue-100 text-blue-800' :
+            getConfidenceLevel(confidence) === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+            'bg-red-100 text-red-800'
+          }`}>
+            <Award className="w-5 h-5 mr-2" />
+            Confiança da análise: {confidence}%
           </div>
-          <div>
-            <CardTitle className="text-2xl mb-2">
-              Análise do Seu Perfil Completa!
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Nossa IA analisou seu conteúdo e identificou padrões importantes. 
-              Veja o que descobrimos sobre seu perfil profissional.
-            </CardDescription>
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-sm text-gray-600">Confiança da análise:</span>
-            <span className={`font-bold text-lg ${confidenceColor}`}>
-              {analysis.confidence}%
-            </span>
+        </div>
+      </div>
+
+      {/* Profile Summary Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-blue-600" />
+            <CardTitle>Perfil Identificado</CardTitle>
           </div>
         </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-medium text-gray-700 mb-1">Nicho Principal:</h4>
+              <p className="text-blue-600 font-medium">{profile?.niche || 'Não identificado'}</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-700 mb-1">Tom de Voz:</h4>
+              <p className="text-gray-900">{profile?.tone || 'Não identificado'}</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-700 mb-1">Audiência:</h4>
+              <p className="text-gray-900">{profile?.audience || 'Não identificado'}</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-700 mb-1">Frequência:</h4>
+              <p className="text-gray-900">{profile?.postFrequency || 'Não identificado'}</p>
+            </div>
+          </div>
+          
+          {/* V8.0: Enhanced Demographics */}
+          {profile?.targetDemographics && (
+            <div className="pt-4 border-t">
+              <h4 className="font-medium text-gray-700 mb-2">Demografia do Público:</h4>
+              <div className="grid md:grid-cols-3 gap-2 text-sm">
+                <div>
+                  <span className="text-gray-500">Idade:</span>
+                  <span className="ml-1 font-medium">{profile?.targetDemographics?.ageRange}</span>
+                </div>
+                {profile?.targetDemographics?.profession && (
+                  <div>
+                    <span className="text-gray-500">Profissão:</span>
+                    <span className="ml-1 font-medium">{profile?.targetDemographics?.profession}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
       </Card>
 
-      {/* Profile Summary */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-600" />
-              Perfil Identificado
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-gray-600">Nicho Principal:</span>
-                <p className="text-lg font-semibold text-blue-700">{analysis.profile.niche}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-600">Tom de Voz:</span>
-                <p className="text-base">{analysis.profile.tone}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-600">Audiência:</span>
-                <p className="text-base">{analysis.profile.audience}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-600">Frequência:</span>
-                <p className="text-base">{analysis.profile.postFrequency}</p>
-              </div>
+      {/* V8.0: Enhanced Statistics */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-purple-600" />
+            <CardTitle>Estatísticas</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{stats?.postsAnalyzed || 0}</div>
+              <div className="text-sm text-blue-800">Posts Analisados</div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{stats?.engagementAverage || 'N/A'}</div>
+              <div className="text-sm text-green-800">Engagement Médio</div>
+            </div>
+            {stats?.avgLikesPerPost && (
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">{stats?.avgLikesPerPost}</div>
+                <div className="text-sm text-purple-800">Curtidas/Post</div>
+              </div>
+            )}
+            {stats?.followerGrowthRate && (
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{stats?.followerGrowthRate}</div>
+                <div className="text-sm text-yellow-800">Crescimento</div>
+              </div>
+            )}
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-purple-600" />
-              Estatísticas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
-                  {analysis.stats.postsAnalyzed}
-                </div>
-                <div className="text-xs text-blue-600">Posts Analisados</div>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
-                  {analysis.stats.engagementAverage}
-                </div>
-                <div className="text-xs text-green-600">Engagement Médio</div>
-              </div>
-            </div>
-            
+          <div className="mt-6 space-y-4">
             <div>
-              <span className="text-sm font-medium text-gray-600">Melhor Performance:</span>
-              <p className="text-sm">{analysis.profile.bestPerformingContent}</p>
+              <h4 className="font-medium text-gray-700 mb-2">Melhor Performance:</h4>
+              <p className="text-gray-600">{profile?.bestPerformingContent || 'Não identificado'}</p>
             </div>
-            
+
             <div>
-              <span className="text-sm font-medium text-gray-600">Top Hashtags:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {analysis.stats.topHashtags.map((tag, index) => (
+              <h4 className="font-medium text-gray-700 mb-2">Top Hashtags:</h4>
+              <div className="flex flex-wrap gap-2">
+                {stats?.topHashtags?.map((hashtag, index) => (
                   <Badge key={index} variant="secondary" className="text-xs">
-                    {tag}
+                    <Hash className="w-3 h-3 mr-1" />
+                    {hashtag}
                   </Badge>
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Topics Covered */}
+            {stats?.peakTimes?.length > 0 && (
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Melhores Horários:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {stats?.peakTimes?.map((time, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {time}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* V8.0: Enhanced Topics */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-green-600" />
-            Temas Principais Identificados
-          </CardTitle>
+            <CardTitle>Temas Principais Identificados</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {analysis.profile.topics.map((topic, index) => (
-              <Badge 
-                key={index} 
-                variant="outline" 
-                className="px-4 py-2 text-sm border-green-200 text-green-700"
-              >
+            {profile?.topics?.map((topic, index) => (
+              <Badge key={index} className="text-sm">
                 {topic}
               </Badge>
             ))}
           </div>
+          
+          {/* V8.0: Content Categories */}
+          {profile?.contentCategories && profile?.contentCategories?.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-700 mb-2">Categorias de Conteúdo:</h4>
+              <div className="flex flex-wrap gap-2">
+                {profile?.contentCategories?.map((category, index) => (
+                  <Badge key={index} variant="outline" className="text-sm">
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Insights & Opportunities */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-purple-600" />
-            Insights & Oportunidades
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-yellow-600" />
+            <CardTitle>Insights & Oportunidades</CardTitle>
+          </div>
           <CardDescription>
             Baseado na análise do seu conteúdo, identificamos estas oportunidades:
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {analysis.insights.map((insight, index) => (
+          {insights.map((insight, index) => (
             <div
               key={index}
               className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
@@ -251,8 +305,23 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
                         {insight.impact === 'high' ? 'Alto Impacto' : 
                          insight.impact === 'medium' ? 'Médio Impacto' : 'Baixo Impacto'}
                       </Badge>
+                      {insight.priority && (
+                        <Badge variant="secondary" className="text-xs">
+                          P{insight.priority}
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-gray-600">{insight.description}</p>
+                    
+                    {/* V8.0: Enhanced Insight Details */}
+                    {selectedInsight === index && insight.estimatedTimeToImplement && (
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Tempo estimado: {insight.estimatedTimeToImplement}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -261,18 +330,62 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
         </CardContent>
       </Card>
 
+      {/* V8.0: Content Recommendations */}
+      {contentRecommendations && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-indigo-600" />
+              <CardTitle>Recomendações de Conteúdo</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {contentRecommendations.suggestedTopics.length > 0 && (
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Tópicos Sugeridos:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {contentRecommendations.suggestedTopics.map((topic, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm">
+                      {topic}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {contentRecommendations.contentFormats.length > 0 && (
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Formatos Recomendados:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {contentRecommendations.contentFormats.map((format, index) => (
+                    <Badge key={index} variant="outline" className="text-sm">
+                      {format}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Accuracy Notice */}
       <Alert className="border-purple-200 bg-purple-50">
         <Brain className="h-4 w-4 text-purple-600" />
         <AlertDescription className="text-purple-800">
-          <strong>Como chegamos a esses insights:</strong> Analisamos {analysis.stats.postsAnalyzed} posts, 
-          padrões de engagement, tom de voz e temas recorrentes. Essa análise nos dá {analysis.confidence}% 
+          <strong>Como chegamos a esses insights:</strong> Analisamos {stats?.postsAnalyzed || 0} posts, 
+          padrões de engagement, tom de voz e temas recorrentes. Essa análise nos dá {confidence}% 
           de confiança nos resultados.
+          {metadata?.modelUsed && (
+            <span className="block mt-1 text-sm">
+              Modelo utilizado: {metadata.modelUsed} • Versão: {metadata.analysisVersion}
+            </span>
+          )}
         </AlertDescription>
       </Alert>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* Action Buttons - V8.0: Enhanced with better layout */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <Button 
           onClick={onProceed}
           disabled={loading}
@@ -280,10 +393,11 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
           size="lg"
         >
           {loading ? (
-            'Processando...'
+            <>Processando...</>
           ) : (
             <>
-              ✅ Está Correto - Vamos Conversar
+              <CheckCircle className="w-5 h-5 mr-2" />
+              Está Correto - Vamos Conversar
               <ArrowRight className="w-5 h-5 ml-2" />
             </>
           )}
@@ -299,29 +413,6 @@ export const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({
           <Edit3 className="w-5 h-5 mr-2" />
           Ajustar Análise
         </Button>
-      </div>
-
-      {/* Next Steps Preview */}
-      <div className="text-center bg-gray-50 rounded-lg p-6 space-y-3">
-        <h3 className="font-medium text-gray-700">Próximo Passo:</h3>
-        <p className="text-sm text-gray-600">
-          Vamos fazer algumas perguntas específicas baseadas nessa análise para criar 
-          sua estratégia de conteúdo personalizada.
-        </p>
-        <div className="flex items-center justify-center gap-6 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            ICP Detalhado
-          </span>
-          <span className="flex items-center gap-1">
-            <Target className="w-3 h-3" />
-            Objetivos
-          </span>
-          <span className="flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
-            Estratégia
-          </span>
-        </div>
       </div>
     </div>
   );

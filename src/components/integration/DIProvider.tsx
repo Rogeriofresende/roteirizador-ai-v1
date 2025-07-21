@@ -1,46 +1,59 @@
 /**
  * 🔌 DI PROVIDER V8.0 - FRONTEND INTEGRATION
  * Conecta frontend ao sistema de Dependency Injection consolidado
- * Baseado em: ServiceBootstrap.ts + ServiceRegistry.ts
- * Metodologia: V8.0 Consolidation Strategy
+ * V8.0 CONSOLIDATION: Usando ServiceBootstrapV8 (844 linhas consolidadas)
+ * Metodologia: V8.0 Unified Development + Frontend Integration
  */
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { serviceRegistry } from '../../services/registry/ServiceRegistry';
-import { ServiceBootstrap, ServiceIdentifiers } from '../../services/bootstrap/ServiceBootstrap';
+import { serviceBootstrapV8, ServiceIdentifiersV8 } from '../../services/bootstrap/ServiceBootstrapV8';
 import { createLogger } from '../../utils/logger';
 
-const logger = createLogger('DIProvider');
+const logger = createLogger('DIProviderV8');
 
 // =============================================================================
-// TYPES & INTERFACES
+// V8.0 UNIFIED INTERFACES
 // =============================================================================
 
-interface DIContextValue {
+interface DIContextValueV8 {
   isInitialized: boolean;
   services: Record<string, any>;
   bootstrap: () => Promise<void>;
   getService: <T>(identifier: string) => T | null;
-  getServiceHealth: (identifier: string) => ServiceHealthStatus;
-  registryMetrics: RegistryMetrics;
+  getSystemHealth: () => Promise<SystemHealthV8>;
+  registryMetrics: RegistryMetricsV8;
+  performanceScore: number;
+  bootstrapTime: number;
 }
 
-interface ServiceHealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  lastCheck: number;
-  responseTime: number;
-  errorCount: number;
+interface SystemHealthV8 {
+  overall: 'healthy' | 'degraded' | 'offline';
+  services: Array<{
+    name: string;
+    status: string;
+    health: any;
+    metrics: any;
+  }>;
+  summary: {
+    total: number;
+    healthy: number;
+    degraded: number;
+    offline: number;
+  };
+  telemetry: any;
 }
 
-interface RegistryMetrics {
+interface RegistryMetricsV8 {
   totalServices: number;
   healthyServices: number;
   degradedServices: number;
-  unhealthyServices: number;
+  offlineServices: number;
   averageResponseTime: number;
+  performanceScore: number;
+  totalBootstrapTime: number;
 }
 
-const DIContext = createContext<DIContextValue | null>(null);
+const DIContext = createContext<DIContextValueV8 | null>(null);
 
 // =============================================================================
 // DI PROVIDER COMPONENT
@@ -57,12 +70,14 @@ export const DIProvider: React.FC<DIProviderProps> = ({
 }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [services, setServices] = useState<Record<string, any>>({});
-  const [registryMetrics, setRegistryMetrics] = useState<RegistryMetrics>({
+  const [registryMetrics, setRegistryMetrics] = useState<RegistryMetricsV8>({
     totalServices: 0,
     healthyServices: 0,
     degradedServices: 0,
-    unhealthyServices: 0,
-    averageResponseTime: 0
+    offlineServices: 0,
+    averageResponseTime: 0,
+    performanceScore: 0,
+    totalBootstrapTime: 0
   });
 
   // =============================================================================
@@ -74,12 +89,12 @@ export const DIProvider: React.FC<DIProviderProps> = ({
       logger.info('🚀 Bootstrapping DI system...');
       const startTime = performance.now();
 
-      // Initialize ServiceBootstrap
-      await ServiceBootstrap.initialize();
+      // Initialize ServiceBootstrapV8
+      await serviceBootstrapV8.initialize();
       
       // Get all registered services
-      const registeredServices = serviceRegistry.getAllServices();
-      setServices(registeredServices);
+      const serviceStats = serviceBootstrapV8.getStats();
+      setServices(serviceStats.instances || {});
 
       // Update metrics
       updateRegistryMetrics();
@@ -99,37 +114,56 @@ export const DIProvider: React.FC<DIProviderProps> = ({
   // SERVICE ACCESS FUNCTIONS
   // =============================================================================
 
-  const getService = <T>(identifier: string): T | null => {
+  const getService = <T extends unknown>(identifier: string): T | null => {
     try {
-      return serviceRegistry.get<T>(identifier);
+      return serviceBootstrapV8.get<T>(identifier);
     } catch (error) {
       logger.warn(`⚠️ Service '${identifier}' not found:`, error);
       return null;
     }
   };
 
-  const getServiceHealth = (identifier: string): ServiceHealthStatus => {
-    return serviceRegistry.getHealthStatus(identifier) || {
-      status: 'unhealthy',
-      lastCheck: Date.now(),
-      responseTime: 0,
-      errorCount: 1
-    };
+  const getSystemHealth = async (): Promise<SystemHealthV8> => {
+    return serviceBootstrapV8.getSystemHealth();
   };
 
   const updateRegistryMetrics = (): void => {
-    const allServices = serviceRegistry.getAllServices();
-    const healthStatuses = Object.keys(allServices).map(id => getServiceHealth(id));
-    
-    const metrics: RegistryMetrics = {
-      totalServices: Object.keys(allServices).length,
-      healthyServices: healthStatuses.filter(h => h.status === 'healthy').length,
-      degradedServices: healthStatuses.filter(h => h.status === 'degraded').length,
-      unhealthyServices: healthStatuses.filter(h => h.status === 'unhealthy').length,
-      averageResponseTime: healthStatuses.reduce((sum, h) => sum + h.responseTime, 0) / healthStatuses.length || 0
-    };
+    try {
+      const serviceStats = serviceBootstrapV8.getStats();
+      const allServices = serviceStats.instances || [];
+      
+      // Map array instances to health status
+      const healthStatuses = allServices.map(instance => ({
+        name: instance.key,
+        status: instance.health || 'unknown',
+        health: instance.health || 'unknown',
+        metrics: { responseTime: instance.initTime || 0 }
+      }));
+      
+      const metrics: RegistryMetricsV8 = {
+        totalServices: allServices.length,
+        healthyServices: healthStatuses.filter(s => s.status === 'healthy').length,
+        degradedServices: healthStatuses.filter(s => s.status === 'degraded').length,
+        offlineServices: healthStatuses.filter(s => s.status === 'offline').length,
+        averageResponseTime: healthStatuses.reduce((sum, s) => sum + (s.metrics.responseTime || 0), 0) / healthStatuses.length || 0,
+        performanceScore: serviceBootstrapV8.getPerformanceScore(),
+        totalBootstrapTime: serviceBootstrapV8.getTotalBootstrapTime()
+      };
 
-    setRegistryMetrics(metrics);
+      setRegistryMetrics(metrics);
+    } catch (error) {
+      console.warn('Error updating registry metrics:', error);
+      // Set safe defaults
+      setRegistryMetrics({
+        totalServices: 0,
+        healthyServices: 0,
+        degradedServices: 0,
+        offlineServices: 0,
+        averageResponseTime: 0,
+        performanceScore: 0,
+        totalBootstrapTime: 0
+      });
+    }
   };
 
   // =============================================================================
@@ -137,10 +171,17 @@ export const DIProvider: React.FC<DIProviderProps> = ({
   // =============================================================================
 
   useEffect(() => {
-    if (autoBootstrap && !isInitialized) {
+    // V8.0 Fix: Disable auto-bootstrap in Storybook environment
+    const isStorybook = globalThis.STORYBOOK_ENVIRONMENT === true;
+    
+    if (autoBootstrap && !isInitialized && !isStorybook) {
       bootstrap().catch(error => {
         logger.error('Auto-bootstrap failed:', error);
       });
+    } else if (isStorybook) {
+      // For Storybook, just set initialized without full bootstrap
+      logger.info('🎭 [STORYBOOK] Skipping DI bootstrap, using mocks');
+      setIsInitialized(true);
     }
   }, [autoBootstrap, isInitialized]);
 
@@ -156,13 +197,15 @@ export const DIProvider: React.FC<DIProviderProps> = ({
   // CONTEXT VALUE
   // =============================================================================
 
-  const contextValue: DIContextValue = {
+  const contextValue: DIContextValueV8 = {
     isInitialized,
     services,
     bootstrap,
     getService,
-    getServiceHealth,
-    registryMetrics
+    getSystemHealth,
+    registryMetrics,
+    performanceScore: serviceBootstrapV8.getPerformanceScore(),
+    bootstrapTime: serviceBootstrapV8.getTotalBootstrapTime()
   };
 
   return (
@@ -176,7 +219,7 @@ export const DIProvider: React.FC<DIProviderProps> = ({
 // CUSTOM HOOK
 // =============================================================================
 
-export const useDI = (): DIContextValue => {
+export const useDI = (): DIContextValueV8 => {
   const context = useContext(DIContext);
   if (!context) {
     throw new Error('useDI must be used within DIProvider');
@@ -188,25 +231,25 @@ export const useDI = (): DIContextValue => {
 // SERVICE-SPECIFIC HOOKS
 // =============================================================================
 
-export const useService = <T>(identifier: string): T | null => {
+export const useService = <T extends unknown>(identifier: string): T | null => {
   const { getService } = useDI();
   return getService<T>(identifier);
 };
 
 export const useAnalyticsService = () => {
-  return useService(ServiceIdentifiers.Analytics.name);
+  return useService(ServiceIdentifiersV8.Analytics.name);
 };
 
 export const useGeminiService = () => {
-  return useService(ServiceIdentifiers.Gemini?.name || 'GeminiService');
+  return useService(ServiceIdentifiersV8.Gemini?.name || 'GeminiService');
 };
 
 export const useCacheService = () => {
-  return useService(ServiceIdentifiers.Cache?.name || 'CacheService');
+  return useService(ServiceIdentifiersV8.Cache?.name || 'CacheService');
 };
 
 export const usePerformanceService = () => {
-  return useService(ServiceIdentifiers.Performance?.name || 'PerformanceService');
+  return useService(ServiceIdentifiersV8.Performance?.name || 'PerformanceService');
 };
 
 // =============================================================================

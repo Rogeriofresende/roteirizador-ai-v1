@@ -15,9 +15,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Import all cost management services from Pre-Week 0
 import CostManagementService from '../risk-management/costManagementService';
-import BudgetControlService from '../cost-management/budgetControlService';
-import RateLimitingService from '../cost-management/rateLimitingService';
-import PriorityQueueService from '../cost-management/priorityQueueService';
+import BudgetControlService from '../api-protection/budgetControlService';
+import RateLimitingService from '../api-protection/rateLimitingService';
+import PriorityQueueService from '../api-protection/priorityQueueService';
 import FallbackService from '../cost-management/fallbackService';
 import { UsageTierService, UserTier } from '../risk-management/usageTierService';
 

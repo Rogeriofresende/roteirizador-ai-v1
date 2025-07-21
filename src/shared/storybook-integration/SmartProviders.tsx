@@ -9,6 +9,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { geminiService } from '../../services/geminiService';
 import { analyticsService } from '../../services/analyticsService';
 import { useBancoDeIdeiasState } from '../../pages/BancoDeIdeias/hooks/useBancoDeIdeiasState';
+import { DIProvider } from '../../components/integration/DIProvider';
+import { CacheProvider } from '../../components/integration/CacheProvider';
+import { MonitoringProvider } from '../../components/integration/MonitoringProvider';
 
 // ============================================================================
 // CONTEXT DEFINITIONS
@@ -155,11 +158,17 @@ export const CombinedStorybookProvider: React.FC<StorybookProviderProps> = ({
   ...props 
 }) => {
   return (
-    <StorybookProvider {...props}>
-      <StorybookStateProvider>
-        {children}
-      </StorybookStateProvider>
-    </StorybookProvider>
+    <DIProvider>
+      <CacheProvider>
+        <MonitoringProvider>
+          <StorybookProvider {...props}>
+            <StorybookStateProvider>
+              {children}
+            </StorybookStateProvider>
+          </StorybookProvider>
+        </MonitoringProvider>
+      </CacheProvider>
+    </DIProvider>
   );
 };
 

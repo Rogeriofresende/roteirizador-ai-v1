@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -20,6 +20,11 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // V8.0 Fix: Generate unique IDs to prevent duplicate form field IDs
+  const formIdPrefix = useId();
+  const emailId = `${formIdPrefix}-email`;
+  const passwordId = `${formIdPrefix}-password`;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,13 +100,13 @@ const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="login-email">
+              <Label htmlFor={emailId}>
                 <Layout.Text variant="label">Email</Layout.Text>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="login-email"
+                  id={emailId}
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
@@ -114,7 +119,7 @@ const LoginPage: React.FC = () => {
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="login-password">
+                <Label htmlFor={passwordId}>
                   <Layout.Text variant="label">Senha</Layout.Text>
                 </Label>
                 <Link 
@@ -127,7 +132,7 @@ const LoginPage: React.FC = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  id="login-password"
+                  id={passwordId}
                   type="password"
                   placeholder="••••••••"
                   value={password}

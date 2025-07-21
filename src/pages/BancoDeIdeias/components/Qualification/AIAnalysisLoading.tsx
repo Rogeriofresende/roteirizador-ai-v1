@@ -32,7 +32,7 @@ interface AnalysisResult {
 }
 
 export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
-  profiles,
+  profiles = [], // V8.0 Fix: Default empty array to prevent undefined
   onComplete,
   estimatedTime = 45
 }) => {
@@ -40,6 +40,9 @@ export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
   const [progress, setProgress] = useState(0);
   const [realTimeInsights, setRealTimeInsights] = useState<string[]>([]);
   const [timeRemaining, setTimeRemaining] = useState(estimatedTime);
+
+  // V8.0 Fix: Ensure profiles is always a valid array
+  const safeProfiles = Array.isArray(profiles) ? profiles : [];
 
   const analysisSteps: AnalysisStep[] = [
     {
@@ -192,7 +195,7 @@ export const AIAnalysisLoading: React.FC<AIAnalysisLoadingProps> = ({
               IA Analisando Seus Perfis
             </CardTitle>
             <div className="flex flex-wrap justify-center gap-2">
-              {profiles.map((profile, index) => (
+              {safeProfiles.map((profile, index) => (
                 <Badge key={index} variant="outline" className="px-3 py-1">
                   {profile.platform}: {profile.username}
                 </Badge>

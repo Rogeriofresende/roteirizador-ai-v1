@@ -234,7 +234,7 @@ const QualificationFlow: React.FC<QualificationFlowProps> = ({ onComplete }) => 
 // ============================================================================
 
 const meta: Meta<typeof QualificationFlow> = {
-  title: 'V8.0 Functional/Qualification/CompleteFlow',
+  title: 'V8.0 Functional/Qualification/QualificationFlow',
   component: QualificationFlow,
   parameters: {
     layout: 'fullscreen',

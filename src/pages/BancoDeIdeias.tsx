@@ -13,7 +13,7 @@
  * Features: Idea Generation + Personalization + Budget Management + Analytics
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useId } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useIdeaGeneration } from '../hooks/useIdeaGeneration';
 import { usePersonalization } from '../hooks/usePersonalization';
@@ -283,6 +283,16 @@ export const BancoDeIdeias: React.FC = () => {
     getIdeasHistory
   } = useIdeaGeneration();
   
+  // V8.0 Fix: Generate unique IDs to prevent duplicate form field IDs
+  const formIdPrefix = useId();
+  const categoryId = `${formIdPrefix}-category`;
+  const styleId = `${formIdPrefix}-style`;
+  const targetAudienceId = `${formIdPrefix}-targetAudience`;
+  const contentTypeId = `${formIdPrefix}-contentType`;
+  const keywordsId = `${formIdPrefix}-keywords`;
+  const difficultyId = `${formIdPrefix}-difficulty`;
+
+  // Enhanced personalization
   const {
     recommendations,
     learningProgress,
@@ -1177,11 +1187,11 @@ export const BancoDeIdeias: React.FC = () => {
                   <form onSubmit={(e) => { e.preventDefault(); handleGenerateIdea(); }}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Layout.Label htmlFor="banco-category" className="block mb-2">
+                        <Layout.Label htmlFor={categoryId} className="block mb-2">
                           Categoria
                         </Layout.Label>
                         <Layout.Select
-                          id="banco-category"
+                          id={categoryId}
                           value={formData.category}
                           onChange={(e) => setFormData({...formData, category: e.target.value})}
                           className="w-full"
@@ -1200,11 +1210,11 @@ export const BancoDeIdeias: React.FC = () => {
                       </div>
 
                       <div>
-                        <Layout.Label htmlFor="banco-style" className="block mb-2">
+                        <Layout.Label htmlFor={styleId} className="block mb-2">
                           Estilo
                         </Layout.Label>
                         <Layout.Select
-                          id="banco-style"
+                          id={styleId}
                           value={formData.style}
                           onChange={(e) => setFormData({...formData, style: e.target.value})}
                           className="w-full"
@@ -1218,11 +1228,11 @@ export const BancoDeIdeias: React.FC = () => {
                       </div>
 
                       <div>
-                        <Layout.Label htmlFor="banco-targetAudience" className="block mb-2">
+                        <Layout.Label htmlFor={targetAudienceId} className="block mb-2">
                           Público-alvo
                         </Layout.Label>
                         <Layout.Select
-                          id="banco-targetAudience"
+                          id={targetAudienceId}
                           value={formData.targetAudience}
                           onChange={(e) => setFormData({...formData, targetAudience: e.target.value})}
                           className="w-full"
@@ -1237,11 +1247,11 @@ export const BancoDeIdeias: React.FC = () => {
                       </div>
 
                       <div>
-                        <Layout.Label htmlFor="banco-contentType" className="block mb-2">
+                        <Layout.Label htmlFor={contentTypeId} className="block mb-2">
                           Tipo de Conteúdo
                         </Layout.Label>
                         <Layout.Select
-                          id="banco-contentType"
+                          id={contentTypeId}
                           value={formData.contentType}
                           onChange={(e) => setFormData({...formData, contentType: e.target.value})}
                           className="w-full"
@@ -1260,11 +1270,11 @@ export const BancoDeIdeias: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <Layout.Label htmlFor="banco-keywords" className="block mb-2">
+                        <Layout.Label htmlFor={keywordsId} className="block mb-2">
                           Palavras-chave (separadas por vírgula)
                         </Layout.Label>
                         <Layout.Input
-                          id="banco-keywords"
+                          id={keywordsId}
                           type="text"
                           value={formData.keywordsInput}
                           onChange={(e) => setFormData({...formData, keywordsInput: e.target.value})}
@@ -1274,11 +1284,11 @@ export const BancoDeIdeias: React.FC = () => {
                       </div>
 
                       <div>
-                        <Layout.Label htmlFor="banco-difficulty" className="block mb-2">
+                        <Layout.Label htmlFor={difficultyId} className="block mb-2">
                           Nível de Dificuldade
                         </Layout.Label>
                         <Layout.Select
-                          id="banco-difficulty"
+                          id={difficultyId}
                           value={formData.difficulty}
                           onChange={(e) => setFormData({...formData, difficulty: e.target.value})}
                           className="w-full"
